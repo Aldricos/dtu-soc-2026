@@ -149,7 +149,7 @@ jobs:
 
       - name: Run RTL Verification
         run: |
-          make cocotb-verify-all-rtl 
+          cf verify --all 
 
   precheck:
     timeout-minutes: 720

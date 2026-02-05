@@ -449,3 +449,9 @@ $(clean-targets): clean-% :
 	rm -f ./mag/$*.mag
 	rm -f ./lef/$*.lef
 	rm -f ./maglef/*.maglef
+
+chisel-generate:
+	sbt "runMain CaravelTop"
+
+chisel-test:
+	sbt test
