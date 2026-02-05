@@ -436,6 +436,7 @@ $(blocks): % :
 
 .PHONY: harden
 harden: check-deprecated $(blocks)
+harden-all: CaravelTop user_project_wrapper
 
 clean-targets=$(blocks:%=clean-%)
 .PHONY: $(clean-targets)
