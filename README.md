@@ -29,7 +29,7 @@ The Chisel modules can be tested in Scala by calling:
 make chisel-test
 ```
 
-An integration test for the whole Caravel system can be run using cocotb. An example test case is included, which uses the GCD component and checks its output in `verilog/dv/cocotb/test-cases/gcd_example_test`. To run this test, execute the following command:
+An integration test for the whole Caravel system can be run using cocotb. An example test case is included, which uses the GCD component and checks its output in `verilog/dv/cocotb/user_proj_tests/gcd_example_test`. To run this test, execute the following command:
 
 ```
 cf verify --all
