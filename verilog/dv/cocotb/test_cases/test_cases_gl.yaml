@@ -1,0 +1,5 @@
+---
+# yaml file contain general design information that would mostly need to be updated in the first run only 
+Tests: 
+    - {name: gcd_example_test, sim: GL}
+
