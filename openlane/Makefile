@@ -34,7 +34,7 @@ export CARAVEL_ROOT := $(CARAVEL_ROOT)
 export PDK := $(PDK)
 export PDK_ROOT := $(PDK_ROOT)
 
-designs = $(shell cd $(PROJECT_ROOT)/blocks && find * -maxdepth 0 -type d)
+designs = $(shell cd $(PROJECT_ROOT)/openlane && find * -maxdepth 0 -type d)
 current_design = null
 
 LIBRELANE_USE_NIX ?= 0
@@ -64,7 +64,7 @@ librelane_run = nix run github:librelane/librelane/$(UPSTREAM_LIBRELANE_TAG) --
 endif
 else
 librelane_docker_args = $(shell test -t 0 || echo "--docker-no-tty")
-librelane_run = $(PROJECT_ROOT)/blocks/.venv/bin/python3 -m librelane $(docker_mounts) $(librelane_docker_args) --dockerized 
+librelane_run = $(PROJECT_ROOT)/openlane/.venv/bin/python3 -m librelane $(docker_mounts) $(librelane_docker_args) --dockerized 
 endif
 
 list:
@@ -73,7 +73,7 @@ list:
 .PHONY: $(designs)
 $(designs) : export current_design=$@
 $(designs):
-	@config_dir="$(PROJECT_ROOT)/blocks/$@"; \
+	@config_dir="$(PROJECT_ROOT)/openlane/$@"; \
 	config=""; \
 	for ext in yaml json tcl; do \
 		if [ -f "$$config_dir/config.$$ext" ]; then \
@@ -93,15 +93,15 @@ librelane: librelane-venv librelane-docker-image
 librelane-docker-image:
 	@echo "LibreLane will automatically pull the appropriate Docker image as needed."
 
-librelane-venv: $(PROJECT_ROOT)/blocks/.venv/manifest.txt
-$(PROJECT_ROOT)/blocks/.venv/manifest.txt: $(PROJECT_ROOT)/blocks/.version-$(CF_LIBRELANE_TAG)
-	rm -rf $(PROJECT_ROOT)/blocks/.venv
-	python3 -m venv $(PROJECT_ROOT)/blocks/.venv
-	PYTHONPATH= $(PROJECT_ROOT)/blocks/.venv/bin/python3 -m pip install --upgrade pip
-	PYTHONPATH= $(PROJECT_ROOT)/blocks/.venv/bin/python3 -m pip install "https://github.com/chipfoundry/openlane-2/tarball/$(CF_LIBRELANE_TAG)"
-	PYTHONPATH= $(PROJECT_ROOT)/blocks/.venv/bin/python3 -m pip freeze > $@
+librelane-venv: $(PROJECT_ROOT)/openlane/.venv/manifest.txt
+$(PROJECT_ROOT)/openlane/.venv/manifest.txt: $(PROJECT_ROOT)/openlane/.version-$(CF_LIBRELANE_TAG)
+	rm -rf $(PROJECT_ROOT)/openlane/.venv
+	python3 -m venv $(PROJECT_ROOT)/openlane/.venv
+	PYTHONPATH= $(PROJECT_ROOT)/openlane/.venv/bin/python3 -m pip install --upgrade pip
+	PYTHONPATH= $(PROJECT_ROOT)/openlane/.venv/bin/python3 -m pip install "https://github.com/chipfoundry/openlane-2/tarball/$(CF_LIBRELANE_TAG)"
+	PYTHONPATH= $(PROJECT_ROOT)/openlane/.venv/bin/python3 -m pip freeze > $@
 	
-$(PROJECT_ROOT)/blocks/.version-$(CF_LIBRELANE_TAG):
+$(PROJECT_ROOT)/openlane/.version-$(CF_LIBRELANE_TAG):
 	echo "$(CF_LIBRELANE_TAG)" > $@
 	python3 -c 'import os; [os.remove(f) for f in os.listdir("$(@D)") if f.startswith(".version-") and f != os.path.basename("$@")]'
 

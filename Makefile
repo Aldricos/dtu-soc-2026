@@ -199,7 +199,7 @@ librelane: librelane-venv
 openlane2-venv: librelane-venv
 openlane2-docker-container: librelane-docker-image
 librelane-%:
-	$(MAKE) -C blocks $@
+	$(MAKE) -C openlane $@
 	
 # Alias to install with Ciel
 pdk-with-volare:
@@ -211,13 +211,13 @@ pdk-with-volare:
 .PHONY: simlink
 simlink: check-caravel
 ### Symbolic links relative path to $CARAVEL_ROOT
-	$(eval MAKEFILE_PATH := $(shell realpath --relative-to=blocks $(CARAVEL_ROOT)/blocks/Makefile))
-	$(eval PIN_CFG_PATH  := $(shell realpath --relative-to=blocks/user_project_wrapper $(CARAVEL_ROOT)/blocks/user_project_wrapper_empty/pin_order.cfg))
-	mkdir -p blocks
-	mkdir -p blocks/user_project_wrapper
-	cd blocks &&\
+	$(eval MAKEFILE_PATH := $(shell realpath --relative-to=openlane $(CARAVEL_ROOT)/openlane/Makefile))
+	$(eval PIN_CFG_PATH  := $(shell realpath --relative-to=openlane/user_project_wrapper $(CARAVEL_ROOT)/openlane/user_project_wrapper_empty/pin_order.cfg))
+	mkdir -p openlane
+	mkdir -p openlane/user_project_wrapper
+	cd openlane &&\
 	ln -sf $(MAKEFILE_PATH) Makefile
-	cd blocks/user_project_wrapper &&\
+	cd openlane/user_project_wrapper &&\
 	ln -sf $(PIN_CFG_PATH) pin_order.cfg
 
 # Update Caravel
@@ -429,10 +429,10 @@ caravel-sta: ./env/spef-mapping.tcl
 	@echo "Check summary.log of a specific corner to point to reports with reg2reg violations"
 	@echo "Cap and slew violations are inside summary.log file itself"
 
-blocks=$(shell cd $(PROJECT_ROOT)/blocks && find * -maxdepth 0 -type d)
+blocks=$(shell cd $(PROJECT_ROOT)/openlane && find * -maxdepth 0 -type d)
 .PHONY: $(blocks)
 $(blocks): % :
-	$(MAKE) -C blocks $*
+	$(MAKE) -C openlane $*
 
 .PHONY: harden
 harden: check-deprecated $(blocks)

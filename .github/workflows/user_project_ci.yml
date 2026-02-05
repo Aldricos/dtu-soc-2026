@@ -59,7 +59,11 @@ jobs:
 
       - name: Harden Designs
         run: |
-          make harden-all
+          set -e
+          python3 .github/scripts/get_designs.py --design ${{ github.workspace }}
+          for design in $(cat harden_sequence.txt); do
+            cf harden $design || exit 1
+          done
 
       - name: Upload Hardened Design
         uses: actions/upload-artifact@v4
