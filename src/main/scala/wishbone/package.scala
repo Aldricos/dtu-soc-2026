@@ -8,6 +8,7 @@ package object wishbone {
     val addr = Input(UInt(addrWidth.W))
     val din = Input(UInt(dataWidth.W))
     val dout = Output(UInt(dataWidth.W))
+    val sel = Input(UInt((dataWidth / 8).W)) // Byte select
     val ack = Output(Bool())
   }
 }
