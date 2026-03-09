@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="https://umsousercontent.com/lib_lnlnuhLgkYnZdkSC/hj0vk05j0kemus1i.png" alt="ChipFoundry Logo" height="140" />
-
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Inter&size=44&duration=3000&pause=600&color=4C6EF5&center=true&vCenter=true&width=1100&lines=Caravel+User+Project+Template;OpenLane+%2B+ChipFoundry+Flow;Verification+and+Shuttle-Ready)](https://git.io/typing-svg)
+# DTU SoC 2026 - Caravel User Project
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Scalatest CI](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/scala.yml/badge.svg)](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/scala.yml)
 [![CI](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/user_project_ci.yml/badge.svg)](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/user_project_ci.yml)
 
 </div>
+
+## Chisel Project Setup
 
 This repository contains a starting point for integrating a Chisel project into the Caravel harness using Librelane.
 
@@ -51,6 +51,14 @@ An integration test for the whole Caravel system can be run using cocotb. An exa
 cf verify --all
 ```
 
+# Group Projects
+
+Enter your project here.
+
+## Group 1:
+
+
+# Caravel Documentation
 The remaining documentation is a general guide from the Caravel user project template.
 
 
