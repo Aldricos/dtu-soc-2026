@@ -15,7 +15,7 @@
 #include <firmware_apis.h>
 
 // address of the gpio module in words
-#define GPIO_ADDR (0x00000 >> 2) 
+#define GPIO_ADDR (0x0000000 >> 2) 
 
 void gpio_set_oeb(int value) {
     USER_writeWord(value, GPIO_ADDR + 2);

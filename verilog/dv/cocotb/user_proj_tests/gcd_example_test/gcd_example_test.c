@@ -15,7 +15,7 @@
 #include <firmware_apis.h>
 
 // address of the gcd module in words
-#define GCD_ADDR (0x10000 >> 2) 
+#define GCD_ADDR (0x0100000 >> 2) 
 
 int gcd_input_is_ready() {
     return USER_readWord(GCD_ADDR + 1) & 0x2;

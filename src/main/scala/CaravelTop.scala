@@ -14,7 +14,7 @@ object CaravelTop extends App {
 
 class CaravelTop extends Module {
 
-  val WB_ADDR_WIDTH = 20
+  val WB_ADDR_WIDTH = 28
   val MPRJ_IO_PADS = 38
 
   val wb = IO(new wishbone.WishboneIO(WB_ADDR_WIDTH, dataWidth = 32))
@@ -42,7 +42,7 @@ class CaravelTop extends Module {
   // address decoding for the peripherals
   // lower 16 bits of the address are used inside the peripherals, so we ignore them for decoding
   // the upper 4 bits [19:16] are used for decoding
-  switch(wb.addr(WB_ADDR_WIDTH - 1, 16)) {
+  switch(wb.addr(WB_ADDR_WIDTH - 1, WB_ADDR_WIDTH - 8)) {
     is(0x0.U) {
       // TODO: connect the GPIO peripheral to the Wishbone bus
     }
