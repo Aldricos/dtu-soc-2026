@@ -85,7 +85,7 @@ We are intrested in implementing a VGA controller
 
 We are intrested in implementing the RAM using OpenRam.
 
-## Group 4
+## Group 4: Parallelized Game of life 
 
 - Rifki Firdaus (s250169)
 - Aoxuan Wang (s252619)
