@@ -62,6 +62,10 @@ cf verify --all
 Enter your project here.
 
 ## Group 1:
+- Mads A. Pedersen
+- Mathias
+- Filippo
+- Bertram Fink-Jakobsen
 
 
 # Caravel Documentation
