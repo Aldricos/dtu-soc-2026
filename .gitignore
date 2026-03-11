@@ -21,7 +21,9 @@ project/
 .bloop/
 .bsp/
 .metals/
-verilog/rtl/CaravelTop.sv
+verilog/rtl/CaravelTop.v
+*.fir
+*.anno.json
 gds/
 def/
 lef/

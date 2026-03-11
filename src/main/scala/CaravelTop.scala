@@ -4,10 +4,9 @@ import chisel3.util._
 import wishbone.WishboneIO
 
 object CaravelTop extends App {
-  ChiselStage.emitSystemVerilogFile(
+  emitVerilog(
     new CaravelTop(), 
-    Array("--target-dir", "verilog/rtl"), 
-    Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
+    Array("--target-dir", "verilog/rtl")
   )
 }
 
