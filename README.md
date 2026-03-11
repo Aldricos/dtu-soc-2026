@@ -71,6 +71,7 @@ Enter your project here.
 - Célien Abbet
 - Amaury Chevoir
 - Aldric Rüedi
+
 We are intrested in implementing the RAM using OpenRam.
 
 
