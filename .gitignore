@@ -34,3 +34,5 @@ spef/
 verilog/gl/
 .scalafmt.conf
 test_run_dir/
+
+/verilog/rtl/
