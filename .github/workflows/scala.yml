@@ -25,5 +25,7 @@ jobs:
       uses: sbt/setup-sbt@v1
     - name: Setup Verilator
       run: sudo apt-get install verilator
+    - name: get submodules
+      run: git submodule update --init --recursive
     - name: Run tests
       run: sbt test
