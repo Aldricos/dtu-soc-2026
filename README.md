@@ -33,6 +33,7 @@ make chisel-generate
 ```
 
 To work with caravel, you will have to install the `cf-cli` tool and fetch dependencies using:
+
 ```
 pip install chipfoundry-cli
 cf setup
@@ -62,34 +63,45 @@ cf verify --all
 Enter your project here.
 
 ## Group 0:
+
 - Mads A. Pedersen
 - Mathias Schyth
 - Filippo Pruzzi
 - Bertram Fink-Jakobsen
 
 ## Group 1:
+
 - Martin Mejer (s235469)
 - Sebastian Tobias Holdt (s235475)
 - Karl Petersen (s235481)
 
-We are intrested in implementing a VGA controller 
+We are intrested in implementing a VGA controller
 
 ## Group 2:
+
 - Célien Abbet
 - Amaury Chevoir
 - Aldric Rüedi
 
 We are intrested in implementing the RAM using OpenRam.
 
+## Group 4
+
+- Rifki Firdaus (s250169)
+- Aoxuan Wang (s252619)
+- Christian Paus Damsgaard (s235255)
+- Roméo Clément Estezet (s234602)
+- Tore Kofod Beyer (s234377)
 
 
 # Caravel Documentation
+
 The remaining documentation is a general guide from the Caravel user project template.
 
-
 ## Table of Contents
+
 - [Overview](#overview)
-- [Documentation & Resources](#documentation--resources)
+- [Documentation &amp; Resources](#documentation--resources)
 - [Prerequisites](#prerequisites)
 - [Project Structure](#project-structure)
 - [Starting Your Project](#starting-your-project)
@@ -99,6 +111,7 @@ The remaining documentation is a general guide from the Caravel user project tem
 - [Checklist for Shuttle Submission](#checklist-for-shuttle-submission)
 
 ## Overview
+
 This repository contains a user project designed for integration into the **Caravel chip user space**. Use it as a template for integrating custom RTL with Caravel's system-on-chip (SoC) utilities, including:
 
 * **IO Pads:** Configurable general-purpose input/output.
@@ -108,6 +121,7 @@ This repository contains a user project designed for integration into the **Cara
 ---
 
 ## Documentation & Resources
+
 For detailed hardware specifications and register maps, refer to the following official documents:
 
 * **[Caravel Datasheet](https://github.com/chipfoundry/caravel/blob/main/docs/caravel_datasheet_2.pdf)**: Detailed electrical and physical specifications of the Caravel harness.
@@ -117,6 +131,7 @@ For detailed hardware specifications and register maps, refer to the following o
 ---
 
 ## Prerequisites
+
 Ensure your environment meets the following requirements:
 
 1. **Docker** [Linux](https://docs.docker.com/desktop/setup/install/linux/ubuntu/) | [Windows](https://docs.docker.com/desktop/setup/install/windows-install/) | [Mac](https://docs.docker.com/desktop/setup/install/mac-install/)
@@ -126,22 +141,24 @@ Ensure your environment meets the following requirements:
 ---
 
 ## Project Structure
+
 A successful Caravel project requires a specific directory layout for the automated tools to function:
 
-| Directory | Description |
-| :--- | :--- |
-| `openlane/` | Configuration files for hardening macros and the wrapper. |
-| `verilog/rtl/` | Source Verilog code for the project. |
-| `verilog/gl/` | Gate-level netlists (generated after hardening). |
-| `verilog/dv/` | Design Verification (cocotb and Verilog testbenches). |
-| `gds/` | Final GDSII binary files for fabrication. |
-| `lef/` | Library Exchange Format files for the macros. |
+| Directory        | Description                                               |
+| :--------------- | :-------------------------------------------------------- |
+| `openlane/`    | Configuration files for hardening macros and the wrapper. |
+| `verilog/rtl/` | Source Verilog code for the project.                      |
+| `verilog/gl/`  | Gate-level netlists (generated after hardening).          |
+| `verilog/dv/`  | Design Verification (cocotb and Verilog testbenches).     |
+| `gds/`         | Final GDSII binary files for fabrication.                 |
+| `lef/`         | Library Exchange Format files for the macros.             |
 
 ---
 
 ## Starting Your Project
 
 ### 1. Repository Setup
+
 Create a new repository based on the `caravel_user_project` template and clone it to your local machine:
 
 ```bash
@@ -169,6 +186,7 @@ cf init
 This creates `.cf/project.json` with project metadata. **This must be run before any other commands** (`cf setup`, `cf gpio-config`, `cf harden`, `cf precheck`, `cf verify`).
 
 ### 3. Environment Setup
+
 Install the ChipFoundry CLI tool and set up the local environment (PDKs, OpenLane, and Caravel lite):
 
 ```bash
@@ -188,9 +206,11 @@ The `cf setup` command installs:
 ## Development Flow
 
 ### Hardening the Design
+
 Hardening is the process of synthesizing your RTL and performing Place & Route (P&R) to create a GDSII layout.
 
 #### Macro Hardening
+
 Create a subdirectory for each custom macro under `openlane/` containing your `config.tcl`.
 
 ```bash
@@ -199,11 +219,13 @@ cf harden <macro_name>   # Harden a specific macro
 ```
 
 #### Integration
+
 Instantiate your module(s) in `verilog/rtl/user_project_wrapper.v`.
 
 Update `openlane/user_project_wrapper/config.json` environment variables (`VERILOG_FILES_BLACKBOX`, `EXTRA_LEFS`, `EXTRA_GDS_FILES`) to point to your new macros.
 
 #### Wrapper Hardening
+
 Finalize the top-level user project:
 
 ```bash
@@ -213,6 +235,7 @@ cf harden user_project_wrapper
 ### Verification
 
 #### 1. Simulation
+
 We use cocotb for functional verification. Ensure your file lists are updated in `verilog/includes/`.
 
 **Configure GPIO settings first (required before verification):**
@@ -222,6 +245,7 @@ cf gpio-config
 ```
 
 This interactive command will:
+
 - Configure all GPIO pins interactively
 - Automatically update `verilog/rtl/user_defines.v`
 - Automatically run `gen_gpio_defaults.py` to generate GPIO defaults for simulation
@@ -247,6 +271,7 @@ cf verify --all
 ```
 
 #### 2. Static Timing Analysis (STA)
+
 Verify that your design meets timing constraints using OpenSTA:
 
 ```bash
@@ -261,14 +286,17 @@ make caravel-sta
 ---
 
 ## GPIO Configuration
+
 Configure the power-on default configuration for each GPIO using the interactive CLI tool.
 
 **Use the GPIO configuration command:**
+
 ```bash
 cf gpio-config
 ```
 
 This command will:
+
 - Present an interactive form for configuring GPIO pins 5-37 (GPIO 0-4 are fixed system pins)
 - Show available GPIO modes with descriptions
 - Allow selection by number, partial key, or full mode name
@@ -277,10 +305,12 @@ This command will:
 - Automatically run `gen_gpio_defaults.py` to generate GPIO defaults for simulation (if Caravel is installed)
 
 **GPIO Pin Information:**
+
 - GPIO[0] to GPIO[4]: Preset system pins (do not change).
 - GPIO[5] to GPIO[37]: User-configurable pins.
 
 **Available GPIO Modes:**
+
 - Management modes: `mgmt_input_nopull`, `mgmt_input_pulldown`, `mgmt_input_pullup`, `mgmt_output`, `mgmt_bidirectional`, `mgmt_analog`
 - User modes: `user_input_nopull`, `user_input_pulldown`, `user_input_pullup`, `user_output`, `user_bidirectional`, `user_output_monitored`, `user_analog`
 
@@ -290,6 +320,7 @@ This command will:
 ---
 
 ## Local Precheck
+
 Before submitting your design for fabrication, run the local precheck to ensure it complies with all shuttle requirements:
 
 > [!IMPORTANT]
@@ -305,9 +336,11 @@ You can also run specific checks or disable LVS:
 cf precheck --disable-lvs                    # Skip LVS check
 cf precheck --checks license --checks makefile  # Run specific checks only
 ```
+
 ---
 
 ## Checklist for Shuttle Submission
+
 - [ ] Top-level macro is named user_project_wrapper.
 - [ ] Full Chip Simulation passes for both RTL and GL.
 - [ ] Hardened Macros are LVS and DRC clean.
