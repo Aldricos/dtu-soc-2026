@@ -63,8 +63,8 @@ Enter your project here.
 
 ## Group 1:
 - Mads A. Pedersen
-- Mathias
-- Filippo
+- Mathias Schyth
+- Filippo Pruzzi
 - Bertram Fink-Jakobsen
 
 
