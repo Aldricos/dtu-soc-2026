@@ -61,11 +61,26 @@ cf verify --all
 
 Enter your project here.
 
-## Group 1:
+## Group 0:
 - Mads A. Pedersen
 - Mathias Schyth
 - Filippo Pruzzi
 - Bertram Fink-Jakobsen
+
+## Group 1:
+- Martin Mejer (s235469)
+- Sebastian Tobias Holdt (s235475)
+- Karl Petersen (s235481)
+
+We are intrested in implementing a VGA controller 
+
+## Group 2:
+- Célien Abbet
+- Amaury Chevoir
+- Aldric Rüedi
+
+We are intrested in implementing the RAM using OpenRam.
+
 
 
 # Caravel Documentation
