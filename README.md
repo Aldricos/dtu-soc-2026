@@ -12,7 +12,7 @@
 
 This repository contains a starting point for integrating a Chisel project into the Caravel harness using Librelane.
 
-To use Chisel you need to have a JDK (up t0 21) and `sbt` installed. See [Chisel Setup](https://github.com/schoeberl/chisel-lab/blob/master/Setup.md).
+To use Chisel you need to have a JDK (up to 21) and `sbt` installed. See [Chisel Setup](https://github.com/schoeberl/chisel-lab/blob/master/Setup.md).
 
 Note that this repository contains Wildcat as a submodule. Therefore, check it out with:
 
@@ -127,8 +127,15 @@ Create a new repository based on the `caravel_user_project` template and clone i
 
 ```bash
 git clone <your-github-repo-URL>
-pip install chipfoundry-cli
 cd <project_name>
+```
+
+You need to install the ChipFoundry CLI tool to manage your project and run the necessary commands for setup, hardening, and verification. Best is to install it in a Python virtual environment:
+
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install chipfoundry-cli
 ```
 
 ### 2. Project Initialization
