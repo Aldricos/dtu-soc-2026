@@ -67,6 +67,13 @@ Enter your project here.
 - Filippo Pruzzi
 - Bertram Fink-Jakobsen
 
+## Group 2:
+- Célien Abbet
+- Amaury Chevoir
+- Aldric Rüedi
+We are intrested in implementing the RAM using OpenRam.
+
+
 
 # Caravel Documentation
 The remaining documentation is a general guide from the Caravel user project template.
