@@ -1,5 +1,6 @@
 import chisel3._
 import chisel3.util.Decoupled
+import wishbone.WishboneIO
 
 /**
   * Wishbone peripheral that computes the GCD of two n-bit numbers, where n <= 16.
@@ -20,7 +21,7 @@ class WishboneGcd(width: Int) extends Module {
   // We only need 3 bits to address the 2 registers (input/output and status)
   val WB_ADDR_WIDTH = 3
 
-  val wb = IO(new wishbone.WishboneIO(addrWidth = WB_ADDR_WIDTH, dataWidth = 32))
+  val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
 
   val dataAccess = wb.addr === 0.U
   val statusAccess = wb.addr === 4.U
@@ -35,14 +36,14 @@ class WishboneGcd(width: Int) extends Module {
   val gcd = Module(new DecoupledGcd(width))
 
   gcd.input.valid := ackReg && wb.we && dataAccess
-  gcd.input.bits.value1 := wb.din(15, 0)
-  gcd.input.bits.value2 := wb.din(31, 16)
+  gcd.input.bits.value1 := wb.wrData(15, 0)
+  gcd.input.bits.value2 := wb.wrData(31, 16)
 
   gcd.output.ready := ackReg && !wb.we && dataAccess
 
   
   wb.ack := ackReg && Mux(statusAccess, 1.B, Mux(wb.we, gcd.input.ready, gcd.output.valid))
-  wb.dout := Mux(statusAccess, gcd.input.ready ## gcd.output.valid,gcd.output.bits.gcd)
+  wb.rdData := Mux(statusAccess, gcd.input.ready ## gcd.output.valid,gcd.output.bits.gcd)
 
 }
 

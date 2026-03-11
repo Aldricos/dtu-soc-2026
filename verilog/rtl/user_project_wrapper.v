@@ -94,9 +94,9 @@ CaravelTop top (
     .wb_we(wbs_we_i),
     .wb_sel(wbs_sel_i),
     .wb_addr(wbs_adr_i),
-    .wb_din(wbs_dat_i),
+    .wb_wrData(wbs_dat_i),
     .wb_ack(wbs_ack_o),
-    .wb_dout(wbs_dat_o),
+    .wb_rdData(wbs_dat_o),
 
     // IO Pads
     .io_in (io_in),

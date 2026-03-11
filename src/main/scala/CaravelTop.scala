@@ -1,7 +1,7 @@
 import circt.stage.ChiselStage
 import chisel3._
 import chisel3.util._
-
+import wishbone.WishboneIO
 
 object CaravelTop extends App {
   ChiselStage.emitSystemVerilogFile(
@@ -17,7 +17,7 @@ class CaravelTop extends Module {
   val WB_ADDR_WIDTH = 28
   val MPRJ_IO_PADS = 38
 
-  val wb = IO(new wishbone.WishboneIO(WB_ADDR_WIDTH, dataWidth = 32))
+  val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
   val io = IO(new Bundle {
     val in = Input(UInt(MPRJ_IO_PADS.W))
     val out = Output(UInt(MPRJ_IO_PADS.W))
@@ -49,7 +49,7 @@ class CaravelTop extends Module {
     is(0x1.U) {
       gcd.wb.cyc := wb.cyc
       wb.ack := gcd.wb.ack
-      wb.dout := gcd.wb.dout
+      wb.rdData := gcd.wb.rdData
     }
   }
 }

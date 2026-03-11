@@ -1,6 +1,6 @@
 import chisel3._
 import chisel3.util._
-
+import wishbone.WishboneIO
 
 /**
   * Wishbone n-bit GPIO peripheral with 3 registers:
@@ -17,7 +17,7 @@ class WishboneGpio(n: Int) extends Module {
 
   require(n <= 32, "GPIO width cannot exceed 32 bits")
   
-  val wb = IO(new wishbone.WishboneIO(addrWidth = WB_ADDR_WIDTH, dataWidth = 32))
+  val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
   val io = IO(new Bundle {
     val in = Input(UInt (n.W))
     val out = Output(UInt (n.W))
@@ -46,7 +46,7 @@ class WishboneGpio(n: Int) extends Module {
 
   // wishbone bus response logic
   wb.ack := ackReg
-  wb.dout := MuxCase(0.U, Seq(
+  wb.rdData := MuxCase(0.U, Seq(
     inAccess -> syncedInput,
     outAccess -> outReg,
     oebAccess -> oebReg
@@ -54,8 +54,8 @@ class WishboneGpio(n: Int) extends Module {
 
   // wishbone write logic
   when(ackReg && wb.we) {
-    when(outAccess) { outReg := wb.din(n - 1, 0) }
-    when(oebAccess) { oebReg := wb.din(n - 1, 0) }
+    when(outAccess) { outReg := wb.wrData(n - 1, 0) }
+    when(oebAccess) { oebReg := wb.wrData(n - 1, 0) }
   }
 
   // Connect GPIO
