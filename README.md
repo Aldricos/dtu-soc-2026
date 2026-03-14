@@ -93,6 +93,12 @@ We are intrested in implementing the RAM using OpenRam.
 - Roméo Clément Estezet (s234602)
 - Tore Kofod Beyer (s234377)
 
+## Group 5:
+
+- Theodoros Pontzouktzidis (s250239)
+- Dimitrios Vlachos (s243192)
+
+We will implement an SPI based memory controller.
 
 # Caravel Documentation
 
