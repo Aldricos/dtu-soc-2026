@@ -60,8 +60,6 @@ cf verify --all
 
 # Group Projects
 
-Enter your project here.
-
 ## Group 0:
 
 - Mads A. Pedersen
@@ -99,6 +97,13 @@ We are intrested in implementing the RAM using OpenRam.
 - Dimitrios Vlachos (s243192)
 
 We will implement an SPI based memory controller.
+
+## Needed Work
+
+- [ ] CI with LibreLane synthesis
+- [ ] Add Wildcat in repo (like the exercise)
+- [ ] Wildcat boot
+- [ ] CI with Wildcat in the test loop
 
 # Caravel Documentation
 
