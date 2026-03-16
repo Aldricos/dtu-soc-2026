@@ -32,9 +32,11 @@ It includes a Chisel top-level module (`CaravelTop`) containing a simple GCD cal
 make chisel-generate
 ```
 
-To work with caravel, you will have to install the `cf-cli` tool and fetch dependencies using:
+To work with caravel, you will have to install the `cf-cli` tool and fetch dependencies using (best with a Python venv):
 
 ```
+python3 -m venv venv
+source venv/bin/activate
 pip install chipfoundry-cli
 cf setup
 ```
@@ -103,7 +105,8 @@ We will implement an SPI based memory controller.
 - [ ] CI with LibreLane synthesis
 - [ ] Add Wildcat in repo (like the exercise)
 - [ ] Wildcat boot
-- [ ] CI with Wildcat in the test loop
+- [ ] CI with Wildcat in the test
+- [ ] Check compiler option for RV32IE (16 registers)
 
 # Caravel Documentation
 
