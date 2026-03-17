@@ -100,13 +100,15 @@ We are intrested in implementing the RAM using OpenRam.
 
 We will implement an SPI based memory controller.
 
-## Needed Work
+## Needed Work (TODO List)
 
 - [ ] CI with LibreLane synthesis
 - [ ] Add Wildcat in repo (like the exercise)
-- [ ] Wildcat boot
+- [ ] Wildcat boot from WB
 - [ ] CI with Wildcat in the test
 - [ ] Check compiler option for RV32IE (16 registers)
+- [ ] Block diagram in the README
+- [ ] Explore macro timing with LIB files
 
 # Caravel Documentation
 
