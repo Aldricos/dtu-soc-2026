@@ -25,14 +25,16 @@ jobs:
 
       - name: Run synthesis
         run: |
+          REPO_ROOT=$(pwd)
+          echo "Repo root is: $REPO_ROOT"
           nix run github:librelane/librelane -- \
             --pdk-root ~/.volare \
             --pdk sky130A \
             --flow Classic \
             --from Yosys.Synthesis \
             --to Yosys.Synthesis \
-            --design-dir ${{ github.workspace }} \
-            /openlane/CaravelTop/config.json
+            --design-dir "$REPO_ROOT" \
+            "$REPO_ROOT/openlane/CaravelTop/config.json"
 
       - name: Upload synthesis results
         if: always()
