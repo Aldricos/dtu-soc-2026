@@ -94,7 +94,7 @@ We are intrested in implementing the RAM using OpenRam.
 
 We are intrested in implementing UART and exploring boot options.
 
-## Group 4: Parallelized Game of life 
+## Group 4: Hardware Accelerated ASCII Ray Tracing
 
 - Rifki Firdaus (s250169)
 - Aoxuan Wang (s252619)
