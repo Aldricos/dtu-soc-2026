@@ -33,7 +33,6 @@ jobs:
             --flow Classic \
             --from Yosys.Synthesis \
             --to Yosys.Synthesis \
-            --design-dir "$REPO_ROOT" \
             "$REPO_ROOT/openlane/CaravelTop/config.json"
 
       - name: Upload synthesis results
