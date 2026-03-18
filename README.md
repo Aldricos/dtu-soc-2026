@@ -62,12 +62,16 @@ cf verify --all
 
 # Group Projects
 
-## Group 0:
+## Group 0: CPU Addressable Memory
 
 - Mads A. Pedersen
 - Mathias Schyth
 - Filippo Pruzzi
 - Bertram Fink-Jakobsen
+
+Add a memory controller module between CPU and 
+external memory, and use a handshake so the 
+CPU can wait for slower memory.
 
 ## Group 1:
 
