@@ -29,10 +29,9 @@ jobs:
             --pdk-root ~/.volare \
             --pdk sky130A \
             --flow Classic \
-            --from Yosys \
-            --to Yosys \
-            --design-dir . \
-            openlane/CaravelTop/config.json
+            --from Yosys.Synthesis \
+            --to Yosys.Synthesis \
+            ${{ github.workspace }}/openlane/CaravelTop/config.json
 
       - name: Upload synthesis results
         if: always()
