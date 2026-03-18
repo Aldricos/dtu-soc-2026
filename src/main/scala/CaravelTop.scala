@@ -2,6 +2,7 @@ import circt.stage.ChiselStage
 import chisel3._
 import chisel3.util._
 import wishbone.WishboneIO
+import wildcat.pipeline._
 
 object CaravelTop extends App {
   emitVerilog(
@@ -25,8 +26,17 @@ class CaravelTop extends Module {
 
 
   // Dummy assignments to avoid unconnected IOs
-  io.out := 0.U
-  io.oeb := 0.U
+  // io.out := 0.U
+  // io.oeb := 0.U
+
+  val wc = Module(new CpuTop("wildcat/a.out"))
+
+  val led = wc.io.led
+  val tx = wc.io.tx
+  wc.io.rx := false.B
+
+  io.out := led << 8.U
+  io.oeb := ~(1.U(38.W) << 8.U)
 
   // TODO: instantiate the wishbone GPIO peripheral
   // TODO: connect the GPIO peripheral to the Wishbone bus

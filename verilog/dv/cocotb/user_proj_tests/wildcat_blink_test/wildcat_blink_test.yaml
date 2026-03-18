@@ -1,0 +1,2 @@
+Tests:
+  - {name: wildcat_blink_test, sim: RTL}
