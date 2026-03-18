@@ -102,13 +102,13 @@ We will implement an SPI based memory controller.
 
 ## Needed Work (TODO List)
 
-- [ ] CI with LibreLane synthesis
-- [ ] Add Wildcat in repo (like the exercise)
-- [ ] Wildcat boot from WB
-- [ ] CI with Wildcat in the test
-- [ ] Check compiler option for RV32IE (16 registers)
-- [ ] Block diagram in the README
-- [ ] Explore macro timing with LIB files
+- [ ] CI with LibreLane synthesis (Group 0)
+- [ ] Add Wildcat in repo (like the exercise) (Group 1)
+- [ ] CI with Wildcat in the test (maybe Group 1)
+- [ ] Wildcat boot from WB (Group 3)
+- [ ] Check compiler option for RV32IE (16 registers) (Group 5)
+- [ ] Block diagram in the README (x)
+- [ ] Explore macro timing with LIB files (Group 4)
 
 # Caravel Documentation
 
