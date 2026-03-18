@@ -38,3 +38,11 @@ jobs:
       run: sbt test
     - name: Compile
       run: make chisel-generate
+
+  #Upload the generated Verilog so the synthesis workflow can use it
+    - name: Upload generated Verilog
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-verilog
+        path: verilog/rtl/
+        retention-days: 1
