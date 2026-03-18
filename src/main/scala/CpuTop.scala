@@ -1,8 +1,9 @@
 import chisel3._
 import wildcat.Util
-
 import chisel.lib.uart._
+
 import wildcat.pipeline._
+import cache._
 
 /*
  * This file is part of the RISC-V processor Wildcat.
@@ -15,6 +16,7 @@ import wildcat.pipeline._
  *
  */
 class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
+  val CACHE_LENGTH = 16
 
   val io = IO(new Bundle {
     val led = Output(UInt(16.W))
@@ -29,10 +31,11 @@ class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
   // val cpu = Module(new WildFour())
   // val cpu = Module(new StandardFive())
   val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
-  cpu.io.dmem <> dmem.io
   val imem = Module(new InstructionROM(memory))
-  cpu.io.imem <> imem.io
+  val cache = Module(new DataCache(CACHE_LENGTH))
 
+  cpu.io.dmem <> dmem.io
+  cpu.io.imem <> imem.io
 
   // Here IO stuff
   // IO is mapped ot 0xf000_0000
@@ -44,6 +47,9 @@ class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
   // bit 1 RX data available (RDF)
   // 0xf000_0004 send and receive register
 
+  // Cache
+  // 0xe000_0000 - 0xefff_ffff
+
   val tx = Module(new BufferedTx(100000000, 115200))
   val rx = Module(new Rx(100000000, 115200))
   io.tx := tx.io.txd
@@ -53,6 +59,7 @@ class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
   tx.io.channel.valid := false.B
   rx.io.channel.ready := false.B
 
+  // UART 0xF
   val uartStatusReg = RegNext(rx.io.channel.valid ## tx.io.channel.ready)
   val memAddressReg = RegNext(cpu.io.dmem.address)
   when (memAddressReg(31, 28) === 0xf.U && memAddressReg(19,16) === 0.U) {
@@ -64,6 +71,7 @@ class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
     }
   }
 
+  // LED 0xF
   val ledReg = RegInit(0.U(8.W))
   when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.wr) {
     when (cpu.io.dmem.address(19,16) === 0.U && cpu.io.dmem.address(3, 0) === 4.U) {
@@ -76,6 +84,12 @@ class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
   }
 
   io.led := 1.U ## 0.U(7.W) ## RegNext(ledReg)
+
+  // CACHE 0xE
+  when (cpu.io.dmem.address(31, 28) === 0xe.U) {
+    cache.io.cpuIO.address := cpu.io.dmem.address
+  }
+
 }
 
 object CpuTop extends App {
