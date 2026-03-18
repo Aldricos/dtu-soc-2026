@@ -62,12 +62,15 @@ cf verify --all
 
 # Group Projects
 
-## Group 0:
+## Group 0: CPU Addressable Memory
 
 - Mads A. Pedersen
 - Mathias Schyth
 - Filippo Pruzzi
 - Bertram Fink-Jakobsen
+
+Add a SPI memory controller module between CPU and 
+external memory (off-chip)
 
 ## Group 1:
 
@@ -84,6 +87,12 @@ We are intrested in implementing a VGA controller
 - Aldric Rüedi
 
 We are intrested in implementing the RAM using OpenRam.
+
+## Group 3:
+- Amirhossein Yavarikhoo
+- Alireza Amirinejad Daryasari
+
+We are intrested in implementing UART and exploring boot options.
 
 ## Group 4: Parallelized Game of life 
 

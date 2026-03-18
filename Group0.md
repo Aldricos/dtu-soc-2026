@@ -29,5 +29,11 @@ sbt "runMain CaravelTop"
 ```
 
 
+### Project Idea
+Add a memory controller module between CPU and
+external memory, and use a handshake so the
+CPU can wait for slower memory.
+
+
 
 
