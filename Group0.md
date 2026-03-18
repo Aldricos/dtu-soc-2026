@@ -1,4 +1,4 @@
-### Integrate Wildcat in Caravel
+## Integrate Wildcat in Caravel
 Import the 3-stage wildcat using
 ```scala
     import wildcat.pipeline._
@@ -29,11 +29,53 @@ sbt "runMain CaravelTop"
 ```
 
 
-### Project Idea
+## Project Idea
+___
+### SPI
 Add a memory controller module between CPU and
 external memory, and use a handshake so the
 CPU can wait for slower memory.
 
+1. Add handshake support to Wildcat data memory interface
+2. Decode address inside `WildcatTop`
+3. Create an "Off-Chip Memory Controller" module
+4. Start with a fake SPI backend initially
+5. Add the SPI FSM (finite state-machine)
+
+##### SPI I/O connections
+- SCLK is an output 
+- MOSI is an output
+- CS is an output
+- MISO is an input
+
+Where
+- `oeb = 0` for `SCLK`, `MOSI`, `CS`
+- `oeb = 1` for `MISO`
+
+This means that 4 pads should be reserved for the memory control
+___
+### Cache
+Data focused cache, which enables extra memory, 
+and fetching from SPI-based off-chip memory 
+if it is a miss (refilling the cache)
+
+Small cache FSM:
+- `idle`
+- `miss`
+- `refill`
+
+In `idle`:
+- if request is a hit, serve immediately
+- if miss, latch request and start memory fetch
+
+In `missWait`:
+- hold CPU stalled
+- wait for off-chip controller
+
+When refill completes:
+- update cache arrays
+- provide `rdData`
+- return to `idle`
 
 
 
