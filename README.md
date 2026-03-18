@@ -69,9 +69,8 @@ cf verify --all
 - Filippo Pruzzi
 - Bertram Fink-Jakobsen
 
-Add a memory controller module between CPU and 
-external memory, and use a handshake so the 
-CPU can wait for slower memory.
+Add a SPI memory controller module between CPU and 
+external memory (off-chip)
 
 ## Group 1:
 
