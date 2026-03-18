@@ -31,6 +31,7 @@ jobs:
             --flow Classic \
             --from Yosys \
             --to Yosys \
+            --design-dir . \
             openlane/CaravelTop/config.json
 
       - name: Upload synthesis results
