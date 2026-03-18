@@ -32,7 +32,7 @@ jobs:
             --from Yosys.Synthesis \
             --to Yosys.Synthesis \
             --design-dir ${{ github.workspace }} \
-            ${{ github.workspace }}/openlane/CaravelTop/config.json
+            /openlane/CaravelTop/config.json
 
       - name: Upload synthesis results
         if: always()
