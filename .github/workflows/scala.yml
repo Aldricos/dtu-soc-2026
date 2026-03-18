@@ -29,3 +29,5 @@ jobs:
       run: sudo apt-get install verilator
     - name: Run tests
       run: sbt test
+    - name: Compile
+      run: make chisel-generate
