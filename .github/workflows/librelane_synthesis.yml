@@ -23,24 +23,15 @@ jobs:
             substituters = https://cache.nixos.org https://openlane.cachix.org
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= openlane.cachix.org-1:qqdwh+QMNGmZAuyeQJTH9ErW57OWSvdtuwfBKdS254E=
 
-      # config.json uses dir::../../verilog which goes outside the design dir.
-      # Symlinking verilog/ into openlane/CaravelTop/ makes the relative path
-      # resolve correctly without changing config.json at all.
-      - name: Symlink verilog into design directory
-        run: |
-          ln -s ${{ github.workspace }}/verilog \
-                ${{ github.workspace }}/openlane/CaravelTop/verilog
-
       - name: Run synthesis
         run: |
-          REPO_ROOT=$(pwd)
           nix run github:librelane/librelane -- \
             --pdk-root ~/.volare \
             --pdk sky130A \
             --flow Classic \
             --from Yosys.Synthesis \
             --to Yosys.Synthesis \
-            "$REPO_ROOT/openlane/CaravelTop/config.json"
+            $(pwd)/openlane/CaravelTop/config.json
 
       - name: Upload synthesis results
         if: always()
