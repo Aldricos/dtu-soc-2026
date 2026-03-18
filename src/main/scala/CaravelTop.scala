@@ -24,7 +24,7 @@ class CaravelTop extends Module {
     val oeb = Output(UInt(MPRJ_IO_PADS.W))
   })
   // Wildcat Integration
-  val wc = Module(new CpuTop("wildcat/a.out"))
+  val wc = Module(new CpuTop("a.out"))
 
   val led = wc.io.led
   val tx = wc.io.tx

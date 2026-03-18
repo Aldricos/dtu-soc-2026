@@ -12,8 +12,8 @@ class DataCache(numLines: Int) extends Module {
 
 
   val io = IO(new Bundle {
-    val cpuIO = Flipped(new CacheIO)
-    val memIO = new CacheIO
+    val cpuIO = new CacheIO
+    val memIO = Flipped(new CacheIO)
   })
 
   val validArray = RegInit(VecInit(Seq.fill(numLines)(false.B)))
@@ -39,7 +39,6 @@ class DataCache(numLines: Int) extends Module {
   io.memIO.rd      := false.B
   io.memIO.wr      := false.B
   io.memIO.wrData  := 0.U
-  io.memIO.ready   := false.B // default value
 
   switch(state) {
     is(sIdle) {
