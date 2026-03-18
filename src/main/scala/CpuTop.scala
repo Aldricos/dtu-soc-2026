@@ -1,9 +1,8 @@
-package wildcat.pipeline
-
 import chisel3._
 import wildcat.Util
 
 import chisel.lib.uart._
+import wildcat.pipeline._
 
 /*
  * This file is part of the RISC-V processor Wildcat.
