@@ -31,7 +31,8 @@ jobs:
             --flow Classic \
             --from Yosys.Synthesis \
             --to Yosys.Synthesis \
-            openlane/CaravelTop/config.json
+            --design-dir ${{ github.workspace }} \
+            ${{ github.workspace }}/openlane/CaravelTop/config.json
 
       - name: Upload synthesis results
         if: always()
