@@ -77,5 +77,27 @@ When refill completes:
 - provide `rdData`
 - return to `idle`
 
+## Makefile
+added:
+```make
+##### INTEGRATING WILDCAT MAKEFILE #####
+UNAME := $(shell uname)
+ifeq ($(UNAME),Darwin)
+# assuming tools are installed with Mac Homebrew
+export CROSS=riscv64-elf-
+else
+export CROSS=riscv64-unknown-elf-
+endif
+APP=apps/blink.s
 
+chisel-generate:
+	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
+	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
+	sbt "runMain CaravelTop"
+
+chisel-test:
+	sbt test
+```
+
+for the wildcat integration, to compile assembly files
 
