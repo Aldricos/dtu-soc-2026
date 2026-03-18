@@ -29,8 +29,8 @@ jobs:
             --pdk-root ~/.volare \
             --pdk sky130A \
             --flow Classic \
-            --from-step Yosys \
-            --to-step Yosys \
+            --from Yosys \
+            --to Yosys \
             openlane/CaravelTop/config.json
 
       - name: Upload synthesis results
