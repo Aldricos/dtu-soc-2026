@@ -20,8 +20,8 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
           extra_nix_config: |
-            substituters = https://cache.nixos.org https://librelane.cachix.org
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= librelane.cachix.org-1:db4TSUJSA7aPoQSFPZEnQ8oogEvKNSJSxPkCMrjvRkA=
+            substituters = https://cache.nixos.org https://openlane.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= openlane.cachix.org-1:qqdwh+QMNGmZAuyeQJTH9ErW57OWSvdtuwfBKdS254E=
 
       - name: Run synthesis
         run: |
