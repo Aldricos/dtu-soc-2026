@@ -1,0 +1,42 @@
+name: LibreLane Synthesis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  synthesis:
+    name: Synthesise CaravelTop
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            substituters = https://cache.nixos.org https://openlane.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= openlane.cachix.org-1:qqdwh+QMNGmZAuyeQJTH9ErW57OWSvdtuwfBKdS254E=
+
+      - name: Run synthesis
+        run: |
+          nix run github:librelane/librelane -- \
+            --pdk-root ~/.volare \
+            --pdk sky130A \
+            --flow Classic \
+            --from Yosys \
+            --to Yosys \
+            openlane/CaravelTop/config.json
+
+      - name: Upload synthesis results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthesis-results-${{ github.sha }}
+          path: runs/
+          retention-days: 14
