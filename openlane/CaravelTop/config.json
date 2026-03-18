@@ -2,7 +2,7 @@
     "DESIGN_NAME": "CaravelTop",
     "FP_PDN_MULTILAYER": false,
     "VERILOG_FILES": [
-        "dir::./verilog/rtl/CaravelTop.v"
+        "dir::../../verilog/rtl/CaravelTop.v"
     ],
     "CLOCK_PERIOD": 25,
     "CLOCK_PORT": "clock",
