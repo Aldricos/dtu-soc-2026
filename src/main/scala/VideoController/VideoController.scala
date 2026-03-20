@@ -24,8 +24,8 @@ class VideoController extends Module {
   val videoActive = horizontal < VgaConstants.H_ACTIVE_VIDEO.U && vertical < VgaConstants.V_ACTIVE_VIDEO.U
 
   val terminal = Module(new Terminal)
-  terminal.io.horizontal := horizontal
-  terminal.io.vertical := vertical
+  terminal.io.xPos := horizontal
+  terminal.io.yPos := vertical
 
   io.hSync := RegNext(hSync)
   io.vSync := RegNext(vSync)
