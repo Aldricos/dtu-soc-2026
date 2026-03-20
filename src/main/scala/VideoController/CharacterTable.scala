@@ -31,6 +31,9 @@ class CharacterTable extends Module {
     VecInit(rows.map(_.U(8.W)))
   })
 
-  val row   = table(io.character)(io.yPos)
-  io.pixel := row(io.xPos)  // no 7-xPos needed since bits are already flipped
+  val inRange = io.character >= 33.U && io.character <= 126.U
+  val index   = io.character - 33.U
+
+  val row    = table(index)(io.yPos)
+  io.pixel  := inRange && row(io.xPos)
 }
