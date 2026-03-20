@@ -25,6 +25,7 @@ class CharacterTable extends Module {
     val pixel = Output(Bool())
   })
 
+  // We modified the file taken from https://github.com/DavidDiPaola/font_vincent/blob/master/vincent.h
   val chars = CharacterRom.loadFromFile("src/main/scala/VideoController/characters.csv")
 
   val table = VecInit(chars.map { rows =>
