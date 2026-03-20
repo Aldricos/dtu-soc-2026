@@ -20,9 +20,9 @@ object CharacterRom {
 class CharacterTable extends Module {
   val io = IO(new Bundle {
     val character = Input(UInt(7.W))
-    val xPos      = Input(UInt(3.W))
-    val yPos      = Input(UInt(3.W))
-    val pixel     = Output(Bool())
+    val xPos = Input(UInt(3.W))
+    val yPos = Input(UInt(3.W))
+    val pixel = Output(Bool())
   })
 
   val chars = CharacterRom.loadFromFile("src/main/scala/VideoController/characters.csv")
@@ -32,8 +32,8 @@ class CharacterTable extends Module {
   })
 
   val inRange = io.character >= 33.U && io.character <= 126.U
-  val index   = io.character - 33.U
+  val index = io.character - 33.U
 
-  val row    = table(index)(io.yPos)
-  io.pixel  := inRange && row(io.xPos)
+  val row = table(index)(io.yPos)
+  io.pixel := inRange && row(io.xPos)
 }
