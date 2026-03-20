@@ -3,6 +3,7 @@ import chisel3._
 import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
+import videoController.VideoController
 
 object CaravelTop extends App {
   emitVerilog(
@@ -43,6 +44,10 @@ class CaravelTop extends Module {
   val gcd = Module(new WishboneGcd(16))
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
+
+  val vc = Module(new VideoController)
+  io.out := led ## vc.io.hSync ## vc.io.vSync ## vc.io.red ## vc.io.green ## vc.io.blue
+  io.oeb := ~("x00000001FF".U)
 
   // address decoding for the peripherals
   // lower 16 bits of the address are used inside the peripherals, so we ignore them for decoding

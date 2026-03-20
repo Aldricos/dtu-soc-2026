@@ -1,0 +1,14 @@
+package videoController
+
+object VgaConstants {
+  val H_ACTIVE_VIDEO = 640
+  val H_FRONT_PORCH = 16
+  val H_SYNC_PULSE = 96
+  val H_BACK_PORCH = 48
+  val H_TOTAL = H_ACTIVE_VIDEO + H_FRONT_PORCH + H_SYNC_PULSE + H_BACK_PORCH
+  val V_ACTIVE_VIDEO = 480
+  val V_FRONT_PORCH = 11
+  val V_SYNC_PULSE = 2
+  val V_BACK_PORCH = 31
+  val V_TOTAL = V_ACTIVE_VIDEO + V_FRONT_PORCH + V_SYNC_PULSE + V_BACK_PORCH
+}
