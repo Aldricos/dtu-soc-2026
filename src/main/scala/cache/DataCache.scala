@@ -1,3 +1,14 @@
+/*
+ * This file is an extension of the RISC-V Wildcat
+ * implementation in Caravel.
+ *
+ * This is the implementation of a simple Data Cache
+ * which purpose is to act as a bridge between the
+ * Processor and an off-chip memory.
+ *
+ * Author: Group 0 (Mads, Filippo, Bertram & Mathias)
+ */
+
 package cache
 
 import chisel3._
