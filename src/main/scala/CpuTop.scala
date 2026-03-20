@@ -15,7 +15,7 @@ import cache._
  * Edited by Georg and Alexander to test our Bootloader
  *
  */
-class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
+class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val CACHE_LENGTH = 16
 
   val io = IO(new Bundle {
