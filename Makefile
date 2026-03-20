@@ -465,5 +465,10 @@ chisel-generate:
 	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
 	sbt "runMain CaravelTop"
 
+chisel-generate-fpga:
+	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
+	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
+	sbt "runMain FpgaTop"
+
 chisel-test:
 	sbt test
