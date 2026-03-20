@@ -6,13 +6,14 @@ import wildcat.pipeline._
 import cache._
 
 /*
- * This file is part of the RISC-V processor Wildcat.
+ * This file is a modification of the RISC-V processor Wildcat
+ * for implementation in Caravel.
  *
  * This is the top-level for a three stage pipeline.
  *
  * Author: Martin Schoeberl (martin@jopdesign.com)
  *
- * Edited by Georg and Alexander to test our Bootloader
+ * Edited by F26 02118
  *
  */
 class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
