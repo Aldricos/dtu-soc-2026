@@ -25,7 +25,7 @@ class CharacterTable extends Module {
     val pixel     = Output(Bool())
   })
 
-  val chars = CharacterRom.loadFromFile("src/main/resources/characters_flipped.txt")
+  val chars = CharacterRom.loadFromFile("src/main/VideoController/characters.csv")
 
   val table = VecInit(chars.map { rows =>
     VecInit(rows.map(_.U(8.W)))
