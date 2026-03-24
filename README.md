@@ -48,6 +48,12 @@ cf harden CaravelTop
 cf harden user_project_wrapper
 ```
 
+You can use `nix run` to run part of LibreLane, e.g., switch to the folder of the Caravel top-level and view the generated GDSII layout with:
+
+```
+nix run github:librelane/librelane -- --last-run --flow openinklayout config.json
+```
+
 The Chisel modules can be tested in Scala by calling:
 
 ```
@@ -111,13 +117,16 @@ We will implement an SPI based memory controller.
 
 ## Needed Work (TODO List)
 
-- [ ] CI with LibreLane synthesis (Group 0)
-- [ ] Add Wildcat in repo (like the exercise) (Group 1)
+- [x] CI with LibreLane synthesis (Group 0)
+- [x] Add Wildcat in repo (like the exercise) (Group 1)
 - [ ] CI with Wildcat in the test (maybe Group 1)
 - [ ] Wildcat boot from WB (Group 3)
 - [ ] Check compiler option for RV32IE (16 registers) (Group 5)
 - [ ] Block diagram in the README (x)
 - [ ] Explore macro timing with LIB files (Group 4)
+- [ ] Harden with cf in CI
+- [ ] Fix hold viloations in CaravelTop (pin assignment, placement)
+- [ ] Can we run the whole project (including Caravel) in an FPGA?
 
 # Caravel Documentation
 
