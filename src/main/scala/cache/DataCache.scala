@@ -13,6 +13,7 @@ package cache
 
 import chisel3._
 import chisel3.util._
+import OpenRam.OpenRamSP_256x32
 
 class DataCache(numLines: Int) extends Module {
   val BIT_WIDTH   = 32
@@ -28,16 +29,25 @@ class DataCache(numLines: Int) extends Module {
   })
 
 
-  // --- TEMPORARY CACCHE MEMORY---
-  // TODO: replace vector "memory" with an OpenRam memory
-  // Guide (possible):
-  // https://armleo-openlane.readthedocs.io/en/merge-window-4/tutorials/openram.html
+  // --- CACCHE MEMORY---
+
   val validArray = RegInit(VecInit(Seq.fill(numLines)(false.B)))
   val tagArray   = Reg(Vec(numLines, UInt(TAG_BITS.W)))
-  val dataArray  = Reg(Vec(numLines, UInt(BIT_WIDTH.W)))
-  // --- TEMPORARY CACHE MEMORY ---
 
-  val sIdle :: sMiss :: Nil = Enum(2)
+  // OpenRam Module
+  // Used Guide:
+  // https://armleo-openlane.readthedocs.io/en/merge-window-4/tutorials/openram.html
+  val dataRam = Module(new OpenRamSP_256x32)
+  dataRam.io.clk   := clock
+  dataRam.io.rst_n := !reset.asBool
+
+  dataRam.io.en    := false.B
+  dataRam.io.we    := false.B
+  dataRam.io.wmask := 0.U
+  dataRam.io.addr  := 0.U
+  dataRam.io.wdata := 0.U
+
+  val sIdle :: sHitRead :: sMiss :: Nil = Enum(3)
   val state = RegInit(sIdle)
 
   val missAddrReg  = Reg(UInt(BIT_WIDTH.W))
@@ -48,6 +58,7 @@ class DataCache(numLines: Int) extends Module {
   val tag   = io.cpuIO.address(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
   val hit = validArray(index) && (tagArray(index) === tag)
+  val hitIndexReg = Reg(UInt(INDEX_BITS.W))
 
   io.cpuIO.rdData := 0.U
   io.cpuIO.ready  := false.B
@@ -61,8 +72,12 @@ class DataCache(numLines: Int) extends Module {
     is(sIdle) {
       when(io.cpuIO.rd) {
         when(hit) {
-          io.cpuIO.rdData := dataArray(index)
-          io.cpuIO.ready  := true.B
+          hitIndexReg := index
+          dataRam.io.en   := true.B
+          dataRam.io.we   := false.B
+          dataRam.io.addr := Cat(0.U((8 - INDEX_BITS).W), index)
+
+          state := sHitRead
         }.otherwise {
           missAddrReg  := io.cpuIO.address
           missIndexReg := index
@@ -78,12 +93,23 @@ class DataCache(numLines: Int) extends Module {
       }
     }
 
+    is(sHitRead) {
+      io.cpuIO.rdData := dataRam.io.rdata
+      io.cpuIO.ready  := true.B
+      state := sIdle
+    }
+
     is(sMiss) {
       io.memIO.address := missAddrReg
       io.memIO.rd      := true.B
 
       when(io.memIO.ready) {
-        dataArray(missIndexReg)  := io.memIO.rdData
+        dataRam.io.en    := true.B
+        dataRam.io.we    := true.B
+        dataRam.io.wmask := "b1111".U
+        dataRam.io.addr  := Cat(0.U((8 - INDEX_BITS).W), missIndexReg)
+        dataRam.io.wdata := io.memIO.rdData
+
         tagArray(missIndexReg)   := missTagReg
         validArray(missIndexReg) := true.B
 
