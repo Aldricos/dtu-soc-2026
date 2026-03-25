@@ -117,6 +117,8 @@ We will implement an SPI based memory controller.
 ## Group 6:
 - Tore Kofod Beyer (s234377)
 
+Run the whole project (including Caravel) in an FPGA
+
 ## Needed Work (TODO List)
 
 - [x] CI with LibreLane synthesis (Group 0)
@@ -126,8 +128,7 @@ We will implement an SPI based memory controller.
 - [ ] Block diagram in the README (Group 2)
 - [ ] Explore macro timing with LIB files (Group 4)
 - [x] Harden with cf in CI (Roméo) (Group 4)
-- [ ] Fix hold viloations in CaravelTop (pin assignment, placement)
-- [ ] Can we run the whole project (including Caravel) in an FPGA?
+- [ ] Fix violations in CaravelTop (pin assignment, placement, config values)
 
 # Caravel Documentation
 
