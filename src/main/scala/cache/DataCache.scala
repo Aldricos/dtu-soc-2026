@@ -6,7 +6,7 @@
  * which purpose is to act as a bridge between the
  * Processor and an off-chip memory.
  *
- * Author: Group 0 (Mads, Filippo, Bertram & Mathias)
+ * Author: Group 0 (Mads, Filippo, Bertram, & Mathias)
  */
 
 package cache
@@ -27,9 +27,15 @@ class DataCache(numLines: Int) extends Module {
     val memIO = Flipped(new CacheIO)
   })
 
+
+  // --- TEMPORARY CACCHE MEMORY---
+  // TODO: replace vector "memory" with an OpenRam memory
+  // Guide (possible):
+  // https://armleo-openlane.readthedocs.io/en/merge-window-4/tutorials/openram.html
   val validArray = RegInit(VecInit(Seq.fill(numLines)(false.B)))
   val tagArray   = Reg(Vec(numLines, UInt(TAG_BITS.W)))
   val dataArray  = Reg(Vec(numLines, UInt(BIT_WIDTH.W)))
+  // --- TEMPORARY CACHE MEMORY ---
 
   val sIdle :: sMiss :: Nil = Enum(2)
   val state = RegInit(sIdle)
