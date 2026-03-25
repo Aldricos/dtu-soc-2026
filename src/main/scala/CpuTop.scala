@@ -16,7 +16,7 @@ import cache._
  * Edited by F26 02118
  *
  */
-class CpuTop(file: String, dmemNrByte: Int = 4096) extends Module {
+class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val CACHE_LENGTH = 16
 
   val io = IO(new Bundle {
