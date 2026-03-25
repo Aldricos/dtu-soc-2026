@@ -98,7 +98,7 @@ Goal: We replace the synthesized internal data memory of the Wildcat processor w
 - Amirhossein Yavarikhoo
 - Alireza Amirinejad Daryasari
 
-We are intrested in implementing UART and exploring boot options.
+Booting from Wishbone.
 
 ## Group 4: Hardware Accelerated ASCII Ray Tracing
 
@@ -117,18 +117,18 @@ We will implement an SPI based memory controller.
 ## Group 6:
 - Tore Kofod Beyer (s234377)
 
+Run the whole project (including Caravel) in an FPGA
+
 ## Needed Work (TODO List)
 
 - [x] CI with LibreLane synthesis (Group 0)
 - [x] Add Wildcat in repo (like the exercise) (Group 1)
-- [ ] CI with Wildcat in the test (maybe Group 1)
-- [ ] Wildcat boot from WB (Group 3)
-- [ ] Check compiler option for RV32IE (16 registers) (Group 5)
-- [ ] Block diagram in the README (x)
+- [ ] CI with Wildcat in the test (Group 1)
+- [x] Check compiler option for RV32IE (16 registers) (Group 5)
+- [ ] Block diagram in the README (Group 2)
 - [ ] Explore macro timing with LIB files (Group 4)
-- [ ] Harden with cf in CI
-- [ ] Fix hold viloations in CaravelTop (pin assignment, placement)
-- [ ] Can we run the whole project (including Caravel) in an FPGA?
+- [x] Harden with cf in CI (Roméo) (Group 4)
+- [ ] Fix violations in CaravelTop (pin assignment, placement, config values)
 
 # Caravel Documentation
 
