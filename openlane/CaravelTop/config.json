@@ -2,7 +2,9 @@
     "DESIGN_NAME": "CaravelTop",
     "FP_PDN_MULTILAYER": false,
     "VERILOG_FILES": [
-        "ref::$DESIGN_DIR/../../verilog/rtl/CaravelTop.v"
+        "ref::$DESIGN_DIR/../../verilog/rtl/CaravelTop.v",
+        "ref::$DESIGN_DIR/../../src/main/resources/OpenRamSP_256x32.v",
+        "ref::$DESIGN_DIR/../../src/main/resources/sky130_sram_1kbyte_1rw1r_32x256_8.v"
     ],
     "CLOCK_PERIOD": 25,
     "CLOCK_PORT": "clock",

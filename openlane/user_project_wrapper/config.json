@@ -2,9 +2,7 @@
     "//": "Design files",
     "VERILOG_FILES": [
         "dir::../../verilog/rtl/defines.v",
-        "dir::../../verilog/rtl/user_project_wrapper.v",
-        "dir::../../src/main/resources/OpenRamSP_256x32.v",
-        "dir::../../src/main/resources/sky130_sram_1kbyte_1rw1r_32x256_8.v"
+        "dir::../../verilog/rtl/user_project_wrapper.v"
     ],
     "PNR_SDC_FILE": "dir::signoff.sdc",
     
