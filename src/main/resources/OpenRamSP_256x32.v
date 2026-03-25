@@ -48,6 +48,8 @@ module OpenRamSP_256x32 (
         .csb1   (1'b1),
         .addr1  (8'b0),
         .dout1  (unused_dout1)
+
+      // TODO: add vccd1 vssd1
     );
 
 endmodule
