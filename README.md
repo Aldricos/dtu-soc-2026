@@ -106,7 +106,6 @@ We are intrested in implementing UART and exploring boot options.
 - Aoxuan Wang (s252619)
 - Christian Paus Damsgaard (s235255)
 - Roméo Clément Estezet (s234602)
-- Tore Kofod Beyer (s234377)
 
 ## Group 5:
 
@@ -114,6 +113,9 @@ We are intrested in implementing UART and exploring boot options.
 - Dimitrios Vlachos (s243192)
 
 We will implement an SPI based memory controller.
+
+## Group 6:
+- Tore Kofod Beyer (s234377)
 
 ## Needed Work (TODO List)
 
