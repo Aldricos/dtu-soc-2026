@@ -28,7 +28,7 @@ class FpgaTop extends Module {
   cw.io.clk_in := clock
 
   withClock(cw.io.clk_out) {
-    val ct = Module(new CaravelTop)
+    val ct = Module(new CaravelUserProject)
 
     // tie off wishbone interface
     ct.wb.stb := 0.U
