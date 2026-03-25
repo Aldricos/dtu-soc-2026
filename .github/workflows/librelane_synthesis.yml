@@ -43,11 +43,6 @@ jobs:
       - name: Run synthesis
         run: |
           nix run github:librelane/librelane -- \
-            --pdk-root ~/.volare \
-            --pdk sky130A \
-            --flow Classic \
-            --from Yosys.Synthesis \
-            --to Yosys.Synthesis \
             "$(pwd)/openlane/CaravelTop/config.json"
 
       - name: Upload synthesis results
