@@ -18,5 +18,5 @@ class CacheIO extends Bundle {
     val rdData  = Output(UInt(32.W))
     val rd      = Input(Bool())
     val wr      = Input(Bool())
-    val ready   = Output(Bool())
+    val stall   = Output(Bool())
 }

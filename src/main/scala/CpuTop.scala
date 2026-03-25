@@ -92,7 +92,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // Contains no working logic
   cache.io.memIO.rdData := 0.U
   cache.io.cpuIO.wr := 0.U
-  cache.io.memIO.ready := 0.U
+  cache.io.memIO.stall := 1.U
   cache.io.cpuIO.rd := 0.U
   cache.io.cpuIO.wrData := 0.U
   cache.io.cpuIO.address := 0.U
