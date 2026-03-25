@@ -61,7 +61,7 @@ class DataCache(numLines: Int) extends Module {
   val hitIndexReg = Reg(UInt(INDEX_BITS.W))
 
   io.cpuIO.rdData := 0.U
-  io.cpuIO.ready  := false.B
+  io.cpuIO.stall  := true.B
 
   io.memIO.address := 0.U
   io.memIO.rd      := false.B
@@ -89,13 +89,13 @@ class DataCache(numLines: Int) extends Module {
           state := sMiss
         }
       }.otherwise {
-        io.cpuIO.ready := true.B
+        io.cpuIO.stall := false.B
       }
     }
 
     is(sHitRead) {
       io.cpuIO.rdData := dataRam.io.rdata
-      io.cpuIO.ready  := true.B
+      io.cpuIO.stall  := false.B
       state := sIdle
     }
 
@@ -103,7 +103,7 @@ class DataCache(numLines: Int) extends Module {
       io.memIO.address := missAddrReg
       io.memIO.rd      := true.B
 
-      when(io.memIO.ready) {
+      when(!io.memIO.stall) {
         dataRam.io.en    := true.B
         dataRam.io.we    := true.B
         dataRam.io.wmask := "b1111".U
@@ -114,7 +114,7 @@ class DataCache(numLines: Int) extends Module {
         validArray(missIndexReg) := true.B
 
         io.cpuIO.rdData := io.memIO.rdData
-        io.cpuIO.ready  := true.B
+        io.cpuIO.stall  := false.B
         state := sIdle
       }
     }

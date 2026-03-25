@@ -33,6 +33,13 @@ jobs:
             substituters = https://cache.nixos.org https://openlane.cachix.org
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= openlane.cachix.org-1:qqdwh+QMNGmZAuyeQJTH9ErW57OWSvdtuwfBKdS254E=
 
+      - name: Cache Nix store
+        uses: actions/cache@v4
+        with:
+          path: /nix/store
+          key: nix-librelane-2.4.13-${{ runner.os }}
+          restore-keys: nix-librelane-
+
       - name: Run synthesis
         run: |
           nix run github:librelane/librelane -- \
