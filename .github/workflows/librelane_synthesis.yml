@@ -33,14 +33,6 @@ jobs:
             substituters = https://cache.nixos.org https://nix-cache.fossi-foundation.org
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-cache.fossi-foundation.org:3+K59iFwXqKsL7BNu6Guy0v+uTlwsxYQxjspXzqLYQs=
 
-
-      - name: Cache Nix store
-        uses: actions/cache@v4
-        with:
-          path: /nix/store
-          key: nix-librelane-3.0.0-${{ runner.os }}
-          restore-keys: nix-librelane-
-
       - name: Run synthesis
         run: |
           nix run github:librelane/librelane -- \
