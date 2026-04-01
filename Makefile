@@ -458,21 +458,21 @@ export CROSS=riscv64-elf-
 else
 export CROSS=riscv64-unknown-elf-
 endif
-APP=apps/blink.s
-
-a.out:
-	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
-	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
+APP=apps/blink_fast.s
 
 chisel-generate-rv32e:
 	$(CROSS)as -march rv32e_zicsr -mabi=ilp32e $(APP) -o a.o
 	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
 	sbt "runMain CaravelTop"
 
-chisel-generate: a.out
+chisel-generate:
+	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
+	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
 	sbt "runMain CaravelTop"
 
-chisel-generate-fpga: a.out
+chisel-generate-fpga:
+	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
+	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
 	sbt "runMain FpgaTop"
 
 chisel-test:
