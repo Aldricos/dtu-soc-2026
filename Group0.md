@@ -3,7 +3,7 @@ Import the 3-stage wildcat using
 ```scala
     import wildcat.pipeline._
 ```
-in `CaravelTop`
+in `CaravelUserProject`
 
 Compile binary (example "Blink"):
 ```bash
@@ -23,9 +23,9 @@ val tx = wc.io.tx
 wc.io.rx := false.B //Tentative
 ```
 
-Run the CaravelTop
+Run the CaravelUserProject
 ```shell
-sbt "runMain CaravelTop"
+sbt "runMain CaravelUserProject"
 ```
 
 
@@ -93,7 +93,7 @@ APP=apps/blink.s
 chisel-generate:
 	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
 	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
-	sbt "runMain CaravelTop"
+	sbt "runMain CaravelUserProject"
 
 chisel-test:
 	sbt test

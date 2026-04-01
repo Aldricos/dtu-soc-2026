@@ -5,15 +5,15 @@ import wishbone.WishboneIO
 import wildcat.pipeline._
 import videoController.VideoController
 
-object CaravelTop extends App {
+object CaravelUserProject extends App {
   emitVerilog(
-    new CaravelTop(), 
+    new CaravelUserProject(), 
     Array("--target-dir", "verilog/rtl")
   )
 }
 
 
-class CaravelTop extends Module {
+class CaravelUserProject extends Module {
 
   val WB_ADDR_WIDTH = 28
   val MPRJ_IO_PADS = 38

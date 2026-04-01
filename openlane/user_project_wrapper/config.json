@@ -21,12 +21,12 @@
 
     "//": "Macros configurations",
     "MACROS": {
-        "CaravelTop": {
+        "CaravelUserProject": {
             "gds": [
-                "dir::../../gds/CaravelTop.gds"
+                "dir::../../gds/CaravelUserProject.gds"
             ],
             "lef": [
-                "dir::../../lef/CaravelTop.lef"
+                "dir::../../lef/CaravelUserProject.lef"
             ],
             "instances": {
                 "top": {
@@ -35,21 +35,21 @@
                 }
             },
             "nl": [
-                "dir::../../verilog/gl/CaravelTop.v"
+                "dir::../../verilog/gl/CaravelUserProject.v"
             ],
             "spef": {
                 "min_*": [
-                    "dir::../../spef/multicorner/CaravelTop.min.spef"
+                    "dir::../../spef/multicorner/CaravelUserProject.min.spef"
                 ],
                 "nom_*": [
-                    "dir::../../spef/multicorner/CaravelTop.nom.spef"
+                    "dir::../../spef/multicorner/CaravelUserProject.nom.spef"
                 ],
                 "max_*": [
-                    "dir::../../spef/multicorner/CaravelTop.max.spef"
+                    "dir::../../spef/multicorner/CaravelUserProject.max.spef"
                 ]
             },
             "lib": {
-                "*": "dir::../../lib/CaravelTop.lib"
+                "*": "dir::../../lib/CaravelUserProject.lib"
             }
         }
     },

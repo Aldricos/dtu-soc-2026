@@ -84,7 +84,7 @@ module user_project_wrapper #(
 
 /* verilator lint_off UNUSEDSIGNAL */
 
-CaravelTop top (
+CaravelUserProject top (
     .clock(wb_clk_i),
     .reset(wb_rst_i),
 
