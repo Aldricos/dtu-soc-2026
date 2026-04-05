@@ -37,15 +37,20 @@ void main(){
     ManagmentGpio_write(0);
     enableHkSpi(0); // disable housekeeping spi
 
-    // TODO: configure all gpios as GPIO_MODE_USER_STD_INPUT_PULLDOWN and load the configuration
+    // Configure all gpios as GPIO_MODE_USER_STD_INPUT_PULLDOWN and load the configuration
+    GPIOs_configureAll(GPIO_MODE_USER_STD_INPUT_PULLDOWN);
+    GPIOs_loadConfigs();
 
-    // TODO: enable wishbone interface
+    // Enable wishbone interface
+    User_enableIF();
 
     int res = 0;
-    // TODO: wait until the value of the input is 0xAA
-
-    if (res == 0xAA) {
-        ManagmentGpio_write(1); // signal pass
+    // Wait until the value of the input is 0xAA
+    while (1) {
+        res = gpio_get_input();
+        if (res == 0xAA) {
+            ManagmentGpio_write(1); // signal pass
+        }
     }
     
     return;
