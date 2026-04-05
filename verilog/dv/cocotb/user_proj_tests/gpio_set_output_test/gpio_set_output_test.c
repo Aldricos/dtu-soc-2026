@@ -37,11 +37,16 @@ void main(){
     ManagmentGpio_write(0);
     enableHkSpi(0); // disable housekeeping spi
 
-    // TODO: configure all gpios as GPIO_MODE_USER_STD_OUTPUT and load the configuration
+    // Configure all gpios as GPIO_MODE_USER_STD_OUTPUT and load the configuration
+    GPIOs_configureAll(GPIO_MODE_USER_STD_OUTPUT);
+    GPIOs_loadConfigs();
 
-    // TODO: enable wishbone interface
+    // Enable wishbone interface
+    User_enableIF();
 
-    // TODO: set the value of the output to 0x66
+    // Set the value of the output to 0x66
+    gpio_set_oeb(0x00); // output enable
+    gpio_set_output(0x66); // output value
 
     ManagmentGpio_write(1); // signal pass
 
