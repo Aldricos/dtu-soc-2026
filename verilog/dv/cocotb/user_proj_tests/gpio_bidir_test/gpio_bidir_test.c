@@ -37,15 +37,22 @@ void main(){
     ManagmentGpio_write(0);
     enableHkSpi(0); // disable housekeeping spi
 
-    // TODO: configure all gpios as bidirectional and load the configuration
+    // Configure all gpios as bidirectional and load the configuration
+    GPIOs_configureAll(GPIO_MODE_USER_STD_BIDIRECTIONAL);
+    GPIOs_loadConfigs();
 
-    // TODO: enable wishbone interface
+    // Enable wishbone interface
+    User_enableIF();
 
-    // TODO: set the upper 4 bits as inputs and the lower 4 bits as outputs
+    // Set the upper 4 bits as inputs and the lower 4 bits as outputs
+    gpio_set_oeb(0xf0);
 
     for (int i = 0; i < 16; i++) {
-        // TODO: set the lower 4 bits to the value of i
-        // TODO: wait for the upper 4 bits to be equal to i
+        // Set the lower 4 bits to the value of i
+        gpio_set_output(i);
+
+        // Wait for the upper 4 bits to be equal to i
+        while ((gpio_get_input() >> 4) != i);
     }
 
     ManagmentGpio_write(1); // signal pass

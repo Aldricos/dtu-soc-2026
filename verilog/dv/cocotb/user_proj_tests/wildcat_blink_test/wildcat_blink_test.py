@@ -11,20 +11,19 @@ async def wildcat_blink_test(dut):
     cocotb.log.info("[TEST] GPIO configured, watching for blink on pin 8")
 
     led = False
-    blinkCounter = 1
+    blinkCounter = 0
 
     for _ in range(100000):
-        val = caravelEnv.monitor_gpio(8, 8)
+        val = caravelEnv.monitor_gpio(16, 16)
         if val == 1:
-            # cocotb.log.info("[TEST] LED went high")
-            led = True
+            if led == False:
+                led = True
+                blinkCounter = blinkCounter + 1
+                cocotb.log.info("[TEST] Blink Counter: " + str(blinkCounter))
         elif val == 0:
-            # cocotb.log.info("[TEST] LED went low")
             if led == True:
                 led = False
-                cocotb.log.info("[TEST] Blink Counter: " + str(blinkCounter))
-                blinkCounter = blinkCounter + 1
-        if blinkCounter > 5:
+        if blinkCounter >= 5:
             cocotb.log.info("[TEST] Success")
             return
         await ClockCycles(caravelEnv.clk, 1)
