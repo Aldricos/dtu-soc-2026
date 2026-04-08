@@ -21,7 +21,8 @@ class DataCache() extends Module {
   val ADDR_WIDTH = 28
   val INDEX_BITS  = log2Ceil(NUM_WORDS)
   val OFFSET_BITS = 2
-  val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS
+//  val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS
+  val TAG_BITS    = 2 
 
 
   val io = IO(new Bundle {

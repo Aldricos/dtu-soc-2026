@@ -134,6 +134,7 @@ Booting from Wishbone (into OpenRAM memory)
 - [x] Harden with cf in CI (Roméo) (Group 4)
 - [ ] Fix any violations in CaravelUserProject hardening (by: pin assignment, placement, or config values)
 - [x] What is the clock frequency in the board: 10 MHz
+- [ ] Need to check using the right IO pins (some are reserved by Caravel)
 
 # Caravel Documentation
 
