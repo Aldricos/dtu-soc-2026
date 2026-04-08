@@ -78,6 +78,43 @@ jobs:
             if [ $status -ne 0 ]; then exit $status; fi
           done
 
+      - name: Render GDS layouts
+        if: success()
+        run: |
+          sudo apt-get install -y klayout
+          pip3 install --quiet gdspy numpy triangle pygltflib
+          git clone --depth=1 https://github.com/mbalestrini/GDS2glTF.git /tmp/gds2gltf
+          mkdir -p renders
+          LYP_FILE=$(find dependencies/pdks -name "${{ matrix.pdk }}.lyp" | head -1)
+          for gds in gds/*.gds; do
+            name=$(basename "$gds" .gds)
+            python3 .github/scripts/render_gds.py "$gds" "renders/${name}.png" "$LYP_FILE" || true
+            python3 .github/scripts/gds_to_3d.py "$gds" renders /tmp/gds2gltf || true
+          done
+
+      - name: Add render info to summary
+        if: success()
+        run: |
+          echo "## Layout Renders" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for png in renders/*.png; do
+            [ -f "$png" ] && echo "- 2D layout: \`$(basename $png)\`" >> $GITHUB_STEP_SUMMARY
+          done
+          for gltf in renders/*.gltf; do
+            [ -f "$gltf" ] && echo "- 3D model: \`$(basename $gltf)\`" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "*Download the \`renders\` artifact. Open .gltf files at https://gltf-viewer.donmccurdy.com*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Renders
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: renders-${{ matrix.pdk }}
+          path: ${{ github.workspace }}/renders/
+          retention-days: 14
+
       - name: Upload Run Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -98,6 +135,64 @@ jobs:
             ${{ github.workspace }}/signoff
             ${{ github.workspace }}/.cf/project.json
           retention-days: 1
+
+  viewer:
+    runs-on: ubuntu-latest
+    needs: [hardening]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Download Renders (sky130A)
+        uses: actions/download-artifact@v4
+        with:
+          name: renders-sky130A
+          path: site/sky130A/
+
+      - name: Download Renders (sky130B)
+        uses: actions/download-artifact@v4
+        with:
+          name: renders-sky130B
+          path: site/sky130B/
+
+      - name: Generate index page
+        run: |
+          cat > site/index.html <<'HTMLEOF'
+          <!DOCTYPE html>
+          <html>
+          <head><title>GDS Layout Viewer</title></head>
+          <body>
+          <h1>GDS Layout Renders</h1>
+          <h2>sky130A</h2>
+          <ul>
+          HTMLEOF
+          for f in site/sky130A/*.gltf; do
+            [ -f "$f" ] && name=$(basename "$f") && echo "<li><a href=\"sky130A/$name\">$name</a></li>" >> site/index.html
+          done
+          for f in site/sky130A/*.png; do
+            [ -f "$f" ] && name=$(basename "$f") && echo "<li><img src=\"sky130A/$name\" width=\"600\"><br>$name</li>" >> site/index.html
+          done
+          echo "</ul><h2>sky130B</h2><ul>" >> site/index.html
+          for f in site/sky130B/*.gltf; do
+            [ -f "$f" ] && name=$(basename "$f") && echo "<li><a href=\"sky130B/$name\">$name</a></li>" >> site/index.html
+          done
+          for f in site/sky130B/*.png; do
+            [ -f "$f" ] && name=$(basename "$f") && echo "<li><img src=\"sky130B/$name\" width=\"600\"><br>$name</li>" >> site/index.html
+          done
+          echo "</ul></body></html>" >> site/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
 
   precheck:
     timeout-minutes: 720
