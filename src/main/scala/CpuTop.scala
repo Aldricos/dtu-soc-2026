@@ -1,7 +1,6 @@
+import chisel.lib.uart._
 import chisel3._
 import wildcat.Util
-import chisel.lib.uart._
-
 import wildcat.pipeline._
 import cache._
 
@@ -17,8 +16,6 @@ import cache._
  *
  */
 class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
-  //val CACHE_LENGTH = 16
-
   val io = IO(new Bundle {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
@@ -33,7 +30,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // val cpu = Module(new StandardFive())
   val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
   val imem = Module(new InstructionROM(memory))
-  //val cache = Module(new DataCache(CACHE_LENGTH))
+  val cache = Module(new DataCache())
 
   cpu.io.dmem <> dmem.io
   cpu.io.imem <> imem.io
@@ -90,15 +87,15 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // TODO: Fix Cache communication with CPU
   // Current Connections are placeholder
   // Contains no working logic
-  //cache.io.memIO.rdData := 0.U
-  //cache.io.cpuIO.wr := 0.U
-  //cache.io.memIO.stall := 1.U
-  //cache.io.cpuIO.rd := 0.U
-  //cache.io.cpuIO.wrData := 0.U
-  //cache.io.cpuIO.address := 0.U
-  //when (cpu.io.dmem.address(31, 28) === 0xe.U) {
-  //  cache.io.cpuIO.address := cpu.io.dmem.address
-  //}
+  cache.io.memIO.rdData := 0.U
+  cache.io.cpuIO.wr := 0.U
+  cache.io.memIO.stall := 1.U
+  cache.io.cpuIO.rd := 0.U
+  cache.io.cpuIO.wrData := 0.U
+  cache.io.cpuIO.address := 0.U
+  when (cpu.io.dmem.address(31, 28) === 0xe.U) {
+    cache.io.cpuIO.address := cpu.io.dmem.address
+  }
 
 }
 

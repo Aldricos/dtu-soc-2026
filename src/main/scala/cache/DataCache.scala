@@ -13,12 +13,13 @@ package cache
 
 import chisel3._
 import chisel3.util._
-import OpenRam.OpenRamSP_256x32
+import OpenRam._
 
-class DataCache(numLines: Int) extends Module {
+class DataCache() extends Module {
+  val NUM_WORDS = 64
   val BIT_WIDTH   = 32
   val ADDR_WIDTH = 28
-  val INDEX_BITS  = log2Ceil(numLines)
+  val INDEX_BITS  = log2Ceil(NUM_WORDS)
   val OFFSET_BITS = 2
   val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS
 
@@ -30,14 +31,13 @@ class DataCache(numLines: Int) extends Module {
 
 
   // --- CACCHE MEMORY---
-
-  val validArray = RegInit(VecInit(Seq.fill(numLines)(false.B)))
-  val tagArray   = Reg(Vec(numLines, UInt(TAG_BITS.W)))
+  val validArray = RegInit(VecInit(Seq.fill(NUM_WORDS)(false.B)))
+  val tagArray   = Reg(Vec(NUM_WORDS, UInt(TAG_BITS.W)))
 
   // OpenRam Module
   // Used Guide:
   // https://armleo-openlane.readthedocs.io/en/merge-window-4/tutorials/openram.html
-  val dataRam = Module(new OpenRamSP_256x32)
+  val dataRam = Module(new OpenRamSP_64x32("sky130_sram_256byte_1r1w_32x64_6.v"))
   dataRam.io.clk   := clock
   dataRam.io.rst_n := !reset.asBool
 
@@ -46,6 +46,10 @@ class DataCache(numLines: Int) extends Module {
   dataRam.io.wmask := 0.U
   dataRam.io.addr  := 0.U
   dataRam.io.wdata := 0.U
+
+  // Power pins
+  dataRam.io.vccd1 := 0.U
+  dataRam.io.vssd1 := 0.U
 
   val sIdle :: sHitRead :: sMiss :: Nil = Enum(3)
   val state = RegInit(sIdle)
@@ -75,7 +79,7 @@ class DataCache(numLines: Int) extends Module {
           hitIndexReg := index
           dataRam.io.en   := true.B
           dataRam.io.we   := false.B
-          dataRam.io.addr := Cat(0.U((8 - INDEX_BITS).W), index)
+          dataRam.io.addr := index
 
           state := sHitRead
         }.otherwise {
@@ -107,7 +111,7 @@ class DataCache(numLines: Int) extends Module {
         dataRam.io.en    := true.B
         dataRam.io.we    := true.B
         dataRam.io.wmask := "b1111".U
-        dataRam.io.addr  := Cat(0.U((8 - INDEX_BITS).W), missIndexReg)
+        dataRam.io.addr  := missIndexReg
         dataRam.io.wdata := io.memIO.rdData
 
         tagArray(missIndexReg)   := missTagReg
