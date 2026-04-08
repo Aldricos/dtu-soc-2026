@@ -48,8 +48,8 @@ class DataCache() extends Module {
   dataRam.io.wdata := 0.U
 
   // Power pins
-  //dataRam.io.vccd1 := 0.U
-  //dataRam.io.vssd1 := 0.U
+  dataRam.io.vccd1 := 0.U
+  dataRam.io.vssd1 := 0.U
 
   val sIdle :: sHitRead :: sMiss :: Nil = Enum(3)
   val state = RegInit(sIdle)
@@ -111,7 +111,7 @@ class DataCache() extends Module {
         dataRam.io.en    := true.B
         dataRam.io.we    := true.B
         dataRam.io.wmask := "b1111".U
-        dataRam.io.addr  := index
+        dataRam.io.addr  := missIndexReg
         dataRam.io.wdata := io.memIO.rdData
 
         tagArray(missIndexReg)   := missTagReg
