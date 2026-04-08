@@ -1,6 +1,10 @@
 // Verilog Interface for OpenRam 1kb memory
 
 module OpenRamSP_256x32 (
+`ifdef USE_POWER_PINS
+    inout wire         vccd1,
+    inout wire         vssd1,
+`endif
     input  wire        clk,
     input  wire        rst_n,
 
@@ -35,6 +39,10 @@ module OpenRamSP_256x32 (
     assign rdata = en_d ? rdata_int : rdata_stored;
 
     sky130_sram_1kbyte_1rw1r_32x256_8 u_sram (
+`ifdef USE_POWER_PINS
+        .vccd1 (vccd1),
+        .vssd1 (vssd1),
+`endif
         .clk0   (clk),
         .csb0   (!en),      // active low
         .web0   (!we),      // active low
@@ -48,8 +56,6 @@ module OpenRamSP_256x32 (
         .csb1   (1'b1),
         .addr1  (8'b0),
         .dout1  (unused_dout1)
-
-      // TODO: add vccd1 vssd1
     );
 
 endmodule

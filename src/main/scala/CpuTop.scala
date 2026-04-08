@@ -84,19 +84,25 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   io.led := 1.U ## 0.U(7.W) ## RegNext(ledReg)
 
   // CACHE 0xE
-  // TODO: Fix Cache communication with CPU
-  // Current Connections are placeholder
-  // Contains no working logic
-  cache.io.memIO.rdData := 0.U
-  cache.io.cpuIO.wr := 0.U
-  cache.io.memIO.stall := 1.U
-  cache.io.cpuIO.rd := 0.U
-  cache.io.cpuIO.wrData := 0.U
+  // Partial hookup: drive cache inputs for cache-mapped region
+  cache.io.memIO.rdData  := 0.U
+  cache.io.memIO.stall   := false.B
+  cache.io.memIO.address := 0.U
+  cache.io.memIO.rd      := false.B
+  cache.io.memIO.wr      := false.B
+  cache.io.memIO.wrData  := 0.U
+
   cache.io.cpuIO.address := 0.U
+  cache.io.cpuIO.rd      := false.B
+  cache.io.cpuIO.wr      := false.B
+  cache.io.cpuIO.wrData  := 0.U
+
   when (cpu.io.dmem.address(31, 28) === 0xe.U) {
     cache.io.cpuIO.address := cpu.io.dmem.address
+    cache.io.cpuIO.rd      := cpu.io.dmem.rd
+    cache.io.cpuIO.wr      := cpu.io.dmem.wr
+    cache.io.cpuIO.wrData  := cpu.io.dmem.wrData
   }
-
 }
 
 object CpuTop extends App {

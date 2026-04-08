@@ -14,8 +14,11 @@ class OpenRamSP_256x32(file : String) extends BlackBox with HasBlackBoxResource 
     val addr  = Input(UInt(8.W))
     val wdata = Input(UInt(32.W))
     val rdata = Output(UInt(32.W))
+
+    val vccd1 = Input(Bool())
+    val vssd1 = Input(Bool())
   })
 
   addResource("/OpenRamSP_256x32.v")
-  addResource(file)
+  addResource(f"/$file")
 }
