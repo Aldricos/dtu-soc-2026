@@ -94,4 +94,4 @@ jobs:
 
       - name: Run RTL Verification
         run: |
-          cf verify --all 
+          make cocotb-verify-all-rtl
