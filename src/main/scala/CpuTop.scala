@@ -1,7 +1,6 @@
+import chisel.lib.uart._
 import chisel3._
 import wildcat.Util
-import chisel.lib.uart._
-
 import wildcat.pipeline._
 import cache._
 
