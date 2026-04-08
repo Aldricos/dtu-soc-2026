@@ -3,8 +3,7 @@
     "FP_PDN_MULTILAYER": false,
     "VERILOG_FILES": [
         "ref::$DESIGN_DIR/../../verilog/rtl/CaravelUserProject.v",
-        "ref::$DESIGN_DIR/../../src/main/resources/OpenRamSP_256x32.v",
-        "ref::$DESIGN_DIR/../../src/main/resources/sky130_sram_1kbyte_1rw1r_32x256_8.v"
+        "ref::$DESIGN_DIR/../../src/main/resources/OpenRamSP_256x32.v"
     ],
     "CLOCK_PERIOD": 25,
     "CLOCK_PORT": "clock",
@@ -68,5 +67,31 @@
     },
     "meta": {
         "version": 2
+    },
+
+    "MACROS": {
+        "sky130_sram_1kbyte_1rw1r_32x256_8": {
+            "instances": {
+                "wc.cache.dataRam": {
+                    "location": [
+                        100,
+                        100
+                    ],
+                    "orientation": "N"
+                }
+            },
+            "gds": [
+                "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"
+            ],
+            "lef": [
+                "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"
+            ],
+            "nl": [
+                "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
+            ],
+            "lib": {
+                "*": "pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib"
+            }
+        }
     }
 }

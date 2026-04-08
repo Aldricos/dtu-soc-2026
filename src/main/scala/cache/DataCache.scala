@@ -16,7 +16,7 @@ import chisel3.util._
 import OpenRam._
 
 class DataCache() extends Module {
-  val NUM_WORDS = 64
+  val NUM_WORDS = 256
   val BIT_WIDTH   = 32
   val ADDR_WIDTH = 28
   val INDEX_BITS  = log2Ceil(NUM_WORDS)
@@ -37,24 +37,23 @@ class DataCache() extends Module {
   // OpenRam Module
   // Used Guide:
   // https://armleo-openlane.readthedocs.io/en/merge-window-4/tutorials/openram.html
-  val dataRam = Module(new OpenRamSP_64x32("sky130_sram_256byte_1r1w_32x64_6.v"))
-  dataRam.io.clk   := clock
-  dataRam.io.rst_n := !reset.asBool
+  val dataRam = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
+  dataRam.io.clk0 := clock
+  dataRam.io.csb0 := true.B
+  dataRam.io.web0 := true.B
+  dataRam.io.wmask0 := 0.U
+  dataRam.io.addr0 := 0.U
+  dataRam.io.din0 := 0.U
 
-  dataRam.io.en    := false.B
-  dataRam.io.we    := false.B
-  dataRam.io.wmask := 0.U
-  dataRam.io.addr  := 0.U
-  dataRam.io.wdata := 0.U
-
-  // Power pins
-  dataRam.io.vccd1 := 0.U
-  dataRam.io.vssd1 := 0.U
+  // Port 1: R
+  dataRam.io.clk1 := clock
+  dataRam.io.csb1 := true.B
+  dataRam.io.addr1 := 0.U
 
   val sIdle :: sHitRead :: sMiss :: Nil = Enum(3)
   val state = RegInit(sIdle)
 
-  val missAddrReg  = Reg(UInt(BIT_WIDTH.W))
+  val missAddrReg  = Reg(UInt(32.W))
   val missIndexReg = Reg(UInt(INDEX_BITS.W))
   val missTagReg   = Reg(UInt(TAG_BITS.W))
 
@@ -62,7 +61,6 @@ class DataCache() extends Module {
   val tag   = io.cpuIO.address(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
   val hit = validArray(index) && (tagArray(index) === tag)
-  val hitIndexReg = Reg(UInt(INDEX_BITS.W))
 
   io.cpuIO.rdData := 0.U
   io.cpuIO.stall  := true.B
@@ -76,10 +74,9 @@ class DataCache() extends Module {
     is(sIdle) {
       when(io.cpuIO.rd) {
         when(hit) {
-          hitIndexReg := index
-          dataRam.io.en   := true.B
-          dataRam.io.we   := false.B
-          dataRam.io.addr := index
+          // Use read-only port 1 for cache hit reads
+          dataRam.io.csb1  := false.B
+          dataRam.io.addr1 := index
 
           state := sHitRead
         }.otherwise {
@@ -98,7 +95,8 @@ class DataCache() extends Module {
     }
 
     is(sHitRead) {
-      io.cpuIO.rdData := dataRam.io.rdata
+      // Data from port 1 read
+      io.cpuIO.rdData := dataRam.io.dout1
       io.cpuIO.stall  := false.B
       state := sIdle
     }
@@ -108,11 +106,12 @@ class DataCache() extends Module {
       io.memIO.rd      := true.B
 
       when(!io.memIO.stall) {
-        dataRam.io.en    := true.B
-        dataRam.io.we    := true.B
-        dataRam.io.wmask := "b1111".U
-        dataRam.io.addr  := missIndexReg
-        dataRam.io.wdata := io.memIO.rdData
+        // Refill cache line through RW port 0 as a write
+        dataRam.io.csb0   := false.B
+        dataRam.io.web0   := false.B          // write enable is active low
+        dataRam.io.wmask0 := "b1111".U
+        dataRam.io.addr0  := missIndexReg
+        dataRam.io.din0   := io.memIO.rdData
 
         tagArray(missIndexReg)   := missTagReg
         validArray(missIndexReg) := true.B
