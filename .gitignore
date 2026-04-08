@@ -35,5 +35,7 @@ verilog/gl/
 .scalafmt.conf
 test_run_dir/
 
+/verilog/rtl/
+
 a.o
 a.out
