@@ -2,8 +2,7 @@
     "DESIGN_NAME": "CaravelUserProject",
     "FP_PDN_MULTILAYER": false,
     "VERILOG_FILES": [
-        "ref::$DESIGN_DIR/../../verilog/rtl/CaravelUserProject.v",
-        "ref::$DESIGN_DIR/../../src/main/resources/OpenRamSP_256x32.v"
+        "ref::$DESIGN_DIR/../../verilog/rtl/CaravelUserProject.v"
     ],
     "CLOCK_PERIOD": 100,
     "CLOCK_PORT": "clock",
