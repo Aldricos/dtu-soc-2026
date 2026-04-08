@@ -30,7 +30,7 @@ class DataCache() extends Module {
   })
 
 
-  // --- CACCHE MEMORY---
+  // --- CACHE MEMORY---
   val validArray = RegInit(VecInit(Seq.fill(NUM_WORDS)(false.B)))
   val tagArray   = Reg(Vec(NUM_WORDS, UInt(TAG_BITS.W)))
 
