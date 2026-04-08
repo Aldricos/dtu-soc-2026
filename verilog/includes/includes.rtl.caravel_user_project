@@ -16,5 +16,7 @@
 # Caravel user project includes
 -v $(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v	     
 -v $(USER_PROJECT_VERILOG)/rtl/CaravelUserProject.v
+-v $(USER_PROJECT_VERILOG)/rtl/OpenRamSP_64x32.v
+-v $(USER_PROJECT_VERILOG)/rtl/sky130_sram_256byte_1r1w_32x64_6.v
 
  

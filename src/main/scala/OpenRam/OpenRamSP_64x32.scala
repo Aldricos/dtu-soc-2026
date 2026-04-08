@@ -1,9 +1,8 @@
 package OpenRam
-
 import chisel3._
 import chisel3.util._
 
-class OpenRamSP_256x32(file : String) extends BlackBox with HasBlackBoxResource {
+class OpenRamSP_64x32(file : String) extends BlackBox with HasBlackBoxResource {
   val io = IO(new Bundle {
     val clk   = Input(Clock())
     val rst_n = Input(Bool())
@@ -16,6 +15,6 @@ class OpenRamSP_256x32(file : String) extends BlackBox with HasBlackBoxResource 
     val rdata = Output(UInt(32.W))
   })
 
-  addResource("/OpenRamSP_256x32.v")
-  addResource(file)
+  addResource("/OpenRamSP_64x32.v")
+  addResource(f"/$file")
 }
