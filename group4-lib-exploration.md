@@ -8,20 +8,20 @@ Demonstrate that the LibreLane hardening flow reads and uses a macro's LIB file 
 Two versions of the same macro (`TinyMacro`) with identical interfaces but different logic:
 
 - **Fast** (`TinyMacroFast.v`): 8-bit register — `dout <= din`
-- **Slow** (`TinyMacroSlow.v`): 3 chained 8-bit multipliers before the register — deep combinational path
+- **Slow** (`TinyMacroSlow.v`): 3 chained 8-bit multipliers before the register
 
-Each version was hardened independently (`cf harden TinyMacro`), producing a LIB file at `lib/TinyMacro.lib`. A top-level wrapper (`LibTestTop`) instantiating TinyMacro as a black-box was then hardened using the macro's LIB, GDS, LEF, and SPEF artifacts.
+Each version was hardened independently (`cf harden TinyMacro`), producing a LIB file at `lib/TinyMacro.lib`. A top-level wrapper (`LibTestTop`) instantiating TinyMacro was then hardened using the macro's LIB, GDS, LEF, and SPEF artifacts.
 
 ## Results
 
 fmax is derived from the post-PnR setup slack: **fmax = 1 / (period − slack)**. Both designs use a 10 ns clock.
 
-| Macro | Setup Slack (nom_tt) | fmax (nom_tt) | Setup Slack (worst SS) | fmax (worst case) |
-|-------|----------------------|---------------|------------------------|-------------------|
-| Fast  | +6.83 ns             | ~315 MHz      | +6.04 ns               | ~253 MHz          |
-| Slow  | +2.99 ns             | ~143 MHz      | −1.49 ns (violation)   | ~87 MHz           |
+| Macro | Setup Slack (nom_tt) | fmax (nom_tt) |
+|-------|----------------------|---------------|
+| Fast  | +6.83 ns             | ~315 MHz      |
+| Slow  | +2.99 ns             | ~143 MHz      |
 
-The slow macro has **2× worse fmax** and already fails timing at 100 MHz in SS corners.
+The slow macro has **2× worse fmax**.
 
 ## Note on What Actually Drives the Timing
 
@@ -48,5 +48,3 @@ So the experiment result is still valid — the STA correctly reflects the macro
 ## Conclusion
 
 Same top-level wrapper, same constraints, same PDK — only the macro internals changed. The top-level STA correctly reflected the macro's timing in both cases via the gate-level netlist and SPEF. The 2× fmax difference proves the flow properly integrates macro timing, even if the LIB file itself is not the direct input to the STA in this configuration.
-
-Hardening runs are saved under `openlane/TinyMacro/runs/Fast` and `openlane/TinyMacro/runs/Slow`.
