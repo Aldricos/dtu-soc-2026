@@ -31,7 +31,6 @@ class DataCache() extends Module {
 
 
   // --- CACCHE MEMORY---
-
   val validArray = RegInit(VecInit(Seq.fill(NUM_WORDS)(false.B)))
   val tagArray   = Reg(Vec(NUM_WORDS, UInt(TAG_BITS.W)))
 
@@ -80,7 +79,7 @@ class DataCache() extends Module {
           hitIndexReg := index
           dataRam.io.en   := true.B
           dataRam.io.we   := false.B
-          dataRam.io.addr := Cat(0.U((8 - INDEX_BITS).W), index)
+          dataRam.io.addr := index
 
           state := sHitRead
         }.otherwise {
@@ -112,7 +111,7 @@ class DataCache() extends Module {
         dataRam.io.en    := true.B
         dataRam.io.we    := true.B
         dataRam.io.wmask := "b1111".U
-        dataRam.io.addr  := Cat(0.U((8 - INDEX_BITS).W), missIndexReg)
+        dataRam.io.addr  := index
         dataRam.io.wdata := io.memIO.rdData
 
         tagArray(missIndexReg)   := missTagReg

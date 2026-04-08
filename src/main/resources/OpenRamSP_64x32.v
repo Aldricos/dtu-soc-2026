@@ -1,4 +1,8 @@
 module OpenRamSP_64x32 (
+`ifdef USE_POWER_PINS
+    inout wire         vccd1,
+    inout wire         vssd1,
+`endif
     input  wire        clk,
     input  wire        rst_n,
 
@@ -33,6 +37,10 @@ module OpenRamSP_64x32 (
     assign rdata = read_en_d ? rdata_int : rdata_stored;
 
     sky130_sram_256byte_1r1w_32x64_6 u_sram (
+`ifdef USE_POWER_PINS
+        .vccd1 (vccd1),
+        .vssd1 (vssd1),
+`endif
         // write port
         .clk0  (clk),
         .csb0  (!do_write),
@@ -44,8 +52,6 @@ module OpenRamSP_64x32 (
         .csb1  (!do_read),
         .addr1 (addr),
         .dout1 (rdata_int)
-
-        // TODO: add vccd1 vssd1
     );
 
 endmodule
