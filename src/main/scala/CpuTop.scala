@@ -87,10 +87,10 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // Partial hookup: drive cache inputs for cache-mapped region
   cache.io.memIO.rdData  := 0.U
   cache.io.memIO.stall   := false.B
-  cache.io.memIO.address := 0.U
-  cache.io.memIO.rd      := false.B
-  cache.io.memIO.wr      := false.B
-  cache.io.memIO.wrData  := 0.U
+  //cache.io.memIO.address := 0.U
+  //cache.io.memIO.rd      := false.B
+  //cache.io.memIO.wr      := false.B
+  //cache.io.memIO.wrData  := 0.U
 
   cache.io.cpuIO.address := 0.U
   cache.io.cpuIO.rd      := false.B
