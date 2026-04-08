@@ -46,7 +46,7 @@ void main(){
 
     // Set the value of the output to 0x66
     gpio_set_oeb(0x00); // output enable
-    gpio_set_output(0x66); // output value
+    gpio_set_output(0x67); // output value
 
     ManagmentGpio_write(1); // signal pass
 
