@@ -73,8 +73,18 @@ jobs:
           set -e
           python3 .github/scripts/get_designs.py --design ${{ github.workspace }}
           for design in $(cat harden_sequence.txt); do
-            cf harden --use-nix $design || exit 1
+            cf harden --use-nix $design && status=0 || status=$?
+            python3 .github/scripts/hardening_summary.py $design $status
+            if [ $status -ne 0 ]; then exit $status; fi
           done
+
+      - name: Upload Run Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardening-logs-${{ matrix.pdk }}
+          path: ${{ github.workspace }}/runs/
+          retention-days: 7
 
       - name: Upload Hardened Design
         uses: actions/upload-artifact@v4
