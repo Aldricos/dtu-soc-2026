@@ -1,3 +1,6 @@
 [submodule "wildcat"]
 	path = wildcat
 	url = git@github.com:schoeberl/wildcat.git
+[submodule "Ray-tracing-chisel"]
+	path = Ray-tracing-chisel
+	url = https://github.com/rifkifi/Ray-tracing-chisel
