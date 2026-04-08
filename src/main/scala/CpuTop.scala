@@ -102,7 +102,9 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cache.io.cpuIO.rd      := cpu.io.dmem.rd
     cache.io.cpuIO.wr      := cpu.io.dmem.wr
     cache.io.cpuIO.wrData  := cpu.io.dmem.wrData
+    io.led := cache.io.cpuIO.rdData
   }
+
 }
 
 object CpuTop extends App {
