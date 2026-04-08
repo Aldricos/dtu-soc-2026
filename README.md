@@ -98,6 +98,7 @@ Goal: We replace the synthesized internal data memory of the Wildcat processor w
 - Alireza Amirinejad Daryasari
 
 Booting from Wishbone.
+Maybe gave up?
 
 ## Group 4: Hardware Accelerated ASCII Ray Tracing
 
@@ -112,11 +113,15 @@ Booting from Wishbone.
 - Dimitrios Vlachos (s243192)
 
 We will implement an SPI based memory controller.
+Maybe gave up?
 
 ## Group 6:
+
 - Tore Kofod Beyer (s234377)
 
-Run the whole project (including Caravel) in an FPGA
+Run the whole project (including Caravel) in an FPGA - too much effort, Caravel is not designed for FPGA.
+
+Booting from Wishbone (into OpenRAM memory)
 
 ## Needed Work (TODO List)
 
@@ -125,7 +130,7 @@ Run the whole project (including Caravel) in an FPGA
 - [ ] CI with Wildcat in the test (Group 1)
 - [x] Check compiler option for RV32IE (16 registers) (Group 5)
 - [ ] Block diagram in the README (Group 2)
-- [ ] Explore macro timing with LIB files (Group 4)
+- [x] Explore macro timing with LIB files (Group 4)
 - [x] Harden with cf in CI (Roméo) (Group 4)
 - [ ] Fix any violations in CaravelUserProject hardening (by: pin assignment, placement, or config values)
 
