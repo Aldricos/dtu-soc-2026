@@ -94,8 +94,12 @@ jobs:
 
       - name: Run RTL Verification
         run: |
-          make cocotb-verify-all-rtl DISABLE_DEPRECATED_MAKEFILE_PROMPT=1
-
-      - name: Print compilation log
-        run: |
-          cat verilog/dv/cocotb/sim/run_*/RTL-compilation/compilation.log || true
+          make cocotb-verify-all-rtl DISABLE_DEPRECATED_MAKEFILE_PROMPT=1 | tee tmp
+          if grep -E -q "fail|error" tmp; then
+            cat verilog/dv/cocotb/sim/run_*/RTL-compilation/firmware.log || true
+            cat verilog/dv/cocotb/sim/run_*/RTL-compilation/compilation.log || true
+            echo "RTL Verification failed"
+            exit 1
+          else
+            echo "RTL Verification succeeded"
+          fi
