@@ -97,6 +97,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   cache.io.cpuIO.wr      := false.B
   cache.io.cpuIO.wrData  := 0.U
 
+/*
   when (cpu.io.dmem.address(31, 28) === 0xe.U) {
     cache.io.cpuIO.address := cpu.io.dmem.address
     cache.io.cpuIO.rd      := cpu.io.dmem.rd
@@ -104,6 +105,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cache.io.cpuIO.wrData  := cpu.io.dmem.wrData
     io.led := cache.io.cpuIO.rdData
   }
+  */
 
 }
 
