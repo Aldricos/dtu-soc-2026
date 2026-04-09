@@ -31,8 +31,8 @@ class DataCache() extends Module {
 
 
   // --- CACHE MEMORY---
-  val validArray = RegInit(VecInit(Seq.fill(NUM_WORDS)(false.B)))
-  val tagArray   = Reg(Vec(NUM_WORDS, UInt(TAG_BITS.W)))
+  //val validArray = RegInit(VecInit(Seq.fill(NUM_WORDS)(false.B)))
+  //val tagArray   = Reg(Vec(NUM_WORDS, UInt(TAG_BITS.W)))
 
   // OpenRam Module
   // Used Guide:
@@ -60,7 +60,8 @@ class DataCache() extends Module {
   val index = io.cpuIO.address(OFFSET_BITS + INDEX_BITS - 1, OFFSET_BITS)
   val tag   = io.cpuIO.address(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
-  val hit = validArray(index) && (tagArray(index) === tag)
+  // Just hardcoding until logic is created properly
+  val hit = true.B //validArray(index) && (tagArray(index) === tag)
 
   io.cpuIO.rdData := 0.U
   io.cpuIO.stall  := true.B
@@ -113,8 +114,8 @@ class DataCache() extends Module {
         dataRam.io.addr0  := missIndexReg
         dataRam.io.din0   := io.memIO.rdData
 
-        tagArray(missIndexReg)   := missTagReg
-        validArray(missIndexReg) := true.B
+        //tagArray(missIndexReg)   := missTagReg
+        //validArray(missIndexReg) := true.B
 
         io.cpuIO.rdData := io.memIO.rdData
         io.cpuIO.stall  := false.B
