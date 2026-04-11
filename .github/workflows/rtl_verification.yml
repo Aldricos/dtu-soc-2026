@@ -95,8 +95,6 @@ jobs:
       - name: Run RTL Verification
         run: |
           if cf verify --all | grep -E -q -i "fail|error"; then 
-            cat verilog/dv/cocotb/sim/run_*/RTL-compilation/firmware.log || true
-            cat verilog/dv/cocotb/sim/run_*/RTL-compilation/compilation.log || true
             echo "RTL Verification failed"
             exit 1
           else
