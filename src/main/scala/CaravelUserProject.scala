@@ -44,8 +44,6 @@ class CaravelUserProject extends Module {
 
   // TODO: move to CpuTop
   val vc = Module(new VideoController)
-  io.out := led ## vc.io.hSync ## vc.io.vSync ## vc.io.red ## vc.io.green ## vc.io.blue
-  io.oeb := ~("x00000001FF".U)
 
   // address decoding for the peripherals
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
@@ -64,6 +62,7 @@ class CaravelUserProject extends Module {
   }
 
   // connect output ports
-  io.out := led ## gpio.io.out ## 0.U(8.W)
-  io.oeb := 0.U(1.W) ## gpio.io.oeb ## 0.U(8.W)
+  // TODO: only use the right pins (see booklet)
+  io.out := led ## gpio.io.out ## 0.U(8.W) ## vc.io.hSync ## vc.io.vSync ## vc.io.red ## vc.io.green ## vc.io.blue
+  io.oeb := 0.U(1.W) ## gpio.io.oeb ## 0.U(8.W) ## 31.U(5.W)
 }
