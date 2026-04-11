@@ -83,7 +83,7 @@ external memory (off-chip)
 - Sebastian Tobias Holdt (s235475)
 - Karl Petersen (s235481)
 
-We are intrested in implementing a VGA controller
+We are intrested in implementing a VGA controller.
 
 ## Group 2:
 
@@ -121,7 +121,7 @@ Maybe gave up?
 
 Run the whole project (including Caravel) in an FPGA - too much effort, Caravel is not designed for FPGA.
 
-Booting from Wishbone (into OpenRAM memory)
+Booting from Wishbone (into OpenRAM memory).
 
 ## Needed Work (TODO List)
 
@@ -135,6 +135,12 @@ Booting from Wishbone (into OpenRAM memory)
 - [ ] Fix any violations in CaravelUserProject hardening (by: pin assignment, placement, or config values)
 - [x] What is the clock frequency in the board: 10 MHz
 - [ ] Need to check using the right IO pins (some are reserved by Caravel)
+- [ ] Adapt VideoController to use VGA pmod from TT (Group 1)
+- [ ] Add a super simple test for the VideoController (Group 1)
+- [ ] Use 10 MHz in the design (UART, VGA)
+- [ ] Adapt FPGA test
+- [ ] Connect the UART and test
+
 
 # Caravel Documentation
 
