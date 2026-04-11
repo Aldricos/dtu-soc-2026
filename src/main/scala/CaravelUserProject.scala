@@ -63,6 +63,6 @@ class CaravelUserProject extends Module {
 
   // connect output ports
   // TODO: only use the right pins (see booklet)
-  io.out := led ## gpio.io.out ## 0.U(8.W) ## vc.io.hSync ## vc.io.vSync ## vc.io.red ## vc.io.green ## vc.io.blue
-  io.oeb := 0.U(1.W) ## gpio.io.oeb ## 0.U(8.W) ## 31.U(5.W)
+  io.out := vc.io.hSync ## vc.io.vSync ## vc.io.red ## vc.io.green ## vc.io.blue ## led ## gpio.io.out ## 0.U(8.W)
+  io.oeb := 0.U(8.W) ## 0.U(1.W) ## gpio.io.oeb ## 0.U(8.W)
 }
