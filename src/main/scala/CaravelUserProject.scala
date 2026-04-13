@@ -15,7 +15,7 @@ object CaravelUserProject extends App {
 
 class CaravelUserProject extends Module {
 
-  val WB_ADDR_WIDTH = 28
+  val WB_ADDR_WIDTH = 32
   val MPRJ_IO_PADS = 38
 
   val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
@@ -47,8 +47,8 @@ class CaravelUserProject extends Module {
 
   // address decoding for the peripherals
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
-  // the upper 8 bits [27:20] are used for decoding
-  switch(wb.addr(WB_ADDR_WIDTH - 1, WB_ADDR_WIDTH - 8)) {
+  // bits [27:20] are used for decoding
+  switch(wb.addr(27, 20)) {
     is(0x0.U) {
       gpio.wb.cyc := wb.cyc
       wb.ack := gpio.wb.ack
