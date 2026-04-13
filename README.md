@@ -123,6 +123,11 @@ Run the whole project (including Caravel) in an FPGA - too much effort, Caravel 
 
 Booting from Wishbone (into OpenRAM memory).
 
+Notes:
+
+ - maybe ncs could be tied to GND
+ - We also need to reset Wildcat from Caravel
+
 ## Needed Work (TODO List)
 
 - [x] CI with LibreLane synthesis (Group 0)
