@@ -132,7 +132,7 @@ Booting from Wishbone (into OpenRAM memory).
 - [ ] Block diagram in the README (Group 2)
 - [x] Explore macro timing with LIB files (Group 4)
 - [x] Harden with cf in CI (Roméo) (Group 4)
-- [ ] Fix any violations in CaravelUserProject hardening (by: pin assignment, placement, or config values)
+- [ ] Fix any violations in CaravelUserProject hardening (pin assignment, placement, or config values)
 - [x] What is the clock frequency in the board: 10 MHz
 - [ ] Need to check using the right IO pins (some are reserved by Caravel)
 - [ ] Adapt VideoController to use VGA pmod from TT (Group 1)
