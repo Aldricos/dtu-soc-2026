@@ -11,7 +11,7 @@
     "DIE_AREA": [
         0,
         0,
-        800,
+        1500,
         800
     ],
     "FP_PIN_ORDER_CFG": "dir::pin_order.cfg",
@@ -78,6 +78,13 @@
                         100
                     ],
                     "orientation": "N"
+                },
+                "wc.cache.metaRam": {
+                    "location": [
+                        700,
+                        100
+                    ],
+                    "orientation": "N"
                 }
             },
 
@@ -102,6 +109,7 @@
     "RUN_KLAYOUT_XOR": false,
 
     "PDN_MACRO_CONNECTIONS": [
-        "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1"
+        "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
+        "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1"
     ]
 }
