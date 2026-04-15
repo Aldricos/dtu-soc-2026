@@ -138,10 +138,7 @@
             ],
             "nl": [
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_8x1024_8.v"
-            ],
-            "lib": {
-                "*": "pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_1kbyte_1rw1r_8x1024_8_TT_1p8V_25C.lib"
-            }
+            ]
         }
     },
     "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
