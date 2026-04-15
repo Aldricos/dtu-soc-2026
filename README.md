@@ -148,6 +148,7 @@ Notes:
 - [ ] Connect the UART and test
 - [ ] Wildcat Caravel communication (Group 1)
 - [ ] Reset port (Group 1)
+- [ ] Add .lib files and **fix the timing**
 
 
 # Caravel Documentation
