@@ -156,6 +156,10 @@
 
     "PDN_MACRO_CONNECTIONS": [
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
-        "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1"
+        "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.mem0 vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.mem1 vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.mem2 vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.mem3 vccd1 vssd1 vccd1 vssd1"
     ]
 }
