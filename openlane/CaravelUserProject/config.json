@@ -1,6 +1,7 @@
 {
     "DESIGN_NAME": "CaravelUserProject",
-    "FP_PDN_MULTILAYER": false,
+    "FP_PDN_MULTILAYER": true,
+    "FP_PDN_CORE_RING": true,
     "VERILOG_FILES": [
         "ref::$DESIGN_DIR/../../verilog/rtl/CaravelUserProject.v"
     ],
@@ -70,6 +71,15 @@
 
     "MACROS": {
         "sky130_sram_1kbyte_1rw1r_32x256_8": {
+            "instances": {
+                "wc.cache.dataRam": {
+                    "location": [
+                        100,
+                        100
+                    ],
+                    "orientation": "N"
+                }
+            },
 
             "gds": [
                 "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"
@@ -79,12 +89,19 @@
             ],
             "nl": [
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
-            ],
-            "lib": {
-                "*": "pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib"
-            }
+            ]
         }
     },
-    "MAGIC_CAPTURE_ERRORS": false
+    "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
+    "FP_PDN_CHECK_NODES": false,
 
+    "MAGIC_CAPTURE_ERRORS": false,
+    "PRIMARY_GDSII_STREAMOUT_TOOL": "klayout",
+    "RUN_KLAYOUT_DRC": true,
+    "RUN_MAGIC_DRC": false,
+    "RUN_KLAYOUT_XOR": false,
+
+    "PDN_MACRO_CONNECTIONS": [
+        "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1"
+    ]
 }

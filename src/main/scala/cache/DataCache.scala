@@ -16,53 +16,75 @@ import chisel3.util._
 import OpenRam._
 
 class DataCache() extends Module {
-  val NUM_WORDS = 256
+  val NUM_LINES   = 128
   val BIT_WIDTH   = 32
-  val ADDR_WIDTH = 28
-  val INDEX_BITS  = log2Ceil(NUM_WORDS)
-  val OFFSET_BITS = 2
-  val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS
+  val ADDR_WIDTH  = 28
+  val INDEX_BITS  = log2Ceil(NUM_LINES)   // 7
+  val OFFSET_BITS = 2                     // byte offset within 32-bit word
+  val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS // 19
 
+  // SRAM layout:
+  //   0 .. 127   : data array
+  //   128 .. 255 : metadata array (valid + tag)
+  val META_BASE = NUM_LINES
 
   val io = IO(new Bundle {
     val cpuIO = new CacheIO
     val memIO = Flipped(new CacheIO)
   })
 
-
-  // --- CACHE MEMORY---
-  //val validArray = RegInit(VecInit(Seq.fill(NUM_WORDS)(false.B)))
-  //val tagArray   = Reg(Vec(NUM_WORDS, UInt(TAG_BITS.W)))
-
-  // OpenRam Module
-  // Used Guide:
-  // https://armleo-openlane.readthedocs.io/en/merge-window-4/tutorials/openram.html
   val dataRam = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
-  dataRam.io.clk0 := clock
-  dataRam.io.csb0 := true.B
-  dataRam.io.web0 := true.B
+
+  // -----------------------------
+  // Default SRAM port assignments
+  // -----------------------------
+  // Port 0: RW
+  dataRam.io.clk0   := clock
+  dataRam.io.csb0   := true.B
+  dataRam.io.web0   := true.B
   dataRam.io.wmask0 := 0.U
-  dataRam.io.addr0 := 0.U
-  dataRam.io.din0 := 0.U
+  dataRam.io.addr0  := 0.U
+  dataRam.io.din0   := 0.U
 
   // Port 1: R
-  dataRam.io.clk1 := clock
-  dataRam.io.csb1 := true.B
+  dataRam.io.clk1  := clock
+  dataRam.io.csb1  := true.B
   dataRam.io.addr1 := 0.U
 
-  val sIdle :: sHitRead :: sMiss :: Nil = Enum(3)
+  // -----------------------------
+  // State machine
+  // -----------------------------
+  val sIdle :: sLookupMeta :: sReadData :: sMissWaitMem :: sMissWriteData :: sMissWriteMeta :: Nil = Enum(6)
   val state = RegInit(sIdle)
 
-  val missAddrReg  = Reg(UInt(32.W))
-  val missIndexReg = Reg(UInt(INDEX_BITS.W))
-  val missTagReg   = Reg(UInt(TAG_BITS.W))
+  // -----------------------------
+  // Request / refill registers
+  // -----------------------------
+  val reqAddrReg    = Reg(UInt(32.W))
+  val reqIndexReg   = Reg(UInt(INDEX_BITS.W))
+  val reqTagReg     = Reg(UInt(TAG_BITS.W))
+  val refillDataReg = Reg(UInt(32.W))
 
+  // CPU address decode
   val index = io.cpuIO.address(OFFSET_BITS + INDEX_BITS - 1, OFFSET_BITS)
   val tag   = io.cpuIO.address(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
-  // Just hardcoding until logic is created properly
-  val hit = true.B //validArray(index) && (tagArray(index) === tag)
+  // Metadata format:
+  // bit 0          : valid
+  // bits TAG_BITS:1: tag
+  // upper bits     : unused
+  def packMeta(valid: Bool, tag: UInt): UInt = {
+    Cat(0.U((32 - 1 - TAG_BITS).W), tag, valid)
+  }
 
+  val metaOut   = dataRam.io.dout1
+  val metaValid = metaOut(0)
+  val metaTag   = metaOut(TAG_BITS, 1)
+  val metaHit   = metaValid && (metaTag === reqTagReg)
+
+  // -----------------------------
+  // Default IO assignments
+  // -----------------------------
   io.cpuIO.rdData := 0.U
   io.cpuIO.stall  := true.B
 
@@ -71,56 +93,85 @@ class DataCache() extends Module {
   io.memIO.wr      := false.B
   io.memIO.wrData  := 0.U
 
+  // -----------------------------
+  // FSM
+  // -----------------------------
   switch(state) {
     is(sIdle) {
       when(io.cpuIO.rd) {
-        when(hit) {
-          // Use read-only port 1 for cache hit reads
-          dataRam.io.csb1  := false.B
-          dataRam.io.addr1 := index
+        reqAddrReg  := io.cpuIO.address
+        reqIndexReg := index
+        reqTagReg   := tag
 
-          state := sHitRead
-        }.otherwise {
-          missAddrReg  := io.cpuIO.address
-          missIndexReg := index
-          missTagReg   := tag
+        // Read metadata from SRAM upper half
+        dataRam.io.csb1  := false.B
+        dataRam.io.addr1 := (META_BASE.U + index)
 
-          io.memIO.address := io.cpuIO.address
-          io.memIO.rd      := true.B
-
-          state := sMiss
-        }
+        state := sLookupMeta
       }.otherwise {
+        // No request, no stall
         io.cpuIO.stall := false.B
       }
     }
 
-    is(sHitRead) {
-      // Data from port 1 read
+    is(sLookupMeta) {
+      // metaOut now contains metadata word read last cycle
+      when(metaHit) {
+        // On hit, read data from SRAM lower half
+        dataRam.io.csb1  := false.B
+        dataRam.io.addr1 := reqIndexReg
+
+        state := sReadData
+      }.otherwise {
+        // Cache miss: request off-chip memory
+        io.memIO.address := reqAddrReg
+        io.memIO.rd      := true.B
+
+        state := sMissWaitMem
+      }
+    }
+
+    is(sReadData) {
+      // Data arrives from read-only port
       io.cpuIO.rdData := dataRam.io.dout1
       io.cpuIO.stall  := false.B
       state := sIdle
     }
 
-    is(sMiss) {
-      io.memIO.address := missAddrReg
+    is(sMissWaitMem) {
+      io.memIO.address := reqAddrReg
       io.memIO.rd      := true.B
 
       when(!io.memIO.stall) {
-        // Refill cache line through RW port 0 as a write
-        dataRam.io.csb0   := false.B
-        dataRam.io.web0   := false.B          // write enable is active low
-        dataRam.io.wmask0 := "b1111".U
-        dataRam.io.addr0  := missIndexReg
-        dataRam.io.din0   := io.memIO.rdData
-
-        //tagArray(missIndexReg)   := missTagReg
-        //validArray(missIndexReg) := true.B
-
-        io.cpuIO.rdData := io.memIO.rdData
-        io.cpuIO.stall  := false.B
-        state := sIdle
+        refillDataReg := io.memIO.rdData
+        state := sMissWriteData
       }
+    }
+
+    is(sMissWriteData) {
+      // Write fetched data into data region
+      dataRam.io.csb0   := false.B
+      dataRam.io.web0   := false.B          // active low write enable
+      dataRam.io.wmask0 := "b1111".U
+      dataRam.io.addr0  := reqIndexReg
+      dataRam.io.din0   := refillDataReg
+
+      state := sMissWriteMeta
+    }
+
+    is(sMissWriteMeta) {
+      // Write valid + tag into metadata region
+      dataRam.io.csb0   := false.B
+      dataRam.io.web0   := false.B
+      dataRam.io.wmask0 := "b1111".U
+      dataRam.io.addr0  := (META_BASE.U + reqIndexReg)
+      dataRam.io.din0   := packMeta(true.B, reqTagReg)
+
+      // Return refill data directly to CPU
+      io.cpuIO.rdData := refillDataReg
+      io.cpuIO.stall  := false.B
+
+      state := sIdle
     }
   }
 }
