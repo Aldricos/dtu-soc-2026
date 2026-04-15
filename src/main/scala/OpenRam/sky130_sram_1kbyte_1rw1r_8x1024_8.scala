@@ -1,0 +1,23 @@
+package OpenRam
+
+import chisel3._
+import chisel3.util._
+
+class sky130_sram_1kbyte_1rw1r_8x1024_8() extends BlackBox {
+  val io = IO(new Bundle {
+    // Port 0: RW
+    val clk0 = Input(Clock())
+    val csb0 = Input(Bool())
+    val web0 = Input(Bool())
+    val wmask0 = Input(UInt(1.W))
+    val addr0 = Input(UInt(10.W))
+    val din0 = Input(UInt(8.W))
+    val dout0 = Output(UInt(8.W))
+
+    // Port 1: R
+    val clk1 = Input(Clock())
+    val csb1 = Input(Bool())
+    val addr1 = Input(UInt(10.W))
+    val dout1 = Output(UInt(8.W))
+  })
+}

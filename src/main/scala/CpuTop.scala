@@ -3,6 +3,7 @@ import chisel3._
 import wildcat.Util
 import wildcat.pipeline._
 import cache._
+import videoController.VideoController
 
 /*
  * This file is a modification of the RISC-V processor Wildcat
@@ -20,6 +21,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
     val rx = Input(UInt(1.W))
+    val video = Output(UInt(8.W))
   })
 
   val (memory, start) = Util.getCode(file)
@@ -107,6 +109,19 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   }
   */
 
+  // Video Controller
+  // 0xf200_0000
+  val videoController = Module(new VideoController)
+  videoController.io.address := 0.U
+  videoController.io.wrData := 0.U
+  videoController.io.wr := false.B
+  io.video := videoController.io.video
+  
+  when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
+    videoController.io.address := cpu.io.dmem.address(11,0)
+    videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
+    videoController.io.wr := cpu.io.dmem.wr
+  }
 }
 
 object CpuTop extends App {
