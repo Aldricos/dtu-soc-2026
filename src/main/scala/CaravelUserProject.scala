@@ -3,7 +3,6 @@ import chisel3._
 import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
-import videoController.VideoController
 
 object CaravelUserProject extends App {
   emitVerilog(
@@ -30,6 +29,7 @@ class CaravelUserProject extends Module {
   val led = wc.io.led
   val tx = wc.io.tx
   wc.io.rx := false.B
+  val video = wc.io.video
 
   // create dummy gpio peripheral for testing
   val gpio = Module(new WishboneGpio(8))
@@ -41,9 +41,6 @@ class CaravelUserProject extends Module {
   val gcd = Module(new WishboneGcd(16))
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
-
-  // TODO: move to CpuTop
-  val vc = Module(new VideoController)
 
   // address decoding for the peripherals
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
@@ -63,6 +60,6 @@ class CaravelUserProject extends Module {
 
   // connect output ports
   // TODO: only use the right pins (see booklet)
-  io.out := vc.io.hSync ## vc.io.vSync ## vc.io.red ## vc.io.green ## vc.io.blue ## led ## gpio.io.out ## 0.U(8.W)
+  io.out := video ## led ## gpio.io.out ## 0.U(8.W)
   io.oeb := 0.U(8.W) ## 0.U(1.W) ## gpio.io.oeb ## 0.U(8.W)
 }

@@ -11,8 +11,8 @@
     "DIE_AREA": [
         0,
         0,
-        1500,
-        800
+        3000,
+        3000
     ],
     "FP_PIN_ORDER_CFG": "dir::pin_order.cfg",
     "MAX_TRANSITION_CONSTRAINT": 1.0,
@@ -97,6 +97,52 @@
             "nl": [
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
             ]
+        },
+        "sky130_sram_1kbyte_1rw1r_8x1024_8": {
+
+            "instances": {
+                "wc.videoController.terminal.mem0": {
+                    "location": [
+                        1200,
+                        100
+                    ],
+                    "orientation": "N"
+                },
+                "wc.videoController.terminal.mem1": {
+                    "location": [
+                        1800,
+                        100
+                    ],
+                    "orientation": "N"
+                },
+                "wc.videoController.terminal.mem2": {
+                    "location": [
+                        1200,
+                        700
+                    ],
+                    "orientation": "N"
+                },
+                "wc.videoController.terminal.mem3": {
+                    "location": [
+                        1800,
+                        700
+                    ],
+                    "orientation": "N"
+                }
+            },
+
+            "gds": [
+                "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_8x1024_8.gds"
+            ],
+            "lef": [
+                "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_8x1024_8.lef"
+            ],
+            "nl": [
+                "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_8x1024_8.v"
+            ],
+            "lib": {
+                "*": "pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_1kbyte_1rw1r_8x1024_8_TT_1p8V_25C.lib"
+            }
         }
     },
     "SYNTH_POWER_DEFINE": "USE_POWER_PINS",

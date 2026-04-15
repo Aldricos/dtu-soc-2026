@@ -2,7 +2,6 @@ package videoController
 
 import chisel3._
 import chisel3.util._
-import wishbone.WishboneIO
 
 /**
   * TODO: write summary
@@ -20,15 +19,29 @@ class Terminal extends Module {
     val red = Output(UInt(2.W))
     val green = Output(UInt(2.W))
     val blue = Output(UInt(2.W))
+
+    val address = Input(UInt(12.W))
+    val wrData = Input(UInt(8.W))
+    val wr = Input(Bool())
   })
+
+  val videoBuffer = Module(new VideoBuffer)
+
+  // video buffer write port
+  videoBuffer.io.addr0 := io.address
+  videoBuffer.io.din0 := io.wrData
+  videoBuffer.io.we0 := io.wr
 
   val xTilePos = io.xPos(xBitWidth - 1, 3)
   val yTilePos = io.yPos(yBitWidth - 1, 3)
   val xCharPos = io.xPos(2, 0)
   val yCharPos = io.yPos(2, 0)
 
-  val character = Wire(UInt(8.W))
-  character := yTilePos * horizontalTiles.U + xTilePos
+  val index = yTilePos * horizontalTiles.U + xTilePos
+
+  // video buffer read port
+  videoBuffer.io.addr1 := index
+  val character = videoBuffer.io.dout1
 
   val characterTable = Module(new CharacterTable)
   characterTable.io.character := character
