@@ -2,13 +2,18 @@ package videoController
 
 import chisel3._
 import chisel3.util._
-import wishbone.WishboneIO
 
 /**
   * TODO: write summary
   */
 class VideoController extends Module {
-  val io = IO(new VideoControllerIO)
+  val io = IO(new Bundle {
+    val address = Input(UInt(12.W))
+    val wrData = Input(UInt(8.W))
+    val wr = Input(Bool())
+
+    val video = Output(UInt(8.W))
+  })
 
   val horizontal = RegInit(0.U(log2Up(VgaConstants.H_TOTAL).W))
   val vertical = RegInit(0.U(log2Up(VgaConstants.V_TOTAL).W))
@@ -26,12 +31,15 @@ class VideoController extends Module {
   val terminal = Module(new Terminal)
   terminal.io.xPos := horizontal
   terminal.io.yPos := vertical
+  terminal.io.address := io.address
+  terminal.io.wrData := io.wrData
+  terminal.io.wr := io.wr
 
-  io.hSync := RegNext(hSync)
-  io.vSync := RegNext(vSync)
-  io.red := RegNext(Mux(videoActive, terminal.io.red, 0.U))
-  io.green := RegNext(Mux(videoActive, terminal.io.green, 0.U))
-  io.blue := RegNext(Mux(videoActive, terminal.io.blue, 0.U))
+  val red = Mux(videoActive, terminal.io.red, 0.U)
+  val green = Mux(videoActive, terminal.io.green, 0.U)
+  val blue = Mux(videoActive, terminal.io.blue, 0.U)
+
+  io.video := RegNext(RegNext(hSync ## vSync) ## red ## green ## blue)
 }
 
 object VideoController extends App {

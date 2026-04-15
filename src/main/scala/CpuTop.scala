@@ -3,6 +3,8 @@ import chisel3._
 import wildcat.Util
 import wildcat.pipeline._
 import cache._
+import videoController.VideoController
+
 
 /*
  * This file is a modification of the RISC-V processor Wildcat
@@ -20,20 +22,50 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
     val rx = Input(UInt(1.W))
+    val video = Output(UInt(8.W))
   })
 
   val (memory, start) = Util.getCode(file)
 
-  // Here switch between different designs
   val cpu = Module(new ThreeCats())
-  // val cpu = Module(new WildFour())
-  // val cpu = Module(new StandardFive())
   val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
   val imem = Module(new InstructionROM(memory))
   val cache = Module(new DataCache())
 
-  cpu.io.dmem <> dmem.io
   cpu.io.imem <> imem.io
+
+  // ------------------------------------------------
+  // Memory Connections
+  // ------------------------------------------------
+  // Memory Registers
+  val memAddrReg   = RegNext(cpu.io.dmem.address)
+  val memRdReg     = RegNext(cpu.io.dmem.rd, false.B)
+  val memWrReg     = RegNext(cpu.io.dmem.wr, false.B)
+  val memWrDataReg = RegNext(cpu.io.dmem.wrData)
+  val memWrMaskReg = RegNext(cpu.io.dmem.wrMask)
+
+  // Default CPU outputs
+  cpu.io.dmem.rdData := 0.U
+  cpu.io.dmem.ack    := false.B
+
+  // Default dmem inputs
+  dmem.io.address := 0.U
+  dmem.io.rd      := false.B
+  dmem.io.wr      := false.B
+  dmem.io.wrData  := 0.U
+  dmem.io.wrMask  := 0.U
+
+  // Default cache CPU-side inputs
+  cache.io.cpuIO.address := memAddrReg
+  cache.io.cpuIO.rd      := false.B
+  cache.io.cpuIO.wr      := false.B
+  cache.io.cpuIO.wrData  := memWrDataReg
+  cache.io.cpuIO.wrMask  := memWrMaskReg
+
+  // Default cache backing-memory inputs
+  cache.io.memIO.rdData := 0.U
+  cache.io.memIO.ack    := false.B
+
 
   // Here IO stuff
   // IO is mapped ot 0xf000_0000
@@ -83,30 +115,56 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
   io.led := 1.U ## 0.U(7.W) ## RegNext(ledReg)
 
-  // CACHE 0xE
-  // Partial hookup: drive cache inputs for cache-mapped region
-  cache.io.memIO.rdData  := 0.U
-  cache.io.memIO.stall   := false.B
-  //cache.io.memIO.address := 0.U
-  //cache.io.memIO.rd      := false.B
-  //cache.io.memIO.wr      := false.B
-  //cache.io.memIO.wrData  := 0.U
+  // ------------------------------------------------
+  // Memory
+  // ------------------------------------------------
+  when (memAddrReg(31, 28) === 0x0.U) { // DMem 0x0
+    dmem.io.address := memAddrReg
+    dmem.io.rd      := memRdReg
+    dmem.io.wr      := memWrReg
+    dmem.io.wrData  := memWrDataReg
+    dmem.io.wrMask  := memWrMaskReg
 
-  cache.io.cpuIO.address := 0.U
-  cache.io.cpuIO.rd      := false.B
-  cache.io.cpuIO.wr      := false.B
-  cache.io.cpuIO.wrData  := 0.U
-
-/*
-  when (cpu.io.dmem.address(31, 28) === 0xe.U) {
-    cache.io.cpuIO.address := cpu.io.dmem.address
-    cache.io.cpuIO.rd      := cpu.io.dmem.rd
-    cache.io.cpuIO.wr      := cpu.io.dmem.wr
-    cache.io.cpuIO.wrData  := cpu.io.dmem.wrData
-    io.led := cache.io.cpuIO.rdData
+    cpu.io.dmem.rdData := dmem.io.rdData
+    cpu.io.dmem.ack    := dmem.io.ack
   }
-  */
+  when (memAddrReg(31, 28) === 0xe.U) { // CACHE 0xE
+    // CPU -> cache
+    cache.io.cpuIO.address := memAddrReg
+    cache.io.cpuIO.rd      := memRdReg
+    cache.io.cpuIO.wr      := memWrReg
+    cache.io.cpuIO.wrData  := memWrDataReg
+    cache.io.cpuIO.wrMask  := memWrMaskReg
 
+    // cache -> dmem
+    dmem.io.address := cache.io.memIO.address
+    dmem.io.rd      := cache.io.memIO.rd
+    dmem.io.wr      := cache.io.memIO.wr
+    dmem.io.wrData  := cache.io.memIO.wrData
+    dmem.io.wrMask  := cache.io.memIO.wrMask
+
+    // dmem -> cache
+    cache.io.memIO.rdData := dmem.io.rdData
+    cache.io.memIO.ack    := dmem.io.ack
+
+    // cache -> CPU
+    cpu.io.dmem.rdData := cache.io.cpuIO.rdData
+    cpu.io.dmem.ack    := cache.io.cpuIO.ack
+  }
+
+  // Video Controller
+  // 0xf200_0000
+  val videoController = Module(new VideoController)
+  videoController.io.address := 0.U
+  videoController.io.wrData := 0.U
+  videoController.io.wr := false.B
+  io.video := videoController.io.video
+  
+  when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
+    videoController.io.address := cpu.io.dmem.address(11,0)
+    videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
+    videoController.io.wr := cpu.io.dmem.wr
+  }
 }
 
 object CpuTop extends App {
