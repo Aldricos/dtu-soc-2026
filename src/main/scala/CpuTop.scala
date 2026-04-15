@@ -48,8 +48,8 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // Cache
   // 0xe000_0000 - 0xefff_ffff
 
-  val tx = Module(new BufferedTx(100000000, 115200))
-  val rx = Module(new Rx(100000000, 115200))
+  val tx = Module(new BufferedTx(10000000, 115200))
+  val rx = Module(new Rx(10000000, 115200))
   io.tx := tx.io.txd
   rx.io.rxd := io.rx
 
