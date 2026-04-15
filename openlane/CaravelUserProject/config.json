@@ -99,30 +99,29 @@
             ]
         },
         "sky130_sram_1kbyte_1rw1r_8x1024_8": {
-
             "instances": {
-                "wc.videoController.terminal.mem0": {
+                "wc.videoController.terminal.videoBuffer.mem0": {
                     "location": [
                         1200,
                         100
                     ],
                     "orientation": "N"
                 },
-                "wc.videoController.terminal.mem1": {
+                "wc.videoController.terminal.videoBuffer.mem1": {
                     "location": [
                         1800,
                         100
                     ],
                     "orientation": "N"
                 },
-                "wc.videoController.terminal.mem2": {
+                "wc.videoController.terminal.videoBuffer.mem2": {
                     "location": [
                         1200,
                         700
                     ],
                     "orientation": "N"
                 },
-                "wc.videoController.terminal.mem3": {
+                "wc.videoController.terminal.videoBuffer.mem3": {
                     "location": [
                         1800,
                         700
@@ -157,9 +156,9 @@
     "PDN_MACRO_CONNECTIONS": [
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.mem0 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.mem1 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.mem2 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.mem3 vccd1 vssd1 vccd1 vssd1"
+        "wc.videoController.terminal.videoBuffer.mem0 vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.videoBuffer.mem1 vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.videoBuffer.mem2 vccd1 vssd1 vccd1 vssd1",
+        "wc.videoController.terminal.videoBuffer.mem3 vccd1 vssd1 vccd1 vssd1"
     ]
 }
