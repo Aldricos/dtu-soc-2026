@@ -11,7 +11,7 @@
     "DIE_AREA": [
         0,
         0,
-        2800,
+        2000,
         800
     ],
     "FP_PIN_ORDER_CFG": "dir::pin_order.cfg",
@@ -85,6 +85,13 @@
                         100
                     ],
                     "orientation": "N"
+                },
+                "wc.videoController.terminal.videoBuffer.mem": {
+                    "location": [
+                        1200,
+                        100
+                    ],
+                    "orientation": "N"
                 }
             },
 
@@ -132,7 +139,6 @@
                 "*": [ "ref::$DESIGN_DIR/../../libs/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C_modified.lib" ]
             }
 
-            
         }
     },
     "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
@@ -147,7 +153,6 @@
     "PDN_MACRO_CONNECTIONS": [
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem0 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem1 vccd1 vssd1 vccd1 vssd1"
+        "wc.videoController.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1"
     ]
 }
