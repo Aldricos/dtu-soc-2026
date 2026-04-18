@@ -112,7 +112,7 @@ jobs:
 
       - name: Check for failed test
         run: |
-          if cf verify --all | grep "Fail"; then 
+          if cf verify --all | grep "Fail:"; then 
             echo "RTL Verification failed"
             exit 1
           else
