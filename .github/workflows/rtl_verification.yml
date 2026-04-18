@@ -99,7 +99,7 @@ jobs:
       - name: Check for compilation errors
         run: |
           rm /home/runner/work/dtu-soc-2026/dtu-soc-2026/verilog/dv/cocotb/sim/run_*/ -r
-          if cf verify --all | grep -q -i "error"; then 
+          if cf verify --all | grep -i "error"; then 
             echo "Compilation failed"
             echo "Printing compilation log"
             cat /home/runner/work/dtu-soc-2026/dtu-soc-2026/verilog/dv/cocotb/sim/run_*/RTL-compilation/compilation.log
@@ -112,7 +112,7 @@ jobs:
 
       - name: Check for failed test
         run: |
-          if cf verify --all | grep -q -i "fail"; then 
+          if cf verify --all | grep -i "fail"; then 
             echo "RTL Verification failed"
             exit 1
           else
