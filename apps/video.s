@@ -77,7 +77,7 @@ hello:
     j hello
 
 delay:
-    li      t0, 0x7ff
+    li      t0, 0xff
 loop_0:
     li      t1, 0x7ff
 loop_1:

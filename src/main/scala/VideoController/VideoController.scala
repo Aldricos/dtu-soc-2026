@@ -30,7 +30,7 @@ class VideoController extends Module {
 
   val terminal = Module(new Terminal)
   terminal.io.xPos := horizontal
-  terminal.io.yPos := vertical
+  terminal.io.yPos := vertical(log2Up(VgaConstants.V_TOTAL) - 1,2)
   terminal.io.address := io.address
   terminal.io.wrData := io.wrData
   terminal.io.wr := io.wr
