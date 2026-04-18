@@ -39,6 +39,6 @@ class FpgaTop extends Module {
     ct.wb.sel := 0.U
 
     ct.io.in := 0.U
-    io.out := ct.io.out(9,0)
+    io.out := ct.io.out(24,16)
   }
 }

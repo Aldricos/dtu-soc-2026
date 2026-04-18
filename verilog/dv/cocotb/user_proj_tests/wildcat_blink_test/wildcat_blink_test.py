@@ -8,13 +8,13 @@ async def wildcat_blink_test(dut):
     caravelEnv = await test_configure(dut, timeout_cycles=700000)
 
     await caravelEnv.wait_mgmt_gpio(1)
-    cocotb.log.info("[TEST] GPIO configured, watching for blink on pin 8")
+    cocotb.log.info("[TEST] GPIO configured, watching for blink on pin 24")
 
     led = False
     blinkCounter = 0
 
     for _ in range(100000):
-        val = caravelEnv.monitor_gpio(16, 16)
+        val = caravelEnv.monitor_gpio(24, 24)
         if val == 1:
             if led == False:
                 led = True

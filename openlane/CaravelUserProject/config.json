@@ -11,8 +11,8 @@
     "DIE_AREA": [
         0,
         0,
-        2400,
-        1400
+        2800,
+        800
     ],
     "FP_PIN_ORDER_CFG": "dir::pin_order.cfg",
     "MAX_TRANSITION_CONSTRAINT": 1.0,
@@ -98,7 +98,7 @@
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
             ]
         },
-        "sky130_sram_1kbyte_1rw1r_8x1024_8": {
+        "sky130_sram_2kbyte_1rw1r_32x512_8": {
             "instances": {
                 "wc.videoController.terminal.videoBuffer.mem0": {
                     "location": [
@@ -109,35 +109,21 @@
                 },
                 "wc.videoController.terminal.videoBuffer.mem1": {
                     "location": [
-                        1800,
+                        2000,
                         100
-                    ],
-                    "orientation": "N"
-                },
-                "wc.videoController.terminal.videoBuffer.mem2": {
-                    "location": [
-                        1200,
-                        700
-                    ],
-                    "orientation": "N"
-                },
-                "wc.videoController.terminal.videoBuffer.mem3": {
-                    "location": [
-                        1800,
-                        700
                     ],
                     "orientation": "N"
                 }
             },
 
             "gds": [
-                "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_8x1024_8.gds"
+                "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds"
             ],
             "lef": [
-                "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_8x1024_8.lef"
+                "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef"
             ],
             "nl": [
-                "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_8x1024_8.v"
+                "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v"
             ]
         }
     },
@@ -154,8 +140,6 @@
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
         "wc.videoController.terminal.videoBuffer.mem0 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem1 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem2 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem3 vccd1 vssd1 vccd1 vssd1"
+        "wc.videoController.terminal.videoBuffer.mem1 vccd1 vssd1 vccd1 vssd1"
     ]
 }
