@@ -96,7 +96,10 @@
             ],
             "nl": [
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
-            ]
+            ],
+            "lib": {
+                "*": [ "ref::$DESIGN_DIR/../../libs/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C_modified.lib" ]
+            }
         },
         "sky130_sram_2kbyte_1rw1r_32x512_8": {
             "instances": {
@@ -124,7 +127,12 @@
             ],
             "nl": [
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v"
-            ]
+            ],
+            "lib": {
+                "*": [ "ref::$DESIGN_DIR/../../libs/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C_modified.lib" ]
+            }
+
+            
         }
     },
     "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
