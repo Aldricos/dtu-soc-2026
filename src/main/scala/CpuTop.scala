@@ -4,7 +4,7 @@ import wildcat.Util
 import wildcat.pipeline._
 import cache._
 import videoController.VideoController
-
+import wishbone.WishboneIO
 
 /*
  * This file is a modification of the RISC-V processor Wildcat
@@ -23,16 +23,20 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val tx = Output(UInt(1.W))
     val rx = Input(UInt(1.W))
     val video = Output(UInt(8.W))
+    val imemWb = Flipped(new WishboneIO(32))
   })
 
   val (memory, start) = Util.getCode(file)
 
   val cpu = Module(new ThreeCats())
   val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
-  val imem = Module(new InstructionROM(memory))
+  //val imem = Module(new InstructionROM(memory))
+  val imem = Module(new WishboneInstrRam)
   val cache = Module(new DataCache())
 
-  cpu.io.imem <> imem.io
+  //cpu.io.imem <> imem.io
+  cpu.io.imem <> imem.io.cpu
+  imem.io.wb <> io.imemWb
 
   // ------------------------------------------------
   // Memory Connections

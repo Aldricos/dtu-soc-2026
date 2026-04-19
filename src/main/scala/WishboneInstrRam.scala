@@ -21,7 +21,7 @@ class WishboneInstrRam extends Module {
 
   // Wishbone RW: Port 0
   val wbActive = io.wb.cyc && io.wb.stb
-  ram.io.csb0 := !wbActive  // Active low chip select
+  ram.io.csb0 := false.B  // Active low chip select
   ram.io.web0 := io.wb.we  // Write enable
   ram.io.wmask0 := io.wb.sel
   ram.io.addr0 := io.wb.addr(7, 0)  // 8-bit address for 1KB RAM
