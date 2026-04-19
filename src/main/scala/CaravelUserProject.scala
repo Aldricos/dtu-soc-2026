@@ -28,14 +28,13 @@ class CaravelUserProject extends Module {
 
   val led = wc.io.led
   val tx = wc.io.tx
-  wc.io.rx := false.B
   val video = wc.io.video
 
   // create dummy gpio peripheral for testing
   val gpio = Module(new WishboneGpio(8))
   gpio.wb <> wb
   gpio.wb.cyc := 0.B
-  gpio.io.in := io.in(15,8)
+
 
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
@@ -59,7 +58,25 @@ class CaravelUserProject extends Module {
   }
 
   // connect output ports
-  // TODO: only use the right pins (see booklet)
-  io.out := led ## video ## gpio.io.out ## 0.U(8.W)
-  io.oeb := 0.U(16.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(8.W)
+  io.out := 0.U
+  io.oeb := 0.U
+  // Pins 0-6 are used by Caravel
+  /* This does not work du to a Chisel limitation
+  Better define a bundle
+  io.out(7) := tx
+  io.out(15, 8) := gpio.io.out
+  io.oeb(15, 8) := gpio.io.oeb
+  io.out(23, 16) := video
+  io.oeb(23, 16) := 0.U(8.W)
+  io.out(24) := led(0)
+  io.oeb(24) := 0.U(1.W)
+  */
+
+  io.out := led ## video ## gpio.io.out ## tx ##0.U(7.W)
+  io.oeb := 0.U(16.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
+ 
+  // connect input ports
+  gpio.io.in := io.in(15,8)
+  wc.io.rx := io.in(25)
+
 }
