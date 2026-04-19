@@ -25,7 +25,7 @@ class CaravelUserProject extends Module {
   })
   // Wildcat Integration
   val wc = Module(new CpuTop("a.out"))
-  wc.io.imemWb <> wb
+  //wc.io.imemWb <> wb
 
   val led = wc.io.led
   val tx = wc.io.tx
