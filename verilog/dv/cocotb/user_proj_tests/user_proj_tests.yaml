@@ -21,5 +21,6 @@ includes:
     - gpio_set_output_test/gpio_set_output_test.yaml
     - gpio_bidir_test/gpio_bidir_test.yaml
     - wildcat_blink_test/wildcat_blink_test.yaml
+    - video_test/video_test.yaml
 
 

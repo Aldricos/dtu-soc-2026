@@ -23,8 +23,8 @@ class VideoController extends Module {
   horizontal := Mux(newLine, 0.U, horizontal + 1.U)
   vertical := Mux(newFrame, 0.U, Mux(newLine, vertical + 1.U, vertical))
 
-  val hSync = horizontal < (VgaConstants.H_ACTIVE_VIDEO + VgaConstants.H_FRONT_PORCH).U || horizontal > (VgaConstants.H_ACTIVE_VIDEO + VgaConstants.H_FRONT_PORCH + VgaConstants.H_SYNC_PULSE).U
-  val vSync = vertical < (VgaConstants.V_ACTIVE_VIDEO + VgaConstants.V_FRONT_PORCH).U || vertical > (VgaConstants.V_ACTIVE_VIDEO + VgaConstants.V_FRONT_PORCH + VgaConstants.V_SYNC_PULSE).U
+  val hSync = horizontal < (VgaConstants.H_ACTIVE_VIDEO + VgaConstants.H_FRONT_PORCH).U || horizontal >= (VgaConstants.H_ACTIVE_VIDEO + VgaConstants.H_FRONT_PORCH + VgaConstants.H_SYNC_PULSE).U
+  val vSync = vertical < (VgaConstants.V_ACTIVE_VIDEO + VgaConstants.V_FRONT_PORCH).U || vertical >= (VgaConstants.V_ACTIVE_VIDEO + VgaConstants.V_FRONT_PORCH + VgaConstants.V_SYNC_PULSE).U
 
   val videoActive = horizontal < VgaConstants.H_ACTIVE_VIDEO.U && vertical < VgaConstants.V_ACTIVE_VIDEO.U
 
