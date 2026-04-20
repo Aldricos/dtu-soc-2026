@@ -43,7 +43,7 @@ class CaravelUserProject extends Module {
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
 
-    val imem = Module(new programmable_IMEM(depth = 1024)) // depth = 1024 words
+    val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
     imem.wb<>wb
     imem.wb.cyc:=0.B
 
