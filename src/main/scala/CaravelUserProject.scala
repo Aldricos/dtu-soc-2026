@@ -3,6 +3,7 @@ import chisel3._
 import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
+import programmable_IMEM.programmable_IMEM
 
 object CaravelUserProject extends App {
   emitVerilog(
@@ -42,6 +43,10 @@ class CaravelUserProject extends Module {
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
 
+    val imem = Module(new programmable_IMEM(depth = 1024)) // depth = 1024 words
+    imem.wb<>wb
+    imem.wb.cyc:=0.B
+
   // address decoding for the peripherals
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
   // bits [27:20] are used for decoding
@@ -55,6 +60,11 @@ class CaravelUserProject extends Module {
       gcd.wb.cyc := wb.cyc
       wb.ack := gcd.wb.ack
       wb.rdData := gcd.wb.rdData
+    }
+    is(0x2.U){
+      imem.wb.cyc := wb.cyc
+      wb.ack := imem.wb.ack
+      wb.rdData := imem.wb.rdData 
     }
   }
 
