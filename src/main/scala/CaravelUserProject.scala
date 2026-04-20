@@ -73,8 +73,9 @@ class CaravelUserProject extends Module {
   io.oeb(24) := 0.U(1.W)
   */
 
-  io.out := led ## video ## gpio.io.out ## tx ##0.U(7.W)
-  io.oeb := 0.U(16.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
+  // TODO make a Bundle for this
+  io.out := 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
+  io.oeb := 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
  
   // connect input ports
   gpio.io.in := io.in(15,8)
