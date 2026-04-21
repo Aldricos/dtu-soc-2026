@@ -104,7 +104,7 @@ jobs:
             [ -f "$gltf" ] && echo "- 3D model: \`$(basename $gltf)\`" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "*Download the \`renders\` artifact. Open .gltf files at https://gltf-viewer.donmccurdy.com*" >> $GITHUB_STEP_SUMMARY
+          echo "*Download the \`renders\` artifact for 2D PNGs. 3D viewer is deployed to GitHub Pages.*" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Renders
@@ -151,39 +151,29 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: renders-sky130A
-          path: site/sky130A/
+          path: site/
 
-      - name: Download Renders (sky130B)
-        uses: actions/download-artifact@v4
-        with:
-          name: renders-sky130B
-          path: site/sky130B/
-
-      - name: Generate index page
+      - name: Generate viewer redirect
         run: |
-          cat > site/index.html <<'HTMLEOF'
+          cat > site/index.html <<'EOF'
           <!DOCTYPE html>
-          <html>
-          <head><title>GDS Layout Viewer</title></head>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>GDS 3D Viewer</title>
+            <script>
+              // Find the first .gltf file and redirect to TinyTapeout's viewer
+              var base = location.href.replace(/index\.html$/, '');
+              var model = base + 'CaravelUserProject.gltf';
+              location.href = 'https://gds-viewer.tinytapeout.com/?pdk=sky130&model=' + encodeURIComponent(model);
+            </script>
+          </head>
           <body>
-          <h1>GDS Layout Renders</h1>
-          <h2>sky130A</h2>
-          <ul>
-          HTMLEOF
-          for f in site/sky130A/*.gltf; do
-            [ -f "$f" ] && name=$(basename "$f") && echo "<li><a href=\"sky130A/$name\">$name</a></li>" >> site/index.html
-          done
-          for f in site/sky130A/*.png; do
-            [ -f "$f" ] && name=$(basename "$f") && echo "<li><img src=\"sky130A/$name\" width=\"600\"><br>$name</li>" >> site/index.html
-          done
-          echo "</ul><h2>sky130B</h2><ul>" >> site/index.html
-          for f in site/sky130B/*.gltf; do
-            [ -f "$f" ] && name=$(basename "$f") && echo "<li><a href=\"sky130B/$name\">$name</a></li>" >> site/index.html
-          done
-          for f in site/sky130B/*.png; do
-            [ -f "$f" ] && name=$(basename "$f") && echo "<li><img src=\"sky130B/$name\" width=\"600\"><br>$name</li>" >> site/index.html
-          done
-          echo "</ul></body></html>" >> site/index.html
+            <p>Redirecting to 3D viewer...</p>
+          </body>
+          </html>
+          EOF
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
