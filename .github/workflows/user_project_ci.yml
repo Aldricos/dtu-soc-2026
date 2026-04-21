@@ -82,30 +82,18 @@ jobs:
         if: success()
         run: |
           sudo apt-get install -y klayout
-          pip3 install --quiet gdspy numpy triangle pygltflib
-          git clone --depth=1 https://github.com/mbalestrini/GDS2glTF.git /tmp/gds2gltf
           mkdir -p renders
           LYP_FILE=$(find dependencies/pdks -name "${{ matrix.pdk }}.lyp" | head -1)
           for gds in gds/*.gds; do
             name=$(basename "$gds" .gds)
             python3 .github/scripts/render_gds.py "$gds" "renders/${name}.png" "$LYP_FILE" || true
-            python3 .github/scripts/gds_to_3d.py "$gds" renders /tmp/gds2gltf || true
+            python3 -c "
+          import klayout.db as db
+          ly = db.Layout()
+          ly.read('$gds')
+          ly.write('renders/${name}.oas')
+          " || true
           done
-
-      - name: Add render info to summary
-        if: success()
-        run: |
-          echo "## Layout Renders" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          for png in renders/*.png; do
-            [ -f "$png" ] && echo "- 2D layout: \`$(basename $png)\`" >> $GITHUB_STEP_SUMMARY
-          done
-          for gltf in renders/*.gltf; do
-            [ -f "$gltf" ] && echo "- 3D model: \`$(basename $gltf)\`" >> $GITHUB_STEP_SUMMARY
-          done
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "*Download the \`renders\` artifact for 2D PNGs. 3D viewer is deployed to GitHub Pages.*" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Renders
         if: success()
@@ -151,26 +139,23 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: renders-sky130A
-          path: site/
+          path: gh-pages/
 
       - name: Generate viewer redirect
         run: |
-          cat > site/index.html <<'EOF'
+          cat > gh-pages/index.html <<'EOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>GDS 3D Viewer</title>
-            <script>
-              // Find the first .gltf file and redirect to TinyTapeout's viewer
-              var base = location.href.replace(/index\.html$/, '');
-              var model = base + 'CaravelUserProject.gltf';
-              location.href = 'https://gds-viewer.tinytapeout.com/?pdk=sky130&model=' + encodeURIComponent(model);
-            </script>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Redirecting to 3D Viewer...</title>
           </head>
           <body>
-            <p>Redirecting to 3D viewer...</p>
+            <script>
+              location.href = "https://gds-viewer.tinytapeout.com/?pdk=sky130A&model=" + encodeURIComponent(location.href + '/CaravelUserProject.oas');
+            </script>
           </body>
           </html>
           EOF
@@ -178,11 +163,23 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/
+          path: gh-pages/
 
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+
+      - name: Display viewer in summary
+        run: |
+          PAGE_URL=${{ steps.deploy.outputs.page_url }}
+          PAGE_URL=$(echo "$PAGE_URL" | sed -e 's/\/$//')
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          ## 3D Viewer
+          [Open 3D viewer](https://gds-viewer.tinytapeout.com/?pdk=sky130A&model=${PAGE_URL}/CaravelUserProject.oas)
+
+          ## 2D Preview
+          ![CaravelUserProject](${PAGE_URL}/CaravelUserProject.png)
+          EOF
 
   precheck:
     timeout-minutes: 720
