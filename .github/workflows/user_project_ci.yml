@@ -86,13 +86,8 @@ jobs:
           LYP_FILE=$(find dependencies/pdks -name "${{ matrix.pdk }}.lyp" | head -1)
           for gds in gds/*.gds; do
             name=$(basename "$gds" .gds)
-            python3 .github/scripts/render_gds.py "$gds" "renders/${name}.png" "$LYP_FILE" || true
-            python3 -c "
-          import klayout.db as db
-          ly = db.Layout()
-          ly.read('$gds')
-          ly.write('renders/${name}.oas')
-          " || true
+            klayout -b -r .github/scripts/render_gds.py -rd gds_file="$gds" -rd output_png="renders/${name}.png" -rd lyp_file="$LYP_FILE" || true
+            klayout -b -r .github/scripts/gds_to_oas.py -rd gds_file="$gds" -rd output_oas="renders/${name}.oas" || true
           done
 
       - name: Upload Renders
