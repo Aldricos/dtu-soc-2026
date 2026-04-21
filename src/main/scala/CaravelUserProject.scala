@@ -26,7 +26,8 @@ class CaravelUserProject extends Module {
   })
   // Wildcat Integration
   val wc = Module(new CpuTop("a.out"))
-  //wc.io.imemWb <> wb
+  wc.io.wb <> wb
+  wc.io.wb.cyc := 0.B
 
   val led = wc.io.led
   val tx = wc.io.tx
@@ -61,10 +62,15 @@ class CaravelUserProject extends Module {
       wb.ack := gcd.wb.ack
       wb.rdData := gcd.wb.rdData
     }
-    // is(0x2.U){
+    is(0x2.U) {
+      wc.io.wb.cyc := wb.cyc
+      wb.ack := wc.io.wb.ack
+      wb.rdData := wc.io.wb.rdData
+    }
+    // is(0x3.U){
     //   imem.wb.cyc := wb.cyc
     //   wb.ack := imem.wb.ack
-    //   wb.rdData := imem.wb.rdData 
+    //   wb.rdData := imem.wb.rdData
     // }
   }
 
