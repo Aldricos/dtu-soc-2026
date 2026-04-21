@@ -2,7 +2,7 @@ import OpenRam._
 import chisel3._
 import soc._
 import wishbone.WishboneIO
-
+import chisel3.util._
 /**
  * Instruction RAM.
  * - PipeCon interface for CPU instruction fetch
@@ -19,38 +19,39 @@ class WishboneInstrRam extends Module {
   ram.io.clk0 := clock
   ram.io.clk1 := clock
 
-  // Wishbone RW: Port 0
   val wbActive = io.wb.cyc && io.wb.stb
-  ram.io.csb0 := false.B  // Active low chip select
-  ram.io.web0 := io.wb.we  // Write enable
+  // Wishbone RW: Port 0
+  ram.io.csb0   := !(wbActive)
+  ram.io.web0   := !(io.wb.we && wbActive)
+  ram.io.addr0  := io.wb.addr(9, 2)
+  ram.io.din0   := io.wb.wrData
   ram.io.wmask0 := io.wb.sel
-  ram.io.addr0 := io.wb.addr(7, 0)  // 8-bit address for 1KB RAM
-  ram.io.din0 := io.wb.wrData
+
+  val wbAck  = RegNext(wbActive, false.B)
+  io.wb.ack := wbAck
+  io.wb.rdData := ram.io.dout0
 
   // CPU (R) port: Port 1
-  val cpuRead = io.cpu.rd
-  ram.io.csb1 := !cpuRead  // Active low chip select
-  ram.io.addr1 := io.cpu.address(7, 0)  // 8-bit address for 1KB RAM
 
-  // CPU side
-  val cpuAck = RegInit(false.B)
-  val cpuData = Reg(UInt(32.W))
+  //cpu intruction fetch not enabled before WB writes to address 11111111, for testing until we get a reset
+  val cpuEnable = RegInit(false.B)
+  val address = io.wb.addr(9, 2)
+  when (io.wb.cyc && io.wb.stb && io.wb.we && (address === "b11111111".U)) {
+    cpuEnable := true.B
+  }
 
-  // Register the read data and acknowledge
-  cpuAck := cpuRead
-  cpuData := ram.io.dout1  // CPU reads from Port 1
+  ram.io.csb1  := !(io.cpu.rd && cpuEnable)  // Active low chip select
+  ram.io.addr1 := io.cpu.address(9, 2) // 8-bit address for 1KB RAM
 
-  io.cpu.rdData := cpuData
+  val cpuAck  = RegInit(false.B)
+  // Register the acknowledge
+  cpuAck  := io.cpu.rd && cpuEnable
+
+  io.cpu.rdData := ram.io.dout1
   io.cpu.ack := cpuAck
 
   // no writes for instMem
   dontTouch(io.cpu.wr)
   dontTouch(io.cpu.wrData)
   dontTouch(io.cpu.wrMask)
-
-  // Wishbone things
-  val wbAck = RegInit(false.B)
-  wbAck := wbActive
-  io.wb.ack := wbAck
-  io.wb.rdData := ram.io.dout0  // Wishbone reads from Port 0
 }
