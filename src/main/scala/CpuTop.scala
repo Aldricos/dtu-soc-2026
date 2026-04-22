@@ -44,6 +44,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // Memory Connections
   // ------------------------------------------------
   // Memory Registers
+  // TODO: why are those signals registered? Can we not just connect them directly?
   val memAddrReg   = RegNext(cpu.io.dmem.address)
   val memRdReg     = RegNext(cpu.io.dmem.rd, false.B)
   val memWrReg     = RegNext(cpu.io.dmem.wr, false.B)
