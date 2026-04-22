@@ -30,7 +30,7 @@
             ],
             "instances": {
                 "top": {
-                    "location": [60, 15],
+                    "location": [100, 100],
                     "orientation": "N"
                 }
             },
@@ -53,7 +53,14 @@
             }
         }
     },
-    "PDN_MACRO_CONNECTIONS": ["top vccd2 vssd2 vccd1 vssd1"],
+    "PDN_MACRO_CONNECTIONS": ["top vccd1 vssd1 vccd1 vssd1"],
+
+    "GRT_ALLOW_CONGESTION": true,
+    "GRT_OVERFLOW_ITERS": 200,
+    "GRT_MACRO_EXTENSION": 4,
+    "RT_MAX_LAYER": "met4",
+    "GRT_ANT_ITERS": 15,
+    "GRT_ADJUSTMENT": 0.3,
 
     "//": "PDN configurations",
     "FP_PDN_VOFFSET": 5,
@@ -84,15 +91,15 @@
     "FP_DEF_TEMPLATE": "dir::fixed_dont_change/user_project_wrapper.def",
     "VDD_NETS": [
         "vccd1",
-        "vccd2",
+        "vccd1",
         "vdda1",
-        "vdda2"
+        "vdda1"
     ],
     "GND_NETS": [
         "vssd1",
-        "vssd2",
+        "vssd1",
         "vssa1",
-        "vssa2"
+        "vssa1"
     ],
     "FP_PDN_CORE_RING": true,
     "FP_PDN_CORE_RING_VWIDTH": 3.1,

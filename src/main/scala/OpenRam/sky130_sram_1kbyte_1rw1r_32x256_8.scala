@@ -2,9 +2,7 @@ package OpenRam
 
 import chisel3._
 import chisel3.util._
-//import chisel3.util.HasBlackBoxResource
 
-//class sky130_sram_1kbyte_1rw1r_32x256_8() extends BlackBox with HasBlackBoxResource {
 class sky130_sram_1kbyte_1rw1r_32x256_8() extends BlackBox {
   val io = IO(new Bundle {
     // Port 0: RW
@@ -22,5 +20,4 @@ class sky130_sram_1kbyte_1rw1r_32x256_8() extends BlackBox {
     val addr1 = Input(UInt(8.W))
     val dout1 = Output(UInt(32.W))
   })
-  //addResource("/sky130_sram_1kbyte_1rw1r_32x256_8.v")
 }

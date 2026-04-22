@@ -3,6 +3,7 @@ import chisel3._
 import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
+import programmable_IMEM.programmable_IMEM
 
 object CaravelUserProject extends App {
   emitVerilog(
@@ -25,6 +26,8 @@ class CaravelUserProject extends Module {
   })
   // Wildcat Integration
   val wc = Module(new CpuTop("a.out"))
+  wc.io.wb <> wb
+  wc.io.wb.cyc := 0.B
 
   val led = wc.io.led
   val tx = wc.io.tx
@@ -41,6 +44,10 @@ class CaravelUserProject extends Module {
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
 
+    // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
+    // imem.wb<>wb
+    // imem.wb.cyc:=0.B
+
   // address decoding for the peripherals
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
   // bits [27:20] are used for decoding
@@ -55,6 +62,16 @@ class CaravelUserProject extends Module {
       wb.ack := gcd.wb.ack
       wb.rdData := gcd.wb.rdData
     }
+    is(0x2.U) {
+      wc.io.wb.cyc := wb.cyc
+      wb.ack := wc.io.wb.ack
+      wb.rdData := wc.io.wb.rdData
+    }
+    // is(0x3.U){
+    //   imem.wb.cyc := wb.cyc
+    //   wb.ack := imem.wb.ack
+    //   wb.rdData := imem.wb.rdData
+    // }
   }
 
   // connect output ports
@@ -72,8 +89,9 @@ class CaravelUserProject extends Module {
   io.oeb(24) := 0.U(1.W)
   */
 
-  io.out := led ## video ## gpio.io.out ## tx ##0.U(7.W)
-  io.oeb := 0.U(16.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
+  // TODO make a Bundle for this
+  io.out := 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
+  io.oeb := 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
  
   // connect input ports
   gpio.io.in := io.in(15,8)
