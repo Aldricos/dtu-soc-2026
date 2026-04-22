@@ -24,8 +24,14 @@ class CaravelUserProject extends Module {
     val out = Output(UInt(MPRJ_IO_PADS.W))
     val oeb = Output(UInt(MPRJ_IO_PADS.W))
   })
+
+  // Wildcate Reset Register
+  val wcReset = Reg(Bool())
+  wcReset := reset
+
   // Wildcat Integration
   val wc = Module(new CpuTop("a.out"))
+  wc.reset := wcReset
   wc.io.wb <> wb
   wc.io.wb.cyc := 0.B
 
@@ -72,6 +78,9 @@ class CaravelUserProject extends Module {
     //   wb.ack := imem.wb.ack
     //   wb.rdData := imem.wb.rdData
     // }
+    is (0x4.U) {
+      wcReset := true.B
+    }
   }
 
   // connect output ports
