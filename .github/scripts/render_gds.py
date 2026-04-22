@@ -1,32 +1,83 @@
 #!/usr/bin/env python3
-"""Render GDS files to PNG using KLayout in headless mode.
+"""Render GDS files to PNG using gdstk + rsvg-convert + pngquant.
 
-Run with: klayout -b -r render_gds.py -rd gds_file=X -rd output_png=Y -rd lyp_file=Z
+Same approach as TinyTapeout's tt-support-tools/render_utils.py.
+Dependencies:
+  - pip: gdstk
+  - apt: librsvg2-bin, pngquant
 """
 
-from klayout.lay import LayoutView
-import klayout.db as db
-from pathlib import Path
+import os
+import subprocess
+import sys
 
-# Parameters passed via klayout -rd
-gds_file = gds_file  # noqa: F821 — injected by klayout -rd
-output_png = output_png  # noqa: F821
-lyp_file = lyp_file if "lyp_file" in dir() else None  # noqa: F821
 
-lv = LayoutView()
+def render_svg(gds_file: str, svg_file: str, pad: str = "5%",
+               filter_text: bool = True):
+    import gdstk
 
-lv.set_config("background-color", "#ffffff")
-lv.set_config("grid-visible", "false")
-lv.set_config("grid-show-ruler", "false")
-lv.set_config("text-visible", "false")
+    library = gdstk.read_gds(gds_file)
+    top_cells = library.top_level()
+    assert len(top_cells) >= 1
+    top_cell = top_cells[0]
 
-lv.load_layout(gds_file, 0)
+    cells = [top_cell] + [
+        c for c in top_cell.dependencies(True) if isinstance(c, gdstk.Cell)
+    ]
+    if filter_text:
+        for cell in cells:
+            cell.remove(*cell.labels)
 
-if lyp_file and Path(lyp_file).exists():
-    lv.load_layer_props(lyp_file)
+    top_cell.write_svg(svg_file, pad=pad)
 
-lv.max_hier()
-lv.timer()
 
-lv.save_image(output_png, 2048, 2048)
-print(f"Rendered {gds_file} -> {output_png}")
+def svg_to_png(svg_file: str, png_file: str) -> bool:
+    cmd = ["rsvg-convert", "--unlimited", svg_file, "-o", png_file, "--no-keep-image-data"]
+    p = subprocess.run(cmd, capture_output=True)
+    if p.returncode != 0:
+        print(f"rsvg-convert failed: {p.stderr.decode().strip()}", file=sys.stderr)
+        return False
+    return True
+
+
+def compress_png(png_in: str, png_out: str, quality: str = "0-30") -> bool:
+    cmd = ["pngquant", "--quality", quality, "--speed", "1", "--nofs",
+           "--strip", "--force", "--output", png_out, png_in]
+    p = subprocess.run(cmd, capture_output=True)
+    if p.returncode != 0:
+        # fall back to uncompressed
+        os.rename(png_in, png_out)
+        return False
+    return True
+
+
+def render(gds_file: str, output_png: str):
+    svg_file = output_png.replace(".png", ".svg")
+    tmp_png = output_png.replace(".png", "_raw.png")
+
+    render_svg(gds_file, svg_file, pad=0, filter_text=True)
+    if not svg_to_png(svg_file, tmp_png):
+        sys.exit(1)
+    compress_png(tmp_png, output_png)
+
+    # Clean up intermediates
+    for f in (svg_file, tmp_png):
+        if os.path.exists(f):
+            os.remove(f)
+
+    print(f"Rendered {gds_file} -> {output_png} ({os.path.getsize(output_png):,} bytes)")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print(f"Usage: {sys.argv[0]} <gds_file> <output_png>")
+        sys.exit(1)
+
+    gds_file = sys.argv[1]
+    output_png = sys.argv[2]
+
+    if not os.path.exists(gds_file):
+        print(f"GDS file not found: {gds_file}")
+        sys.exit(1)
+
+    render(gds_file, output_png)

@@ -81,14 +81,15 @@ jobs:
       - name: Render GDS layouts
         if: success()
         run: |
-          sudo apt-get install -y klayout
+          sudo apt-get install -y librsvg2-bin pngquant
+          pip3 install --quiet gdstk klayout
           mkdir -p renders
-          LYP_FILE=$(find dependencies/pdks -name "${{ matrix.pdk }}.lyp" | head -1)
           for gds in gds/*.gds; do
             name=$(basename "$gds" .gds)
-            klayout -b -r .github/scripts/render_gds.py -rd gds_file="$gds" -rd output_png="renders/${name}.png" -rd lyp_file="$LYP_FILE" || true
-            klayout -b -r .github/scripts/gds_to_oas.py -rd gds_file="$gds" -rd output_oas="renders/${name}.oas" || true
+            python3 .github/scripts/render_gds.py "$gds" "renders/${name}.png" || true
+            python3 .github/scripts/gds_to_oas.py "$gds" "renders/${name}.oas" "${{ matrix.pdk }}" || true
           done
+          ls -la renders/
 
       - name: Upload Renders
         if: success()
