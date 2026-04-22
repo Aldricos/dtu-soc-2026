@@ -12,16 +12,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get last successful hardening run ID
+      - name: Find latest run with successful hardening job
         id: last_run
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RUN_ID=$(gh run list --workflow="Hardening & Precheck" \
-            --status=success --limit=1 --json databaseId \
-            --jq '.[0].databaseId')
-          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-            echo "No successful hardening run found"
+          # Walk recent runs and pick the first one where the hardening job
+          # for this PDK succeeded (even if other jobs like precheck failed)
+          RUN_ID=""
+          for id in $(gh run list --workflow="Hardening & Precheck" \
+              --limit=30 --json databaseId --jq '.[].databaseId'); do
+            status=$(gh run view "$id" --json jobs \
+              --jq '.jobs[] | select(.name == "hardening (${{ matrix.pdk }})") | .conclusion')
+            if [ "$status" = "success" ]; then
+              RUN_ID=$id
+              break
+            fi
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "No run with successful hardening job for ${{ matrix.pdk }}"
             exit 1
           fi
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
