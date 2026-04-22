@@ -2,7 +2,7 @@ import chisel.lib.uart._
 import chisel3._
 import wildcat.Util
 import wildcat.pipeline._
-import cache._
+import memory._
 import videoController.VideoController
 
 
@@ -29,6 +29,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
   val cpu = Module(new ThreeCats())
   val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
+  //val dmem = Module(new DataMemory())
   val imem = Module(new InstructionROM(memory))
   val cache = Module(new DataCache())
 
