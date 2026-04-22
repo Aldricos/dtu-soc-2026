@@ -81,46 +81,37 @@ class CaravelUserProject extends Module {
     }
   }
 
-  val outVec = Wire(Vec(MPRJ_IO_PADS, Bool()))
-  val oebVec = Wire(Vec(MPRJ_IO_PADS, Bool()))
+  val outVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(false.B)))
+  val oebVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(false.B)))
 
-  for (i <- 0 until MPRJ_IO_PADS) {
-    outVec(i) := false.B
-    oebVec(i) := false.B
-  }
-
+  // UART TX on pin 7
   outVec(7) := tx
-  oebVec(7) := false.B
 
+  // GPIO 15..8
   for (i <- 0 until 8) {
     outVec(8 + i) := gpio.io.out(i)
     oebVec(8 + i) := gpio.io.oeb(i)
   }
+  gpio.io.in := io.in(15, 8)
 
+  // Video 23..16
   for (i <- 0 until 8) {
     outVec(16 + i) := video(i)
-    oebVec(16 + i) := false.B
   }
 
+  // LED on pin 24
   outVec(24) := led(0)
-  oebVec(24) := false.B
 
+  // UART RX on pin 25
   wc.io.rx := io.in(25)
   oebVec(25) := true.B
 
+  // SPI 29..26
   outVec(26) := wc.io.flash.cs
-  oebVec(26) := false.B
-
   outVec(27) := wc.io.flash.mosi
-  oebVec(27) := false.B
-
   wc.io.flash.miso := io.in(28)
   oebVec(28) := true.B
-
   outVec(29) := wc.io.flash.sck
-  oebVec(29) := false.B
-
-  gpio.io.in := io.in(15, 8)
 
   io.out := outVec.asUInt
   io.oeb := oebVec.asUInt
