@@ -47,7 +47,7 @@ jobs:
       - name: Render GDS layouts
         run: |
           sudo apt-get install -y librsvg2-bin pngquant
-          pip3 install --quiet gdstk klayout
+          pip3 install --quiet gdstk klayout cairosvg
           mkdir -p renders
           for gds in gds/*.gds; do
             name=$(basename "$gds" .gds)

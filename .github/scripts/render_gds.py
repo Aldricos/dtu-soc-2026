@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 """Render GDS files to PNG using gdstk + rsvg-convert + pngquant.
 
-Same approach as TinyTapeout's tt-support-tools/render_utils.py.
+Same approach as TinyTapeout's tt-support-tools/render_utils.py with
+extra fallbacks for large designs that blow past rsvg-convert's limits.
+
 Dependencies:
-  - pip: gdstk
+  - pip: gdstk, cairosvg
   - apt: librsvg2-bin, pngquant
 """
 
+import logging
 import os
 import subprocess
 import sys
 
+MAX_PIXELS = 4096
 
-def render_svg(gds_file: str, svg_file: str, pad: str = "5%",
-               filter_text: bool = True):
+
+def render_svg(gds_file: str, svg_file: str, pad="5%", filter_text: bool = True):
     import gdstk
 
     library = gdstk.read_gds(gds_file)
@@ -31,24 +35,34 @@ def render_svg(gds_file: str, svg_file: str, pad: str = "5%",
     top_cell.write_svg(svg_file, pad=pad)
 
 
-def svg_to_png(svg_file: str, png_file: str) -> bool:
-    cmd = ["rsvg-convert", "--unlimited", svg_file, "-o", png_file, "--no-keep-image-data"]
+def svg_to_png_rsvg(svg_file: str, png_file: str, max_px: int = MAX_PIXELS) -> tuple[bool, str]:
+    cmd = ["rsvg-convert", "--unlimited",
+           "-w", str(max_px), "-h", str(max_px),
+           "--keep-aspect-ratio",
+           svg_file, "-o", png_file, "--no-keep-image-data"]
     p = subprocess.run(cmd, capture_output=True)
     if p.returncode != 0:
-        print(f"rsvg-convert failed: {p.stderr.decode().strip()}", file=sys.stderr)
+        return False, p.stderr.decode().strip()
+    return True, ""
+
+
+def svg_to_png_cairo(svg_file: str, png_file: str, max_px: int = MAX_PIXELS) -> bool:
+    try:
+        import cairosvg
+        cairosvg.svg2png(url=svg_file, write_to=png_file,
+                         output_width=max_px)
+        return True
+    except Exception as e:
+        print(f"cairosvg failed: {e}", file=sys.stderr)
         return False
-    return True
 
 
-def compress_png(png_in: str, png_out: str, quality: str = "0-30") -> bool:
+def compress_png(png_in: str, png_out: str, quality: str = "0-30"):
     cmd = ["pngquant", "--quality", quality, "--speed", "1", "--nofs",
            "--strip", "--force", "--output", png_out, png_in]
     p = subprocess.run(cmd, capture_output=True)
     if p.returncode != 0:
-        # fall back to uncompressed
         os.rename(png_in, png_out)
-        return False
-    return True
 
 
 def render(gds_file: str, output_png: str):
@@ -56,11 +70,16 @@ def render(gds_file: str, output_png: str):
     tmp_png = output_png.replace(".png", "_raw.png")
 
     render_svg(gds_file, svg_file, pad=0, filter_text=True)
-    if not svg_to_png(svg_file, tmp_png):
-        sys.exit(1)
+
+    ok, err = svg_to_png_rsvg(svg_file, tmp_png)
+    if not ok:
+        print(f"rsvg-convert failed ({err}), falling back to cairosvg", file=sys.stderr)
+        if not svg_to_png_cairo(svg_file, tmp_png):
+            print("Both rsvg-convert and cairosvg failed", file=sys.stderr)
+            sys.exit(1)
+
     compress_png(tmp_png, output_png)
 
-    # Clean up intermediates
     for f in (svg_file, tmp_png):
         if os.path.exists(f):
             os.remove(f)
