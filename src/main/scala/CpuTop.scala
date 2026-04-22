@@ -24,20 +24,21 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val rx = Input(UInt(1.W))
     val video = Output(UInt(8.W))
     val wb = Flipped(new WishboneIO(32))
+    val flash = new SpiMemIO
   })
 
   val (memory, start) = Util.getCode(file)
 
   val cpu = Module(new ThreeCats())
-  //val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
-  val dmem = Module(new DataMemory())
-  //val imem = Module(new InstructionROM(memory))
-  val imem = Module(new WishboneInstrRam)
-  val cache = Module(new DataCache())
+  val dmem = Module(new DataMemory()) //val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
+  val imem = Module(new WishboneInstrRam) //val imem = Module(new InstructionROM(memory))
 
-  //cpu.io.imem <> imem.io
-  cpu.io.imem <> imem.io.cpu
+  val cache = Module(new DataCache())
+  val spiMem = Module(new SpiFlashController())
+
+  cpu.io.imem <> imem.io.cpu  //cpu.io.imem <> imem.io
   imem.io.wb <> io.wb
+  io.flash <> spiMem.io.spi
 
   // ------------------------------------------------
   // Memory Connections
@@ -71,6 +72,12 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   cache.io.memIO.rdData := 0.U
   cache.io.memIO.ack    := false.B
 
+  // Default SPI cache values
+  spiMem.io.mem.address := 0.U
+  spiMem.io.mem.rd      := false.B
+  spiMem.io.mem.wr      := false.B
+  spiMem.io.mem.wrData  := 0.U
+  spiMem.io.mem.wrMask  := 0.U
 
   // Here IO stuff
   // IO is mapped ot 0xf000_0000
@@ -141,16 +148,16 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cache.io.cpuIO.wrData  := memWrDataReg
     cache.io.cpuIO.wrMask  := memWrMaskReg
 
-    // cache -> dmem
-    dmem.io.address := cache.io.memIO.address
-    dmem.io.rd      := cache.io.memIO.rd
-    dmem.io.wr      := cache.io.memIO.wr
-    dmem.io.wrData  := cache.io.memIO.wrData
-    dmem.io.wrMask  := cache.io.memIO.wrMask
+    // cache -> spiMem
+    spiMem.io.mem.address := cache.io.memIO.address
+    spiMem.io.mem.rd      := cache.io.memIO.rd
+    spiMem.io.mem.wr      := cache.io.memIO.wr
+    spiMem.io.mem.wrData  := cache.io.memIO.wrData
+    spiMem.io.mem.wrMask  := cache.io.memIO.wrMask
 
-    // dmem -> cache
-    cache.io.memIO.rdData := dmem.io.rdData
-    cache.io.memIO.ack    := dmem.io.ack
+    // spiMem -> cache
+    cache.io.memIO.rdData := spiMem.io.mem.rdData
+    cache.io.memIO.ack    := spiMem.io.mem.ack
 
     // cache -> CPU
     cpu.io.dmem.rdData := cache.io.cpuIO.rdData
