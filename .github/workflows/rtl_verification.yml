@@ -94,7 +94,25 @@ jobs:
 
       - name: Run RTL Verification
         run: |
-          if cf verify --all | grep -E -q -i "fail|error"; then 
+          cf verify --all
+
+      - name: Check for compilation errors
+        run: |
+          rm /home/runner/work/dtu-soc-2026/dtu-soc-2026/verilog/dv/cocotb/sim/run_*/ -r
+          if cf verify --all | grep "Error"; then 
+            echo "Compilation failed"
+            echo "Printing compilation log"
+            cat /home/runner/work/dtu-soc-2026/dtu-soc-2026/verilog/dv/cocotb/sim/run_*/RTL-compilation/compilation.log
+            echo "Printing firmware log"
+            cat /home/runner/work/dtu-soc-2026/dtu-soc-2026/verilog/dv/cocotb/sim/run_*/*/firmware.log
+            exit 1
+          else
+            echo "Compilation succeeded"
+          fi
+
+      - name: Check for failed test
+        run: |
+          if cf verify --all | grep "Fail:"; then 
             echo "RTL Verification failed"
             exit 1
           else

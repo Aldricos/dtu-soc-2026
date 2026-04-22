@@ -11,8 +11,8 @@
     "DIE_AREA": [
         0,
         0,
-        3000,
-        3000
+        2600,
+        1000
     ],
     "FP_PIN_ORDER_CFG": "dir::pin_order.cfg",
     "MAX_TRANSITION_CONSTRAINT": 1.0,
@@ -81,7 +81,21 @@
                 },
                 "wc.cache.metaRam": {
                     "location": [
-                        700,
+                        650,
+                        100
+                    ],
+                    "orientation": "N"
+                },
+                "wc.videoController.terminal.videoBuffer.mem": {
+                    "location": [
+                        1200,
+                        100
+                    ],
+                    "orientation": "N"
+                },
+                "wc.imem.ram": {
+                    "location": [
+                        1800,
                         100
                     ],
                     "orientation": "N"
@@ -96,49 +110,10 @@
             ],
             "nl": [
                 "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
-            ]
-        },
-        "sky130_sram_1kbyte_1rw1r_8x1024_8": {
-            "instances": {
-                "wc.videoController.terminal.videoBuffer.mem0": {
-                    "location": [
-                        1200,
-                        100
-                    ],
-                    "orientation": "N"
-                },
-                "wc.videoController.terminal.videoBuffer.mem1": {
-                    "location": [
-                        1800,
-                        100
-                    ],
-                    "orientation": "N"
-                },
-                "wc.videoController.terminal.videoBuffer.mem2": {
-                    "location": [
-                        1200,
-                        700
-                    ],
-                    "orientation": "N"
-                },
-                "wc.videoController.terminal.videoBuffer.mem3": {
-                    "location": [
-                        1800,
-                        700
-                    ],
-                    "orientation": "N"
-                }
-            },
-
-            "gds": [
-                "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_8x1024_8.gds"
             ],
-            "lef": [
-                "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_8x1024_8.lef"
-            ],
-            "nl": [
-                "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_8x1024_8.v"
-            ]
+            "lib": {
+                "*": [ "ref::$DESIGN_DIR/../../libs/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C_modified.lib" ]
+            }
         }
     },
     "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
@@ -153,9 +128,7 @@
     "PDN_MACRO_CONNECTIONS": [
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem0 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem1 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem2 vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem3 vccd1 vssd1 vccd1 vssd1"
+        "wc.videoController.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1",
+        "wc.imem.ram vccd1 vssd1 vccd1 vssd1"
     ]
 }

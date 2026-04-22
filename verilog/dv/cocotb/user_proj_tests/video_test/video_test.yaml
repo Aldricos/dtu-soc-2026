@@ -1,0 +1,2 @@
+Tests:
+  - {name: video_test, sim: RTL}

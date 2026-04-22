@@ -9,7 +9,7 @@ import chisel3.util._
 class Terminal extends Module {
   val tilePixelWidth = 8
   val xBitWidth = log2Up(VgaConstants.H_ACTIVE_VIDEO)
-  val yBitWidth = log2Up(VgaConstants.V_ACTIVE_VIDEO)
+  val yBitWidth = log2Up(VgaConstants.V_ACTIVE_VIDEO) - 2
   val horizontalTiles = VgaConstants.H_ACTIVE_VIDEO / tilePixelWidth
   val verticalTiles = VgaConstants.V_ACTIVE_VIDEO / tilePixelWidth
 
