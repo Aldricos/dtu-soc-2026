@@ -1,4 +1,4 @@
-/*
+/**
  * This file is an extension of the RISC-V Wildcat
  * implementation in Caravel.
  *

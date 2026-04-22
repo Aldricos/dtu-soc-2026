@@ -11,8 +11,8 @@
     "DIE_AREA": [
         0,
         0,
-        2600,
-        1000
+        3000,
+        1500
     ],
     "FP_PIN_ORDER_CFG": "dir::pin_order.cfg",
     "MAX_TRANSITION_CONSTRAINT": 1.0,
@@ -81,22 +81,29 @@
                 },
                 "wc.cache.metaRam": {
                     "location": [
-                        650,
+                        700,
                         100
                     ],
                     "orientation": "N"
                 },
                 "wc.videoController.terminal.videoBuffer.mem": {
                     "location": [
-                        1200,
+                        1300,
                         100
                     ],
                     "orientation": "N"
                 },
                 "wc.imem.ram": {
                     "location": [
-                        1800,
+                        1900,
                         100
+                    ],
+                    "orientation": "N"
+                },
+                "wc.dmem.bank": {
+                    "location": [
+                        100,
+                        700
                     ],
                     "orientation": "N"
                 }
@@ -129,6 +136,7 @@
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
         "wc.videoController.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1",
-        "wc.imem.ram vccd1 vssd1 vccd1 vssd1"
+        "wc.imem.ram vccd1 vssd1 vccd1 vssd1",
+        "wc.dmem.bank vccd1 vssd1 vccd1 vssd1"
     ]
 }

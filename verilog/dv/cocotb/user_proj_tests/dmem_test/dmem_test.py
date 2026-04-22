@@ -14,15 +14,16 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-# yaml file contain general design information that would mostly need to be updated in the first run only 
-includes: 
-    - gcd_example_test/gcd_example_test.yaml
-    - gpio_read_input_test/gpio_read_input_test.yaml
-    - gpio_set_output_test/gpio_set_output_test.yaml
-    - gpio_bidir_test/gpio_bidir_test.yaml
-    - wildcat_blink_test/wildcat_blink_test.yaml
-    - video_test/video_test.yaml
-    - wb_inst_mem_test/wb_inst_mem_test.yaml
-    - dmem_test/dmem_test.yaml
-    - cache_test/cache_test.yaml
 
+from caravel_cocotb.caravel_interfaces import test_configure
+from caravel_cocotb.caravel_interfaces import report_test
+import cocotb
+
+@cocotb.test()
+@report_test
+async def dmem_test(dut):
+    caravelEnv = await test_configure(dut,timeout_cycles=276490)
+
+    cocotb.log.info(f"[TEST] Start dmem_test")
+    await caravelEnv.wait_mgmt_gpio(1)
+    cocotb.log.info(f"[TEST] Received dmem_test pass signal")
