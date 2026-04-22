@@ -62,14 +62,6 @@ class DataCache() extends Module {
   metaRam.io.csb1   := true.B
   metaRam.io.addr1  := 0.U
 
-  //dontTouch(metaRam.io.dout1)
-  //dontTouch(metaRam.io.addr0)
-  //dontTouch(metaRam.io.addr1)
-  //dontTouch(metaRam.io.din0)
-  //dontTouch(metaRam.io.csb0)
-  //dontTouch(metaRam.io.csb1)
-  //dontTouch(metaRam.io.web0)
-
   // ------------------------------------------------
   // State
   // ------------------------------------------------
