@@ -29,8 +29,8 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val (memory, start) = Util.getCode(file)
 
   val cpu = Module(new ThreeCats())
-  val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
-  //val dmem = Module(new DataMemory())
+  //val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
+  val dmem = Module(new DataMemory())
   //val imem = Module(new InstructionROM(memory))
   val imem = Module(new WishboneInstrRam)
   val cache = Module(new DataCache())
