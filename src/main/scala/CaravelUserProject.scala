@@ -12,7 +12,6 @@ object CaravelUserProject extends App {
   )
 }
 
-
 class CaravelUserProject extends Module {
 
   val WB_ADDR_WIDTH = 32
@@ -37,7 +36,6 @@ class CaravelUserProject extends Module {
   val gpio = Module(new WishboneGpio(8))
   gpio.wb <> wb
   gpio.wb.cyc := 0.B
-
 
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
@@ -74,9 +72,53 @@ class CaravelUserProject extends Module {
     // }
   }
 
+  val outVec = Wire(Vec(MPRJ_IO_PADS, Bool()))
+  val oebVec = Wire(Vec(MPRJ_IO_PADS, Bool()))
+
+  for (i <- 0 until MPRJ_IO_PADS) {
+    outVec(i) := false.B
+    oebVec(i) := false.B
+  }
+
+  outVec(7) := tx
+  oebVec(7) := false.B
+
+  for (i <- 0 until 8) {
+    outVec(8 + i) := gpio.io.out(i)
+    oebVec(8 + i) := gpio.io.oeb(i)
+  }
+
+  for (i <- 0 until 8) {
+    outVec(16 + i) := video(i)
+    oebVec(16 + i) := false.B
+  }
+
+  outVec(24) := led(0)
+  oebVec(24) := false.B
+
+  wc.io.rx := io.in(25)
+  oebVec(25) := true.B
+
+  outVec(26) := wc.io.flash.cs
+  oebVec(26) := false.B
+
+  outVec(27) := wc.io.flash.mosi
+  oebVec(27) := false.B
+
+  wc.io.flash.miso := io.in(28)
+  oebVec(28) := true.B
+
+  outVec(29) := wc.io.flash.sck
+  oebVec(29) := false.B
+
+  gpio.io.in := io.in(15, 8)
+
+  io.out := outVec.asUInt
+  io.oeb := oebVec.asUInt
+
   // connect output ports
-  io.out := 0.U
-  io.oeb := 0.U
+  //io.out := 0.U
+  //io.oeb := 0.U
   // Pins 0-6 are used by Caravel
   /* This does not work du to a Chisel limitation
   Better define a bundle
@@ -89,12 +131,16 @@ class CaravelUserProject extends Module {
   io.oeb(24) := 0.U(1.W)
   */
 
+  //val spi_out = Cat(wc.io.flash.sck, 0.U, wc.io.flash.mosi ,wc.io.flash.cs)
+  //val spi_oeb = Cat(0.U, 1.U, 0.U, 0.U)
+
   // TODO make a Bundle for this
-  io.out := 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
-  io.oeb := 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
+  //io.out := spi_out ## 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
+  //io.oeb := spi_oeb ## 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
  
   // connect input ports
-  gpio.io.in := io.in(15,8)
-  wc.io.rx := io.in(25)
+  //gpio.io.in := io.in(15,8)
+  //wc.io.rx := io.in(25)
 
+  //wc.io.flash.miso := io.in(28)
 }
