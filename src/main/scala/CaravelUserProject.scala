@@ -48,7 +48,19 @@ class CaravelUserProject extends Module {
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
 
-    // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
+  // create luke_clock peripheral
+  val lukeClock = Module(new WishboneLukeClock)
+  lukeClock.wb <> wb
+  lukeClock.wb.cyc := 0.B
+  // IMPORTANT!!
+  // TODO: TO BE CONNECTED TO PINS or MULTIPLEXED WITH THE OTHER VGA PERIPHERAL
+  //?? := lukeClock.hSyncOut // 1 bits
+  //?? := lukeClock.vSyncOut // 1 bits
+  //?? := lukeClock.redOut // 2 bits
+  //?? := lukeClock.greenOut // 2 bits
+  //?? := lukeClock.blueOut // 2 bits
+
+  // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
     // imem.wb<>wb
     // imem.wb.cyc:=0.B
 
@@ -70,6 +82,11 @@ class CaravelUserProject extends Module {
       wc.io.wb.cyc := wb.cyc
       wb.ack := wc.io.wb.ack
       wb.rdData := wc.io.wb.rdData
+    }
+    is(0x7.U) {
+      lukeClock.wb.cyc := wb.cyc
+      wb.ack := lukeClock.wb.ack
+      wb.rdData := lukeClock.wb.rdData
     }
     // is(0x3.U){
     //   imem.wb.cyc := wb.cyc

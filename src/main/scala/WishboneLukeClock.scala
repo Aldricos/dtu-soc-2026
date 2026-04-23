@@ -22,11 +22,11 @@ class WishboneLukeClock extends Module {
 
   val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
   val io = IO(new Bundle {
-    val hSyncOut = Output(false.B)
-    val vSyncOut = Output(false.B)
-    val redOut = Output(0.U(2.W))
-    val greenOut = Output(0.U(2.W))
-    val blueOut = Output(0.U(2.W))
+    val hSyncOut = Output(Bool())
+    val vSyncOut = Output(Bool())
+    val redOut = Output(UInt(2.W))
+    val greenOut = Output(UInt(2.W))
+    val blueOut = Output(UInt(2.W))
   })
 
   // registers to hold the output and oeb values
