@@ -3,21 +3,12 @@ import chisel3.util._
 import wishbone.WishboneIO
 
 /**
-  * Wishbone LukeClock peripheral with 3 registers:
-  * - input register at address 0x0 (read-only)
-  * - output register at address 0x4 (read-write)
-  * - oeb register at address 0x8 (read-write) (1 = input, 0 = output)
-  *
-  * @param n number of GPIO pins (must be <= 32)
-  */
-
-/**
   * Wishbone LukeClock peripheral:
   * - config register at address 0x0 (read-only)
   */
 class WishboneLukeClock extends Module {
 
-  // we only need 4 bits to address the 3 registers (input, output, oeb)
+  // we only need 4 bits to address the 1 config register
   val WB_ADDR_WIDTH = 4
 
   val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
@@ -30,7 +21,7 @@ class WishboneLukeClock extends Module {
   })
 
   // registers to hold the output and oeb values
-  val configReg = RegInit(0.U(32.W))
+  val configReg = RegInit(0.U(8.W))
 
   // wishbone acknowledge register
   val ackReg = RegInit(0.B)
@@ -54,10 +45,10 @@ class WishboneLukeClock extends Module {
     when(configAccess) { configReg := wb.wrData(7, 0) }
   }
 
-  // Config register definitiona
+  // Config register definitions
   //configReg(1) ## configReg(0) // Select of the time clock source (switches)
-  // 00: internal 25.175 MHz
-  // 01: internal 25MHz
+  // 00: internal 10 MHz
+  // 01: internal 10 MHz (same as 00)
   // 10: external 32768 Hz
   // 11: external 1 Hz
   //configReg(2) // Input with 1Hz frequency
