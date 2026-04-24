@@ -52,13 +52,6 @@ class CaravelUserProject extends Module {
   val lukeClock = Module(new WishboneLukeClock)
   lukeClock.wb <> wb
   lukeClock.wb.cyc := 0.B
-  // IMPORTANT!!
-  // TODO: TO BE CONNECTED TO PINS or MULTIPLEXED WITH THE OTHER VGA PERIPHERAL
-  //?? := lukeClock.hSyncOut // 1 bits
-  //?? := lukeClock.vSyncOut // 1 bits
-  //?? := lukeClock.redOut // 2 bits
-  //?? := lukeClock.greenOut // 2 bits
-  //?? := lukeClock.blueOut // 2 bits
 
   // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
     // imem.wb<>wb
@@ -83,11 +76,6 @@ class CaravelUserProject extends Module {
       wb.ack := wc.io.wb.ack
       wb.rdData := wc.io.wb.rdData
     }
-    is(0x7.U) {
-      lukeClock.wb.cyc := wb.cyc
-      wb.ack := lukeClock.wb.ack
-      wb.rdData := lukeClock.wb.rdData
-    }
     // is(0x3.U){
     //   imem.wb.cyc := wb.cyc
     //   wb.ack := imem.wb.ack
@@ -95,6 +83,11 @@ class CaravelUserProject extends Module {
     // }
     is (0x4.U) {
       wcReset := true.B
+    }
+    is(0x7.U) {
+      lukeClock.wb.cyc := wb.cyc
+      wb.ack := lukeClock.wb.ack
+      wb.rdData := lukeClock.wb.rdData
     }
   }
 
@@ -129,6 +122,16 @@ class CaravelUserProject extends Module {
   wc.io.flash.miso := io.in(28)
   oebVec(28) := true.B
   outVec(29) := wc.io.flash.sck
+
+  // VGA luke_clock
+  outVec(30) := lukeClock.io.hSyncOut
+  outVec(31) := lukeClock.io.vSyncOut
+  outVec(32) := lukeClock.io.redOut(0)
+  outVec(33) := lukeClock.io.redOut(1)
+  outVec(34) := lukeClock.io.greenOut(0)
+  outVec(35) := lukeClock.io.greenOut(1)
+  outVec(36) := lukeClock.io.blueOut(0)
+  outVec(37) := lukeClock.io.blueOut(1)
 
   io.out := outVec.asUInt
   io.oeb := oebVec.asUInt
