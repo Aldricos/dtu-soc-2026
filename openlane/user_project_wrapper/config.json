@@ -111,7 +111,7 @@
     "CLOCK_PORT": "wb_clk_i",
     "SIGNOFF_SDC_FILE": "dir::signoff.sdc",
     "MAGIC_DEF_LABELS": false,
-    "CLOCK_PERIOD": 25,
+    "CLOCK_PERIOD": 100,
     "MAGIC_ZEROIZE_ORIGIN": false,
     "meta": {
         "version": 2
