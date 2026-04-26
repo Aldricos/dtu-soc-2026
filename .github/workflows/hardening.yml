@@ -154,7 +154,8 @@ jobs:
           gh workflow run precheck.yml \
             --repo "${{ github.repository }}" \
             --ref "${{ github.event.workflow_run.head_branch || github.ref_name }}" \
-            --field hardening_run_id=${{ github.run_id }}
+            --field hardening_run_id=${{ github.run_id }} \
+            --field head_sha="${{ github.event.workflow_run.head_sha || github.sha }}"
 
   viewer:
     runs-on: ubuntu-latest

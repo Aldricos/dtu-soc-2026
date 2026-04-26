@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: ""
+      head_sha:
+        description: "Git ref (branch, tag, or SHA) to check out. Defaults to the workflow's commit."
+        required: false
+        type: string
+        default: ""
 
 jobs:
   precheck:
@@ -19,6 +24,8 @@ jobs:
         pdk: ["sky130A", "sky130B"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.head_sha || github.sha }}
 
       - name: Resolve hardening run id
         id: source_run
