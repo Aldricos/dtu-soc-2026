@@ -4,7 +4,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Scalatest CI](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/scala.yml/badge.svg)](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/scala.yml)
-[![CI](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/user_project_ci.yml/badge.svg)](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/user_project_ci.yml)
+[![Hardening](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/hardening.yml/badge.svg)](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/hardening.yml)
+[![Precheck](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/precheck.yml/badge.svg)](https://github.com/os-chip-design/dtu-soc-2026/actions/workflows/precheck.yml)
 
 </div>
 

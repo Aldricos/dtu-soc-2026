@@ -1,0 +1,147 @@
+name: Precheck
+
+on:
+  workflow_dispatch:
+    inputs:
+      hardening_run_id:
+        description: "ID of the Hardening run whose design artifact to precheck. Leave blank to find the latest run with a successful hardening job."
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  precheck:
+    timeout-minutes: 720
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pdk: ["sky130A", "sky130B"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve hardening run id
+        id: source_run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_RUN_ID: ${{ inputs.hardening_run_id }}
+        run: |
+          # If a run id was passed in (auto-dispatch from the Hardening
+          # workflow), use it directly. Otherwise (manual dispatch with an
+          # empty input) walk recent Hardening runs and pick the first
+          # where the hardening job for this PDK succeeded — the workflow
+          # as a whole need not have passed.
+          if [ -n "$INPUT_RUN_ID" ]; then
+            echo "run_id=$INPUT_RUN_ID" >> $GITHUB_OUTPUT
+            echo "Using caller-provided hardening run id: $INPUT_RUN_ID"
+            exit 0
+          fi
+          RUN_ID=""
+          for id in $(gh run list --workflow="Hardening" \
+              --limit=30 --json databaseId --jq '.[].databaseId'); do
+            status=$(gh run view "$id" --json jobs \
+              --jq '.jobs[] | select(.name == "hardening (${{ matrix.pdk }})") | .conclusion')
+            if [ "$status" = "success" ]; then
+              RUN_ID=$id
+              break
+            fi
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "No run with successful hardening job for ${{ matrix.pdk }}" >&2
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "Using hardening run id: $RUN_ID"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Install ChipFoundry CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+          pip3 install chipfoundry-cli
+
+      - name: Patch chipfoundry_cli for SRAM DRC false positives
+        # cf precheck runs cf_precheck inside a Docker container that does its
+        # own `pip install cf-precheck` per run, so the only durable place to
+        # inject the `sram_exclude=true` fix is the host's chipfoundry_cli;
+        # it then runs scripts/patch_cf_precheck.sh inside the container.
+        run: bash scripts/patch_chipfoundry_cli.sh
+
+      - name: Initialize Project
+        run: |
+          mkdir -p .cf
+          python3 <<EOF
+          import json
+          import os
+          from pathlib import Path
+
+          project_name = os.path.basename(os.getcwd())
+          project_json = Path('.cf/project.json')
+
+          data = {
+              "pdk": "${{ matrix.pdk }}",
+              "project": {
+                  "name": project_name,
+                  "type": "digital",
+                  "user": "chipfoundry",
+                  "version": "1.0.0",
+                  "user_project_wrapper_hash": "",
+                  "submission_state": "Draft"
+              }
+          }
+
+          with open(project_json, 'w') as f:
+              json.dump(data, f, indent=2)
+          EOF
+
+      - name: Setup Dependencies
+        run: |
+          cf setup --pdk ${{ matrix.pdk }} --only-pdk --only-precheck
+
+      - name: Download Hardened Design
+        uses: actions/download-artifact@v4
+        with:
+          name: design-${{ matrix.pdk }}
+          path: ${{ github.workspace }}
+          run-id: ${{ steps.source_run.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Configure GPIO (non-interactive)
+        run: |
+          python3 <<EOF
+          import json
+          from pathlib import Path
+
+          project_json = Path('.cf/project.json')
+          with open(project_json) as f:
+              data = json.load(f)
+
+          # Set default GPIO config (all as user input no pull)
+          gpio_config = {}
+          for gpio in range(5, 38):
+              gpio_config[str(gpio)] = "13'h0402"  # GPIO_MODE_USER_STD_INPUT_NOPULL
+
+          data['project']['gpio_config'] = gpio_config
+
+          with open(project_json, 'w') as f:
+              json.dump(data, f, indent=2)
+          EOF
+
+      - name: Run Precheck
+        run: |
+          cf precheck
+
+      - name: Upload Precheck Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: precheck-logs-${{ matrix.pdk }}
+          path: |
+            ${{ github.workspace }}/precheck_results
+          retention-days: 14
+          if-no-files-found: ignore

@@ -1,30 +1,63 @@
-name: Hardening & Precheck
+name: Hardening
 
 on:
   workflow_run:
     workflows: ["Scalatest CI"]
     types: [completed]
+  workflow_dispatch:
 
 jobs:
   hardening:
     timeout-minutes: 720
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
+      fail-fast: false
       matrix:
         pdk: ["sky130A", "sky130B"]
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Download generated Verilog
+        if: ${{ github.event_name == 'workflow_run' }}
         uses: actions/download-artifact@v4
         with:
           name: generated-verilog
           path: verilog/rtl/
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find latest Scalatest CI run (manual dispatch)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: scalatest_run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RUN_ID=""
+          for id in $(gh run list --workflow="Scalatest CI" \
+              --limit=30 --json databaseId --jq '.[].databaseId'); do
+            conclusion=$(gh run view "$id" --json conclusion --jq '.conclusion')
+            if [ "$conclusion" = "success" ]; then
+              RUN_ID=$id
+              break
+            fi
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "No successful Scalatest CI run found" >&2
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Download generated Verilog (manual dispatch)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-verilog
+          path: verilog/rtl/
+          run-id: ${{ steps.scalatest_run.outputs.run_id }}
+          github-token: ${{ github.token }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -80,27 +113,6 @@ jobs:
             if [ $status -ne 0 ]; then exit $status; fi
           done
 
-      - name: Render GDS layouts
-        if: success()
-        run: |
-          sudo apt-get install -y librsvg2-bin pngquant
-          pip3 install --quiet gdstk klayout cairosvg
-          mkdir -p renders
-          for gds in gds/*.gds; do
-            name=$(basename "$gds" .gds)
-            python3 .github/scripts/render_gds.py "$gds" "renders/${name}.png" || true
-            python3 .github/scripts/gds_to_oas.py "$gds" "renders/${name}.oas" "${{ matrix.pdk }}" || true
-          done
-          ls -la renders/
-
-      - name: Upload Renders
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: renders-${{ matrix.pdk }}
-          path: ${{ github.workspace }}/renders/
-          retention-days: 14
-
       - name: Upload Run Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -120,12 +132,34 @@ jobs:
             ${{ github.workspace }}/verilog/gl
             ${{ github.workspace }}/signoff
             ${{ github.workspace }}/.cf/project.json
-          retention-days: 1
+          retention-days: 14
+
+  trigger-precheck:
+    runs-on: ubuntu-latest
+    needs: [hardening]
+    # Fires precheck.yml as an independent workflow run as soon as
+    # hardening finishes — its pass/fail status is separate from this
+    # workflow, and it runs in parallel with the viewer job.
+    if: ${{ success() }}
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch Precheck workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # gh workflow run / the workflow_dispatch API requires a branch or
+          # tag name in --ref, not a commit SHA, so we pass head_branch on
+          # workflow_run and ref_name on manual dispatch.
+          gh workflow run precheck.yml \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.event.workflow_run.head_branch || github.ref_name }}" \
+            --field hardening_run_id=${{ github.run_id }}
 
   viewer:
     runs-on: ubuntu-latest
     needs: [hardening]
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ success() }}
     permissions:
       pages: write
       id-token: write
@@ -133,11 +167,28 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - name: Download Renders (sky130A)
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Download Hardened Design (sky130A)
         uses: actions/download-artifact@v4
         with:
-          name: renders-sky130A
-          path: gh-pages/
+          name: design-sky130A
+          path: ${{ github.workspace }}
+
+      - name: Render GDS to OAS
+        # 2D PNG rendering is intentionally disabled: both rsvg-convert and
+        # cairosvg paths fail on this design (too many cells) and only burn
+        # CI minutes. We keep the OAS conversion which feeds the 3D viewer.
+        run: |
+          pip3 install --quiet klayout
+          mkdir -p gh-pages
+          for gds in gds/*.gds; do
+            name=$(basename "$gds" .gds)
+            python3 .github/scripts/gds_to_oas.py "$gds" "gh-pages/${name}.oas" sky130A || true
+          done
+          ls -la gh-pages/
 
       - name: Generate viewer redirect
         run: |
@@ -174,101 +225,4 @@ jobs:
           cat << EOF >> $GITHUB_STEP_SUMMARY
           ## 3D Viewer
           [Open 3D viewer](https://gds-viewer.tinytapeout.com/?pdk=sky130A&model=${PAGE_URL}/CaravelUserProject.oas)
-
-          ## 2D Preview
-          ![CaravelUserProject](${PAGE_URL}/CaravelUserProject.png)
           EOF
-
-  precheck:
-    timeout-minutes: 720
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    strategy:
-      matrix:
-        pdk: ["sky130A", "sky130B"]
-    needs: [hardening]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Install ChipFoundry CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip
-          pip3 install chipfoundry-cli
-
-      - name: Patch chipfoundry_cli for SRAM DRC false positives
-        # cf precheck runs cf_precheck inside a Docker container that does its
-        # own `pip install cf-precheck` per run, so the only durable place to
-        # inject the `sram_exclude=true` fix is the host's chipfoundry_cli;
-        # it then runs scripts/patch_cf_precheck.sh inside the container.
-        run: bash scripts/patch_chipfoundry_cli.sh
-
-      - name: Initialize Project
-        run: |
-          mkdir -p .cf
-          python3 <<EOF
-          import json
-          import os
-          from pathlib import Path
-
-          project_name = os.path.basename(os.getcwd())
-          project_json = Path('.cf/project.json')
-
-          data = {
-              "pdk": "${{ matrix.pdk }}",
-              "project": {
-                  "name": project_name,
-                  "type": "digital",
-                  "user": "chipfoundry",
-                  "version": "1.0.0",
-                  "user_project_wrapper_hash": "",
-                  "submission_state": "Draft"
-              }
-          }
-
-          with open(project_json, 'w') as f:
-              json.dump(data, f, indent=2)
-          EOF
-
-      - name: Setup Dependencies
-        run: |
-          cf setup --pdk ${{ matrix.pdk }} --only-pdk --only-precheck
-
-      - name: Download Hardened Design
-        uses: actions/download-artifact@v4
-        with:
-          name: design-${{ matrix.pdk }}
-          path: ${{ github.workspace }}
-
-      - name: Configure GPIO (non-interactive)
-        run: |
-          python3 <<EOF
-          import json
-          from pathlib import Path
-
-          project_json = Path('.cf/project.json')
-          with open(project_json) as f:
-              data = json.load(f)
-
-          # Set default GPIO config (all as user input no pull)
-          gpio_config = {}
-          for gpio in range(5, 38):
-              gpio_config[str(gpio)] = "13'h0402"  # GPIO_MODE_USER_STD_INPUT_NOPULL
-
-          data['project']['gpio_config'] = gpio_config
-
-          with open(project_json, 'w') as f:
-              json.dump(data, f, indent=2)
-          EOF
-
-      - name: Run Precheck
-        run: |
-          cf precheck

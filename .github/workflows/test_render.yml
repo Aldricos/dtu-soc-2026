@@ -20,7 +20,7 @@ jobs:
           # Walk recent runs and pick the first one where the hardening job
           # for this PDK succeeded (even if other jobs like precheck failed)
           RUN_ID=""
-          for id in $(gh run list --workflow="Hardening & Precheck" \
+          for id in $(gh run list --workflow="Hardening" \
               --limit=30 --json databaseId --jq '.[].databaseId'); do
             status=$(gh run view "$id" --json jobs \
               --jq '.jobs[] | select(.name == "hardening (${{ matrix.pdk }})") | .conclusion')
@@ -44,14 +44,15 @@ jobs:
           run-id: ${{ steps.last_run.outputs.run_id }}
           github-token: ${{ github.token }}
 
-      - name: Render GDS layouts
+      - name: Render GDS to OAS
+        # 2D PNG rendering is intentionally disabled: both rsvg-convert and
+        # cairosvg paths fail on this design (too many cells) and only burn
+        # CI minutes. We keep the OAS conversion which feeds the 3D viewer.
         run: |
-          sudo apt-get install -y librsvg2-bin pngquant
-          pip3 install --quiet gdstk klayout cairosvg
+          pip3 install --quiet klayout
           mkdir -p renders
           for gds in gds/*.gds; do
             name=$(basename "$gds" .gds)
-            python3 .github/scripts/render_gds.py "$gds" "renders/${name}.png" || true
             python3 .github/scripts/gds_to_oas.py "$gds" "renders/${name}.oas" "${{ matrix.pdk }}" || true
           done
           ls -la renders/
@@ -114,7 +115,4 @@ jobs:
           cat << EOF >> $GITHUB_STEP_SUMMARY
           ## 3D Viewer
           [Open 3D viewer](https://gds-viewer.tinytapeout.com/?pdk=sky130A&model=${PAGE_URL}/CaravelUserProject.oas)
-
-          ## 2D Preview
-          ![CaravelUserProject](${PAGE_URL}/CaravelUserProject.png)
           EOF
