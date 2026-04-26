@@ -46,21 +46,35 @@ if grep -q 'scripts/patch_cf_precheck.sh' "$TARGET"; then
 fi
 
 "$PYTHON" - "$TARGET" <<'PY'
-import sys, pathlib
+import sys, re, pathlib
 p = pathlib.Path(sys.argv[1])
 src = p.read_text()
-old = "inner_cmd = 'pip3 install --upgrade -q --root-user-action=ignore cf-precheck 2>/dev/null && cf-precheck ' + ' '.join(precheck_args)"
-new = (
-    "inner_cmd = (\n"
-    "        'pip3 install --upgrade -q --root-user-action=ignore cf-precheck 2>/dev/null && '\n"
-    "        f'( [ -f {project_root_path}/scripts/patch_cf_precheck.sh ] && bash {project_root_path}/scripts/patch_cf_precheck.sh || true ) && '\n"
-    "        'cf-precheck ' + ' '.join(precheck_args)\n"
-    "    )"
+# chipfoundry_cli's precheck() builds inner_cmd as a single-line string of
+# the form (with or without the `exec ` introduced in a recent release):
+#   inner_cmd = 'pip3 install ... cf-precheck 2>/dev/null && [exec ]cf-precheck ' + ' '.join(precheck_args)
+# We capture the leading indent and the optional `exec ` prefix so we
+# preserve both faithfully when expanding to a multi-line concatenation.
+pat = re.compile(
+    r"^(?P<indent> *)inner_cmd = "
+    r"'pip3 install --upgrade -q --root-user-action=ignore cf-precheck 2>/dev/null && "
+    r"(?P<exec>exec )?cf-precheck ' \+ ' '\.join\(precheck_args\)$",
+    re.MULTILINE,
 )
-if old not in src:
+m = pat.search(src)
+if not m:
     sys.exit("patch_chipfoundry_cli: expected inner_cmd line not found in main.py;"
              " chipfoundry_cli version may have changed shape, refusing to patch blindly")
-p.write_text(src.replace(old, new, 1))
+indent = m.group("indent")
+inner = indent + "    "
+exec_prefix = m.group("exec") or ""
+replacement = (
+    f"{indent}inner_cmd = (\n"
+    f"{inner}'pip3 install --upgrade -q --root-user-action=ignore cf-precheck 2>/dev/null && '\n"
+    f"{inner}f'( [ -f {{project_root_path}}/scripts/patch_cf_precheck.sh ] && bash {{project_root_path}}/scripts/patch_cf_precheck.sh || true ) && '\n"
+    f"{inner}'{exec_prefix}cf-precheck ' + ' '.join(precheck_args)\n"
+    f"{indent})"
+)
+p.write_text(src[:m.start()] + replacement + src[m.end():])
 PY
 
 echo "patch_chipfoundry_cli: cf precheck now invokes scripts/patch_cf_precheck.sh inside the container before cf-precheck (target: $TARGET)."
