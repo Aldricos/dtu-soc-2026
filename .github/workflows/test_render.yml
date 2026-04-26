@@ -18,12 +18,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # Walk recent runs and pick the first one where the hardening job
-          # for this PDK succeeded (even if other jobs like precheck failed)
+          # for this PDK succeeded (even if other jobs like precheck failed).
+          # We hit the runs API directly (instead of `gh run list --workflow=`)
+          # because that filter only matches a workflow currently present at
+          # that file path; after the user_project_ci.yml -> hardening.yml
+          # rename, runs of the previous "Hardening & Precheck" workflow are
+          # unreachable via the filter but still in the API. The OR matches
+          # both names while the old runs are still within their artifact
+          # retention window.
           RUN_ID=""
-          for id in $(gh run list --workflow="Hardening" \
-              --limit=30 --json databaseId --jq '.[].databaseId'); do
-            status=$(gh run view "$id" --json jobs \
-              --jq '.jobs[] | select(.name == "hardening (${{ matrix.pdk }})") | .conclusion')
+          ids=$(gh api "repos/${{ github.repository }}/actions/runs?per_page=50&status=completed" \
+                  --jq '.workflow_runs[] | select(.name == "Hardening" or .name == "Hardening & Precheck") | .id')
+          for id in $ids; do
+            status=$(gh api "repos/${{ github.repository }}/actions/runs/$id/jobs" \
+                       --jq '.jobs[] | select(.name == "hardening (${{ matrix.pdk }})") | .conclusion')
             if [ "$status" = "success" ]; then
               RUN_ID=$id
               break
