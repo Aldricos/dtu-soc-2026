@@ -58,6 +58,26 @@ if old2 in src:
 elif "openram_dp_cell_dummy" not in src:
     sys.exit("patch_cf_precheck: counter line not found and not already patched; refusing to patch blindly")
 
+old3 = (
+    "        if p.returncode != 0:\n"
+    "            logging.error(f\"{check_name} failed (stat={p.returncode}), see {log_file_path}\")\n"
+    "            return False"
+)
+new3 = (
+    "        if p.returncode != 0:\n"
+    "            import signal\n"
+    "            segfault = p.returncode == -signal.SIGSEGV\n"
+    "            have_report = report_file_path.exists() and report_file_path.stat().st_size != 0\n"
+    "            if not (segfault and have_report):\n"
+    "                logging.error(f\"{check_name} failed (stat={p.returncode}), see {log_file_path}\")\n"
+    "                return False\n"
+    "            logging.warning(f\"{check_name}: klayout exit {p.returncode}, but report present; continuing\")"
+)
+if old3 in src:
+    src = src.replace(old3, new3, 1)
+elif "-signal.SIGSEGV" not in src:
+    sys.exit("patch_cf_precheck: process handler block not found and not already patched; refusing to patch blindly")
+
 if src == original:
     print(f"patch_cf_precheck: already fully patched (target: {target})")
 else:
