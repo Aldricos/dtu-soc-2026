@@ -25,6 +25,14 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val video = Output(UInt(8.W))
     val wb = Flipped(new WishboneIO(32))
     val flash = new SpiMemIO
+
+    // GROUP 5 PINS
+    val g5_spi_sck   = Output(Bool())
+    val g5_spi_mosi  = Output(Bool())
+    val g5_spi_miso  = Input(Bool())
+    val g5_spi_cs0_n = Output(Bool())
+    val g5_spi_cs1_n = Output(Bool())
+    val g5_spi_cs2_n = Output(Bool())
   })
 
   val (memory, start) = Util.getCode(file)
@@ -79,6 +87,25 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   spiMem.io.mem.wr      := false.B
   spiMem.io.mem.wrData  := 0.U
   spiMem.io.mem.wrMask  := 0.U
+
+  // ---------------------------------
+  // GROUP 5: QSPI PMOD CONTROLLER
+  val g5SpiCtrl = Module(new SpiMemoryController())
+
+  io.g5_spi_sck   := g5SpiCtrl.io.spi.sck
+  io.g5_spi_mosi  := g5SpiCtrl.io.spi.mosi
+  g5SpiCtrl.io.spi.miso := io.g5_spi_miso
+  io.g5_spi_cs0_n := g5SpiCtrl.io.spi.cs0_n
+  io.g5_spi_cs1_n := g5SpiCtrl.io.spi.cs1_n
+  io.g5_spi_cs2_n := g5SpiCtrl.io.spi.cs2_n
+
+  // Default values
+  g5SpiCtrl.io.pipecon.address := memAddrReg
+  g5SpiCtrl.io.pipecon.wrData  := memWrDataReg
+  g5SpiCtrl.io.pipecon.wrMask  := memWrMaskReg
+  g5SpiCtrl.io.pipecon.rd      := false.B
+  g5SpiCtrl.io.pipecon.wr      := false.B
+  // -----------------------------------
 
   // Here IO stuff
   // IO is mapped ot 0xf000_0000
@@ -177,6 +204,21 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     videoController.io.address := cpu.io.dmem.address(11,0)
     videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
     videoController.io.wr := cpu.io.dmem.wr
+  }
+
+  // ------------------------------------------------
+  // GROUP 5: Memory Mapping (0x4, 0x5, 0x6)
+  // ------------------------------------------------
+  val isG5Access = (memAddrReg(31, 28) === "h4".U) || (memAddrReg(31, 28) === "h5".U) || (memAddrReg(31, 28) === "h6".U)
+
+  when (isG5Access) {
+    g5SpiCtrl.io.pipecon.rd := memRdReg
+    g5SpiCtrl.io.pipecon.wr := memWrReg
+
+    cpu.io.dmem.rdData := g5SpiCtrl.io.pipecon.rdData
+    cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
+
+    dmem.io.wr := false.B // Prevent scratchpad overwrite
   }
 }
 
