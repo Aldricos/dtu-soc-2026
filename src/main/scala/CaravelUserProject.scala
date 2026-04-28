@@ -45,6 +45,16 @@ class CaravelUserProject extends Module {
   gpio.wb.cyc := 0.B
 
 
+  val com = Module(new WildcatCaravelCommunication())
+  com.wb <> wb
+  com.wb.cyc := 0.B
+
+  //connect com io to wildcat io 
+  com.io.fromWildcat := wc.io.comWriteData
+  com.io.wildcatWriteValid := wc.io.comWriteValid
+  wc.io.comReadData := com.io.toWildcat
+
+
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
   gcd.wb <> wb
@@ -80,6 +90,11 @@ class CaravelUserProject extends Module {
     // }
     is (0x4.U) {
       wcReset := true.B
+    }
+    is (0x5.U) {
+      com.wb.cyc := wb.cyc
+      wb.ack := com.wb.ack
+      wb.rdData := com.wb.rdData
     }
   }
 
