@@ -4,6 +4,7 @@ import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
 import programmable_IMEM.programmable_IMEM
+import comm_controller.comm_controller
 
 object CaravelUserProject extends App {
   emitVerilog(
@@ -33,6 +34,9 @@ class CaravelUserProject extends Module {
   wc.reset := wcReset
   wc.io.wb <> wb
   wc.io.wb.cyc := 0.B
+  wc.io.wb_2 <> wb
+  wc.io.wb_2.cyc := 0.B
+  
 
   val led = wc.io.led
   val tx = wc.io.tx
@@ -42,6 +46,22 @@ class CaravelUserProject extends Module {
   val gpio = Module(new WishboneGpio(8))
   gpio.wb <> wb
   gpio.wb.cyc := 0.B
+
+  val comm = Module(new comm_controller())
+  comm.wb <> wb
+  comm.wb.cyc <> 0.B
+  wc.io.cpu_reset := comm.cpu_reset
+  wc.io.imem_sel := comm.imem_sel
+
+  val com = Module(new WildcatCaravelCommunication())
+  com.wb <> wb
+  com.wb.cyc := 0.B
+
+  //connect com io to wildcat io 
+  com.io.fromWildcat := wc.io.comWriteData
+  com.io.wildcatWriteValid := wc.io.comWriteValid
+  wc.io.comReadData := com.io.toWildcat
+
 
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
@@ -82,15 +102,20 @@ class CaravelUserProject extends Module {
       wb.ack := wc.io.wb.ack
       wb.rdData := wc.io.wb.rdData
     }
-    // is(0x3.U){
-    //   imem.wb.cyc := wb.cyc
-    //   wb.ack := imem.wb.ack
-    //   wb.rdData := imem.wb.rdData
-    // }
-    is (0x4.U) {
-      wcReset := true.B
+    is(0x3.U){
+      wc.io.wb_2.cyc := wb.cyc
+      wb.ack := wc.io.wb_2.ack
+      wb.rdData := wc.io.wb_2.rdData
     }
-    is(0x5.U) {
+    // is (0x4.U) {
+    //   wcReset := true.B
+    // }
+    is (0x4.U){
+      comm.wb.cyc := wb.cyc
+      wb.ack := comm.wb.ack
+      wb.rdData := comm.wb.rdData
+    }
+    is(0x6.U) {
       spiPmod.wb.cyc := wb.cyc
       wb.ack := spiPmod.wb.ack
       wb.rdData := spiPmod.wb.rdData
@@ -99,6 +124,11 @@ class CaravelUserProject extends Module {
       lukeClock.wb.cyc := wb.cyc
       wb.ack := lukeClock.wb.ack
       wb.rdData := lukeClock.wb.rdData
+    }
+    is (0x5.U) {
+      com.wb.cyc := wb.cyc
+      wb.ack := com.wb.ack
+      wb.rdData := com.wb.rdData
     }
   }
 
@@ -146,6 +176,17 @@ class CaravelUserProject extends Module {
 
   io.out := outVec.asUInt
   io.oeb := oebVec.asUInt
+
+  // ==========================================
+  // GROUP 5 SPI PMOD (Pins 0 to 7)
+  outVec(0) := wc.io.g5_spi_cs0_n
+  outVec(1) := wc.io.g5_spi_mosi
+  wc.io.g5_spi_miso := io.in(2)
+  oebVec(2) := true.B                 // pin 2 is input
+  outVec(3) := wc.io.g5_spi_sck
+  outVec(4) := wc.io.g5_spi_cs1_n    // moved from pin 6
+  outVec(5) := wc.io.g5_spi_cs2_n    // moved from pin 7 — conflict resolved
+  // ==========================================
 
   // connect output ports
   //io.out := 0.U

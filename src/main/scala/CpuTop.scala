@@ -5,6 +5,7 @@ import wildcat.pipeline._
 import memory._
 import videoController.VideoController
 import wishbone.WishboneIO
+import programmable_IMEM.programmable_IMEM
 
 /*
  * This file is a modification of the RISC-V processor Wildcat
@@ -27,6 +28,20 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val pmod = new QspiPmodIO
     val flashCtrl = new FlashCtrlIO
     val progMode = Input(Bool())
+    val comReadData = Input(UInt(32.W))
+    val comWriteData = Output(UInt(32.W))
+    val comWriteValid = Output(Bool())
+    val imem_sel = Input(Bool())
+    val wb_2 = Flipped(new WishboneIO(32))
+    val cpu_reset = Input(Bool())
+
+    // GROUP 5 PINS
+    val g5_spi_sck   = Output(Bool())
+    val g5_spi_mosi  = Output(Bool())
+    val g5_spi_miso  = Input(Bool())
+    val g5_spi_cs0_n = Output(Bool())
+    val g5_spi_cs1_n = Output(Bool())
+    val g5_spi_cs2_n = Output(Bool())
   })
 
   val (memory, start) = Util.getCode(file)
@@ -34,37 +49,43 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val cpu = Module(new ThreeCats())
   val dmem = Module(new DataMemory()) //val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
   val imem = Module(new WishboneInstrRam) //val imem = Module(new InstructionROM(memory))
+  val imem_2 = Module(new(programmable_IMEM))
+  val imem_mux = Module(new(imem_mux))
+  cpu.reset := io.cpu_reset
 
   val cache = Module(new DataCache())
   val spiMem = Module(new SpiFlashController())
 
-  cpu.io.imem <> imem.io.cpu  //cpu.io.imem <> imem.io
+  // cpu.io.imem <> imem.io.cpu  //cpu.io.imem <> imem.io
+  imem.io.cpu<>imem_mux.imem_0
+  imem_2.cpu_connection <> imem_mux.imem_1
+  imem_2.cpu_enable := !io.cpu_reset
+  imem_mux.sel <> io.imem_sel
+  cpu.io.imem <> imem_mux.cpu
   imem.io.wb <> io.wb
   io.pmod <> spiMem.io.spi
   spiMem.io.ctrl <> io.flashCtrl
   spiMem.io.progMode := io.progMode
+  io.wb_2 <> imem_2.wb
 
   // ------------------------------------------------
   // Memory Connections
   // ------------------------------------------------
   // Memory Registers
-  // TODO: why are those signals registered? Can we not just connect them directly?
   val memAddrReg   = RegNext(cpu.io.dmem.address)
+  // TODO: why are those signals registered? This seems wrong. Can we not just connect them directly?
   val memRdReg     = RegNext(cpu.io.dmem.rd, false.B)
   val memWrReg     = RegNext(cpu.io.dmem.wr, false.B)
   val memWrDataReg = RegNext(cpu.io.dmem.wrData)
   val memWrMaskReg = RegNext(cpu.io.dmem.wrMask)
 
-  // Default CPU outputs
-  cpu.io.dmem.rdData := 0.U
-  cpu.io.dmem.ack    := false.B
-
-  // Default dmem inputs
-  dmem.io.address := 0.U
-  dmem.io.rd      := false.B
-  dmem.io.wr      := false.B
-  dmem.io.wrData  := 0.U
-  dmem.io.wrMask  := 0.U
+  // Default access to data memory
+  cpu.io.dmem <> dmem.io
+  // Gate rd and wr signal with address
+  when (cpu.io.dmem.address(31, 28) =/= 0.U) {
+    dmem.io.rd      := false.B
+    dmem.io.wr      := false.B
+  }
 
   // Default cache CPU-side inputs
   cache.io.cpuIO.address := memAddrReg
@@ -83,6 +104,25 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   spiMem.io.mem.wr      := false.B
   spiMem.io.mem.wrData  := 0.U
   spiMem.io.mem.wrMask  := 0.U
+
+  // ---------------------------------
+  // GROUP 5: QSPI PMOD CONTROLLER
+  val g5SpiCtrl = Module(new SpiMemoryController())
+
+  io.g5_spi_sck   := g5SpiCtrl.io.spi.sck
+  io.g5_spi_mosi  := g5SpiCtrl.io.spi.mosi
+  g5SpiCtrl.io.spi.miso := io.g5_spi_miso
+  io.g5_spi_cs0_n := g5SpiCtrl.io.spi.cs0_n
+  io.g5_spi_cs1_n := g5SpiCtrl.io.spi.cs1_n
+  io.g5_spi_cs2_n := g5SpiCtrl.io.spi.cs2_n
+
+  // Default values
+  g5SpiCtrl.io.pipecon.address := memAddrReg
+  g5SpiCtrl.io.pipecon.wrData  := memWrDataReg
+  g5SpiCtrl.io.pipecon.wrMask  := memWrMaskReg
+  g5SpiCtrl.io.pipecon.rd      := false.B
+  g5SpiCtrl.io.pipecon.wr      := false.B
+  // -----------------------------------
 
   // Here IO stuff
   // IO is mapped ot 0xf000_0000
@@ -135,6 +175,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // ------------------------------------------------
   // Memory
   // ------------------------------------------------
+  /*
   when (memAddrReg(31, 28) === 0x0.U) { // DMem 0x0
     dmem.io.address := memAddrReg
     dmem.io.rd      := memRdReg
@@ -145,6 +186,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := dmem.io.rdData
     cpu.io.dmem.ack    := dmem.io.ack
   }
+  */
   when (memAddrReg(31, 28) === 0xe.U) { // CACHE 0xE
     // CPU -> cache
     cache.io.cpuIO.address := memAddrReg
@@ -181,6 +223,33 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     videoController.io.address := cpu.io.dmem.address(11,0)
     videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
     videoController.io.wr := cpu.io.dmem.wr
+  }
+
+  //Wildcat Caravel communication 
+  // 0xC000_0000 <- maybe move
+  io.comWriteData := cpu.io.dmem.wrData
+  io.comWriteValid := false.B 
+
+  when (memAddressReg(31, 28) === 0xc.U){
+    cpu.io.dmem.rdData := io.comReadData
+    cpu.io.dmem.ack := true.B
+
+    when (cpu.io.dmem.wr) {
+      io.comWriteValid := true.B
+    }
+  }
+
+  // ------------------------------------------------
+  // GROUP 5: Memory Mapping (0x4, 0x5, 0x6)
+  // ------------------------------------------------
+  val isG5Access = (memAddrReg(31, 28) === "h4".U) || (memAddrReg(31, 28) === "h5".U) || (memAddrReg(31, 28) === "h6".U)
+
+  when (isG5Access) {
+    g5SpiCtrl.io.pipecon.rd := memRdReg
+    g5SpiCtrl.io.pipecon.wr := memWrReg
+
+    cpu.io.dmem.rdData := g5SpiCtrl.io.pipecon.rdData
+    cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
   }
 }
 

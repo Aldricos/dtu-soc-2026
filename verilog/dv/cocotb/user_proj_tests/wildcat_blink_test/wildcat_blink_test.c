@@ -24,6 +24,7 @@ const int wildcat_img_len =
 
 // address of the WB instruction memory module in words
 #define MEM_ADDR (0x0200000 >> 2)
+#define COMM_CTRL (0x400000 >> 2)
 
 void write_to_mem(int word, int addr) {
     USER_writeWord(word, MEM_ADDR + (addr >> 2));
@@ -40,6 +41,18 @@ void load_wildcat_program(void)
     }
 }
 
+bool verify_wildcat_program(void)
+{
+    for (int i = 0; i < wildcat_img_len; i++) {
+        if (USER_readWord(MEM_ADDR + (wildcat_blink_test_img[i].byte_addr >> 2)) !=
+            wildcat_blink_test_img[i].word) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 void main() {
     ManagmentGpio_outputEnable();
@@ -52,10 +65,21 @@ void main() {
 
     User_enableIF();
 
+    // comm_controller bit 1 selects the instruction RAM bank and bit 0 controls reset.
+    // Keep Wildcat in reset while programming IMEM0.
+    USER_writeWord(1, COMM_CTRL);
 
     // Load Wildcat instruction memory
     load_wildcat_program();
 
+    if (!verify_wildcat_program()) {
+        return;
+    }
+
+    // Release reset while keeping the mux pointed at IMEM0.
+    USER_writeWord(0, COMM_CTRL);
+
+    // WishboneInstrRam enables CPU fetch after a write to address 0xFF in the selected IMEM.
     USER_writeWord(3, MEM_ADDR + (1020 >> 2));  // releases CPU 1111111100
 
     // Signal testbench that setup is done

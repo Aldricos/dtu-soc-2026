@@ -130,6 +130,10 @@ Notes:
  - maybe ncs could be tied to GND
  - We also need to reset Wildcat from Caravel
 
+## Block diagram of the entire project 
+
+![Block diagram](Project_diagram.png)
+
 ## Needed Work (TODO List)
 
 - [x] CI with LibreLane synthesis (Group 0)
