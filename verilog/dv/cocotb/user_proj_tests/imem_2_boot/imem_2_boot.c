@@ -30,7 +30,7 @@ void main(){
     User_enableIF(); // this necessary when reading or writing between wishbone and user project if interface isn't enabled no ack would be recieve and the command will be stuck
 
     // Wildcat reset is active high. Hold wc_2 in reset while programming IMEM.
-    USER_writeWord(1, RESET_ADDR);
+    USER_writeWord(3, RESET_ADDR);
 
     uint32_t boot_program[] = {
     0xF0010237,
@@ -52,7 +52,7 @@ void main(){
     }
     if (status == true) {
         // Release wc_2 after the program has been loaded and checked.
-        USER_writeWord(0, RESET_ADDR);
+        USER_writeWord(2, RESET_ADDR);
         ManagmentGpio_write(1);
     }
     return;

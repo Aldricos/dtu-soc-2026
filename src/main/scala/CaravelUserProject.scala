@@ -53,6 +53,16 @@ class CaravelUserProject extends Module {
   wc.io.cpu_reset := comm.cpu_reset
   wc.io.imem_sel := comm.imem_sel
 
+  val com = Module(new WildcatCaravelCommunication())
+  com.wb <> wb
+  com.wb.cyc := 0.B
+
+  //connect com io to wildcat io 
+  com.io.fromWildcat := wc.io.comWriteData
+  com.io.wildcatWriteValid := wc.io.comWriteValid
+  wc.io.comReadData := com.io.toWildcat
+
+
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
   gcd.wb <> wb
@@ -103,6 +113,11 @@ class CaravelUserProject extends Module {
       lukeClock.wb.cyc := wb.cyc
       wb.ack := lukeClock.wb.ack
       wb.rdData := lukeClock.wb.rdData
+    }
+    is (0x5.U) {
+      com.wb.cyc := wb.cyc
+      wb.ack := com.wb.ack
+      wb.rdData := com.wb.rdData
     }
   }
 

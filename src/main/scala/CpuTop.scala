@@ -25,6 +25,9 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val rx = Input(UInt(1.W))
     val video = Output(UInt(8.W))
     val wb = Flipped(new WishboneIO(32))
+    val comReadData = Input(UInt(32.W))
+    val comWriteData = Output(UInt(32.W))
+    val comWriteValid = Output(Bool())
     val flash = new SpiMemIO
     val imem_sel = Input(Bool())
     val wb_2 = Flipped(new WishboneIO(32))
@@ -216,6 +219,20 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     videoController.io.address := cpu.io.dmem.address(11,0)
     videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
     videoController.io.wr := cpu.io.dmem.wr
+  }
+
+  //Wildcat Caravel communication 
+  // 0xC000_0000 <- maybe move
+  io.comWriteData := cpu.io.dmem.wrData
+  io.comWriteValid := false.B 
+
+  when (memAddressReg(31, 28) === 0xc.U){
+    cpu.io.dmem.rdData := io.comReadData
+    cpu.io.dmem.ack := true.B
+
+    when (cpu.io.dmem.wr) {
+      io.comWriteValid := true.B
+    }
   }
 
   // ------------------------------------------------
