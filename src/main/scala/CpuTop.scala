@@ -1,5 +1,6 @@
 import chisel.lib.uart._
 import chisel3._
+import chisel3.util.RegEnable
 import wildcat.Util
 import wildcat.pipeline._
 import memory._
