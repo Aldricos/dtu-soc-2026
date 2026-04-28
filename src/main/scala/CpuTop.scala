@@ -23,7 +23,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
     val rx = Input(UInt(1.W))
-    val video = Output(UInt(8.W))
     val wb = Flipped(new WishboneIO(32))
     val comReadData = Input(UInt(32.W))
     val comWriteData = Output(UInt(32.W))
@@ -40,6 +39,14 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val g5_spi_cs0_n = Output(Bool())
     val g5_spi_cs1_n = Output(Bool())
     val g5_spi_cs2_n = Output(Bool())
+  })
+
+  val video = IO(new Bundle {
+    val hSync = Output(Bool())
+    val vSync = Output(Bool())
+    val red = Output(UInt(2.W))
+    val green = Output(UInt(2.W))
+    val blue = Output(UInt(2.W))
   })
 
   val (memory, start) = Util.getCode(file)
@@ -213,7 +220,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   videoController.io.address := 0.U
   videoController.io.wrData := 0.U
   videoController.io.wr := false.B
-  io.video := videoController.io.video
+  video <> videoController.video
   
   when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
     videoController.io.address := cpu.io.dmem.address(11,0)

@@ -40,7 +40,6 @@ class CaravelUserProject extends Module {
 
   val led = wc.io.led
   val tx = wc.io.tx
-  val video = wc.io.video
 
   // create dummy gpio peripheral for testing
   val gpio = Module(new WishboneGpio(8))
@@ -135,9 +134,14 @@ class CaravelUserProject extends Module {
   gpio.io.in := io.in(15, 8)
 
   // Video 23..16
-  for (i <- 0 until 8) {
-    outVec(16 + i) := video(i)
-  }
+  outVec(23) := wc.video.hSync
+  outVec(22) := wc.video.vSync
+  outVec(21) := wc.video.red(1)
+  outVec(20) := wc.video.red(0)
+  outVec(19) := wc.video.green(1)
+  outVec(18) := wc.video.green(0)
+  outVec(17) := wc.video.blue(1)
+  outVec(16) := wc.video.blue(0)
 
   // LED on pin 24
   outVec(24) := led(0)
