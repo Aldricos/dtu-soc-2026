@@ -73,7 +73,12 @@ class SpiMemoryController extends Module {
       delayCnt   := 0.U
 
       when(io.pipecon.rd || io.pipecon.wr) {
-        addrReg       := io.pipecon.address(23, 0)
+
+        // Drop bits 1 and 0, and replace them with "00"
+        // This guarantees we always fetch a 32-bit aligned word
+        val wordAlignedAddr = Cat(io.pipecon.address(23, 2), "b00".U(2.W))
+
+        addrReg       := wordAlignedAddr
         dataReg       := io.pipecon.wrData
         readData      := 0.U
 
@@ -87,25 +92,31 @@ class SpiMemoryController extends Module {
         val isFlashWriteOrErase = io.pipecon.wr && (io.pipecon.address(31, 24) === "h40".U || io.pipecon.address(31, 24) === "h41".U || io.pipecon.address(31, 24) === "h43".U)
 
         when(isFlashWriteOrErase) {
+          // WREN (0x06)
           spiMosiReg     := false.B
           shiftReg       := Cat("h06".U(8.W)(6, 0), 0.U(65.W))
           bitsToTransfer := 8.U
           nextState      := sCsToggle
         } .elsewhen(io.pipecon.rd && io.pipecon.address(31, 24) === "h42".U) {
+          // Read Status (0x05)
           spiMosiReg     := false.B
           shiftReg       := Cat("h05".U(8.W)(6, 0), 0.U(65.W))
           bitsToTransfer := 16.U
           nextState      := sDone
         } .elsewhen(io.pipecon.rd) {
+          // FAST READ (0x0B)
           val cmd = "h0B".U(8.W)
           spiMosiReg     := cmd(7)
-          shiftReg       := Cat(cmd(6, 0), io.pipecon.address(23, 0), 0.U(8.W), 0.U(33.W))
+          // USE WORD-ALIGNED ADDRESS
+          shiftReg       := Cat(cmd(6, 0), wordAlignedAddr, 0.U(8.W), 0.U(33.W))
           bitsToTransfer := 72.U
           nextState      := sDone
         } .otherwise {
+          // PAGE PROGRAM (0x02)
           val cmd = "h02".U(8.W)
           spiMosiReg     := cmd(7)
-          shiftReg       := Cat(cmd(6, 0), io.pipecon.address(23, 0), io.pipecon.wrData, 0.U(9.W))
+          // USE WORD-ALIGNED ADDRESS
+          shiftReg       := Cat(cmd(6, 0), wordAlignedAddr, io.pipecon.wrData, 0.U(9.W))
           bitsToTransfer := 64.U
           nextState      := sDone
         }
