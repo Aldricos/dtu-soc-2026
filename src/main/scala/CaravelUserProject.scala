@@ -4,6 +4,7 @@ import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
 import programmable_IMEM.programmable_IMEM
+import comm_controller.comm_controller
 
 object CaravelUserProject extends App {
   emitVerilog(
@@ -11,7 +12,6 @@ object CaravelUserProject extends App {
     Array("--target-dir", "verilog/rtl")
   )
 }
-
 
 class CaravelUserProject extends Module {
 
@@ -34,6 +34,9 @@ class CaravelUserProject extends Module {
   wc.reset := wcReset
   wc.io.wb <> wb
   wc.io.wb.cyc := 0.B
+  wc.io.wb_2 <> wb
+  wc.io.wb_2.cyc := 0.B
+  
 
   val led = wc.io.led
   val tx = wc.io.tx
@@ -44,6 +47,11 @@ class CaravelUserProject extends Module {
   gpio.wb <> wb
   gpio.wb.cyc := 0.B
 
+  val comm = Module(new comm_controller())
+  comm.wb <> wb
+  comm.wb.cyc <> 0.B
+  wc.io.cpu_reset := comm.cpu_reset
+  wc.io.imem_sel := comm.imem_sel
 
   val com = Module(new WildcatCaravelCommunication())
   com.wb <> wb
@@ -60,7 +68,12 @@ class CaravelUserProject extends Module {
   gcd.wb <> wb
   gcd.wb.cyc := 0.B
 
-    // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
+  // create luke_clock peripheral
+  val lukeClock = Module(new WishboneLukeClock)
+  lukeClock.wb <> wb
+  lukeClock.wb.cyc := 0.B
+
+  // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
     // imem.wb<>wb
     // imem.wb.cyc:=0.B
 
@@ -83,13 +96,23 @@ class CaravelUserProject extends Module {
       wb.ack := wc.io.wb.ack
       wb.rdData := wc.io.wb.rdData
     }
-    // is(0x3.U){
-    //   imem.wb.cyc := wb.cyc
-    //   wb.ack := imem.wb.ack
-    //   wb.rdData := imem.wb.rdData
+    is(0x3.U){
+      wc.io.wb_2.cyc := wb.cyc
+      wb.ack := wc.io.wb_2.ack
+      wb.rdData := wc.io.wb_2.rdData
+    }
+    // is (0x4.U) {
+    //   wcReset := true.B
     // }
-    is (0x4.U) {
-      wcReset := true.B
+    is (0x4.U){
+      comm.wb.cyc := wb.cyc
+      wb.ack := comm.wb.ack
+      wb.rdData := comm.wb.rdData
+    }
+    is(0x7.U) {
+      lukeClock.wb.cyc := wb.cyc
+      wb.ack := lukeClock.wb.ack
+      wb.rdData := lukeClock.wb.rdData
     }
     is (0x5.U) {
       com.wb.cyc := wb.cyc
@@ -98,9 +121,65 @@ class CaravelUserProject extends Module {
     }
   }
 
+  val outVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(false.B)))
+  val oebVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(false.B)))
+
+  // UART TX on pin 7
+  outVec(7) := tx
+
+  // GPIO 15..8
+  for (i <- 0 until 8) {
+    outVec(8 + i) := gpio.io.out(i)
+    oebVec(8 + i) := gpio.io.oeb(i)
+  }
+  gpio.io.in := io.in(15, 8)
+
+  // Video 23..16
+  for (i <- 0 until 8) {
+    outVec(16 + i) := video(i)
+  }
+
+  // LED on pin 24
+  outVec(24) := led(0)
+
+  // UART RX on pin 25
+  wc.io.rx := io.in(25)
+  oebVec(25) := true.B
+
+  // SPI 29..26
+  outVec(26) := wc.io.flash.cs
+  outVec(27) := wc.io.flash.mosi
+  wc.io.flash.miso := io.in(28)
+  oebVec(28) := true.B
+  outVec(29) := wc.io.flash.sck
+
+  // VGA luke_clock
+  outVec(30) := lukeClock.io.hSyncOut
+  outVec(31) := lukeClock.io.vSyncOut
+  outVec(32) := lukeClock.io.redOut(0)
+  outVec(33) := lukeClock.io.redOut(1)
+  outVec(34) := lukeClock.io.greenOut(0)
+  outVec(35) := lukeClock.io.greenOut(1)
+  outVec(36) := lukeClock.io.blueOut(0)
+  outVec(37) := lukeClock.io.blueOut(1)
+
+  io.out := outVec.asUInt
+  io.oeb := oebVec.asUInt
+
+  // ==========================================
+  // GROUP 5 SPI PMOD (Pins 0 to 7)
+  outVec(0) := wc.io.g5_spi_cs0_n
+  outVec(1) := wc.io.g5_spi_mosi
+  wc.io.g5_spi_miso := io.in(2)
+  oebVec(2) := true.B                 // pin 2 is input
+  outVec(3) := wc.io.g5_spi_sck
+  outVec(4) := wc.io.g5_spi_cs1_n    // moved from pin 6
+  outVec(5) := wc.io.g5_spi_cs2_n    // moved from pin 7 — conflict resolved
+  // ==========================================
+
   // connect output ports
-  io.out := 0.U
-  io.oeb := 0.U
+  //io.out := 0.U
+  //io.oeb := 0.U
   // Pins 0-6 are used by Caravel
   /* This does not work du to a Chisel limitation
   Better define a bundle
@@ -113,12 +192,16 @@ class CaravelUserProject extends Module {
   io.oeb(24) := 0.U(1.W)
   */
 
+  //val spi_out = Cat(wc.io.flash.sck, 0.U, wc.io.flash.mosi ,wc.io.flash.cs)
+  //val spi_oeb = Cat(0.U, 1.U, 0.U, 0.U)
+
   // TODO make a Bundle for this
-  io.out := 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
-  io.oeb := 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
+  //io.out := spi_out ## 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
+  //io.oeb := spi_oeb ## 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
  
   // connect input ports
-  gpio.io.in := io.in(15,8)
-  wc.io.rx := io.in(25)
+  //gpio.io.in := io.in(15,8)
+  //wc.io.rx := io.in(25)
 
+  //wc.io.flash.miso := io.in(28)
 }

@@ -5,3 +5,7 @@ from user_proj_tests.gpio_set_output_test.gpio_set_output_test import gpio_set_o
 from user_proj_tests.wildcat_blink_test.wildcat_blink_test import wildcat_blink_test
 from user_proj_tests.video_test.video_test import video_test
 from user_proj_tests.wb_inst_mem_test.wb_inst_mem_test import wb_inst_mem_test
+from user_proj_tests.dmem_test.dmem_test import dmem_test
+from user_proj_tests.cache_test.cache_test import cache_test
+from user_proj_tests.spi_test.spi_test import spi_test
+from user_proj_tests.imem_2_boot.imem_2_boot import imem_2_boot

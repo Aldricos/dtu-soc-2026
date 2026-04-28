@@ -243,6 +243,20 @@ precheck: check-deprecated
 	@git clone --depth=1 https://github.com/chipfoundry/mpw_precheck.git $(PRECHECK_ROOT)
 	@docker pull chipfoundry/mpw_precheck:latest
 
+# Patch the `cf precheck` flow so its klayout_feol DRC passes
+# `-rd sram_exclude=true` and silences the 15 documented false-positive
+# SRAM-macro errors.
+#
+# `cf precheck` runs cf_precheck inside a Docker container that pip-installs
+# cf-precheck fresh on every run, so we can't just patch the host venv. Instead
+# we patch chipfoundry_cli (host) so its `inner_cmd` invokes our
+# scripts/patch_cf_precheck.sh INSIDE the container, between the pip install
+# and the cf-precheck call. Both scripts are idempotent — safe to re-run after
+# `pip install --upgrade chipfoundry-cli` or `cf-precheck`.
+.PHONY: patch-precheck
+patch-precheck:
+	bash scripts/patch_chipfoundry_cli.sh
+
 .PHONY: run-precheck
 run-precheck: check-deprecated check-pdk check-precheck
 	@if [ "$$DISABLE_LVS" = "1" ]; then\
