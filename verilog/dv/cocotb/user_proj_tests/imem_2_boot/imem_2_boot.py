@@ -23,7 +23,7 @@ from cocotb.triggers import ClockCycles
 @cocotb.test()
 @report_test
 async def imem_2_boot(dut):
-    caravelEnv = await test_configure(dut, timeout_cycles=7000000)
+    caravelEnv = await test_configure(dut, timeout_cycles=100000)
 
     await caravelEnv.wait_mgmt_gpio(1)
     cocotb.log.info("[TEST] GPIO configured, watching for blink on pin 24")
