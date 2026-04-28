@@ -1,2 +1,0 @@
-Tests:
-  - {name: spi_test, sim: RTL}

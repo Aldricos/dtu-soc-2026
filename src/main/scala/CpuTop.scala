@@ -1,5 +1,6 @@
 import chisel.lib.uart._
 import chisel3._
+import chisel3.util.RegEnable
 import wildcat.Util
 import wildcat.pipeline._
 import memory._
@@ -144,20 +145,18 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val rx = Module(new Rx(10000000, 115200))
   io.tx := tx.io.txd
   rx.io.rxd := io.rx
-
+  
   tx.io.channel.bits := cpu.io.dmem.wrData(7, 0)
   tx.io.channel.valid := false.B
-  rx.io.channel.ready := false.B
+  rx.io.channel.ready := cpu.io.dmem.rd && (cpu.io.dmem.address(31, 28) === 0xf.U && cpu.io.dmem.address(19,16) === 0.U && cpu.io.dmem.address(3, 0) === 4.U)
 
-  // UART 0xF
   val uartStatusReg = RegNext(rx.io.channel.valid ## tx.io.channel.ready)
-  val memAddressReg = RegNext(cpu.io.dmem.address)
+  val memAddressReg = RegEnable(cpu.io.dmem.address, 0.U, cpu.io.dmem.rd)
   when (memAddressReg(31, 28) === 0xf.U && memAddressReg(19,16) === 0.U) {
     when (memAddressReg(3, 0) === 0.U) {
       cpu.io.dmem.rdData := uartStatusReg
     } .elsewhen(memAddressReg(3, 0) === 4.U) {
       cpu.io.dmem.rdData := rx.io.channel.bits
-      rx.io.channel.ready := cpu.io.dmem.rd
     }
   }
 
