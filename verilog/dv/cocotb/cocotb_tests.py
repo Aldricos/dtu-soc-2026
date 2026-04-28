@@ -9,3 +9,4 @@ from user_proj_tests.dmem_test.dmem_test import dmem_test
 from user_proj_tests.cache_test.cache_test import cache_test
 from user_proj_tests.spi_test.spi_test import spi_test
 from user_proj_tests.imem_2_boot.imem_2_boot import imem_2_boot
+from user_proj_tests.test_psram_b.test_psram_b import test_psram_b

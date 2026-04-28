@@ -27,4 +27,5 @@ includes:
     - cache_test/cache_test.yaml
     - spi_test/spi_test.yaml
     - imem_2_boot/imem_2_boot.yaml
+    - test_psram_b/test_psram_b.yaml
 
