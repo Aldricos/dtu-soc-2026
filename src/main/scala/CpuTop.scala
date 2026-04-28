@@ -24,7 +24,9 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val rx = Input(UInt(1.W))
     val video = Output(UInt(8.W))
     val wb = Flipped(new WishboneIO(32))
-    val flash = new SpiMemIO
+    val pmod = new QspiPmodIO
+    val flashCtrl = new FlashCtrlIO
+    val progMode = Input(Bool())
   })
 
   val (memory, start) = Util.getCode(file)
@@ -38,7 +40,9 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
   cpu.io.imem <> imem.io.cpu  //cpu.io.imem <> imem.io
   imem.io.wb <> io.wb
-  io.flash <> spiMem.io.spi
+  io.pmod <> spiMem.io.spi
+  spiMem.io.ctrl <> io.flashCtrl
+  spiMem.io.progMode := io.progMode
 
   // ------------------------------------------------
   // Memory Connections

@@ -53,6 +53,12 @@ class CaravelUserProject extends Module {
   lukeClock.wb <> wb
   lukeClock.wb.cyc := 0.B
 
+  val spiPmod = Module(new WishboneSpiPmod)
+  spiPmod.wb <> wb
+  spiPmod.wb.cyc := 0.B
+  spiPmod.ctrl <> wc.io.flashCtrl
+  wc.io.progMode := spiPmod.progMode
+
   // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
     // imem.wb<>wb
     // imem.wb.cyc:=0.B
@@ -83,6 +89,11 @@ class CaravelUserProject extends Module {
     // }
     is (0x4.U) {
       wcReset := true.B
+    }
+    is(0x5.U) {
+      spiPmod.wb.cyc := wb.cyc
+      wb.ack := spiPmod.wb.ack
+      wb.rdData := spiPmod.wb.rdData
     }
     is(0x7.U) {
       lukeClock.wb.cyc := wb.cyc
@@ -117,11 +128,11 @@ class CaravelUserProject extends Module {
   oebVec(25) := true.B
 
   // SPI 29..26
-  outVec(26) := wc.io.flash.cs
-  outVec(27) := wc.io.flash.mosi
-  wc.io.flash.miso := io.in(28)
+  outVec(26) := wc.io.pmod.cs0
+  outVec(27) := wc.io.pmod.sd0
+  wc.io.pmod.sd1 := io.in(28)
   oebVec(28) := true.B
-  outVec(29) := wc.io.flash.sck
+  outVec(29) := wc.io.pmod.sck
 
   // VGA luke_clock
   outVec(30) := lukeClock.io.hSyncOut
