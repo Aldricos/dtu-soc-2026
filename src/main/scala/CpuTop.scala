@@ -137,12 +137,11 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val rx = Module(new Rx(10000000, 115200))
   io.tx := tx.io.txd
   rx.io.rxd := io.rx
-
+  
   tx.io.channel.bits := cpu.io.dmem.wrData(7, 0)
   tx.io.channel.valid := false.B
-  rx.io.channel.ready := false.B
+  rx.io.channel.ready := cpu.io.dmem.rd && (cpu.io.dmem.address(31, 28) === 0xf.U && cpu.io.dmem.address(19,16) === 0.U && cpu.io.dmem.address(3, 0) === 4.U)
 
-  // UART 0xF
   val uartStatusReg = RegNext(rx.io.channel.valid ## tx.io.channel.ready)
   val memAddressReg = RegNext(cpu.io.dmem.address)
   when (memAddressReg(31, 28) === 0xf.U && memAddressReg(19,16) === 0.U) {
@@ -150,7 +149,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
       cpu.io.dmem.rdData := uartStatusReg
     } .elsewhen(memAddressReg(3, 0) === 4.U) {
       cpu.io.dmem.rdData := rx.io.channel.bits
-      rx.io.channel.ready := cpu.io.dmem.rd
     }
   }
 
