@@ -143,7 +143,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   rx.io.channel.ready := cpu.io.dmem.rd && (cpu.io.dmem.address(31, 28) === 0xf.U && cpu.io.dmem.address(19,16) === 0.U && cpu.io.dmem.address(3, 0) === 4.U)
 
   val uartStatusReg = RegNext(rx.io.channel.valid ## tx.io.channel.ready)
-  val memAddressReg = RegNext(cpu.io.dmem.address)
+  val memAddressReg = RegEnable(cpu.io.dmem.address, 0.U, cpu.io.dmem.rd)
   when (memAddressReg(31, 28) === 0xf.U && memAddressReg(19,16) === 0.U) {
     when (memAddressReg(3, 0) === 0.U) {
       cpu.io.dmem.rdData := uartStatusReg
