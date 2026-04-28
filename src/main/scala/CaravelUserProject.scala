@@ -4,6 +4,7 @@ import chisel3.util._
 import wishbone.WishboneIO
 import wildcat.pipeline._
 import programmable_IMEM.programmable_IMEM
+import comm_controller.comm_controller
 
 object CaravelUserProject extends App {
   emitVerilog(
@@ -33,6 +34,9 @@ class CaravelUserProject extends Module {
   wc.reset := wcReset
   wc.io.wb <> wb
   wc.io.wb.cyc := 0.B
+  wc.io.wb_2 <> wb
+  wc.io.wb_2.cyc := 0.B
+  
 
   val led = wc.io.led
   val tx = wc.io.tx
@@ -42,6 +46,12 @@ class CaravelUserProject extends Module {
   val gpio = Module(new WishboneGpio(8))
   gpio.wb <> wb
   gpio.wb.cyc := 0.B
+
+  val comm = Module(new comm_controller())
+  comm.wb <> wb
+  comm.wb.cyc <> 0.B
+  wc.io.cpu_reset := comm.cpu_reset
+  wc.io.imem_sel := comm.imem_sel
 
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
@@ -76,13 +86,18 @@ class CaravelUserProject extends Module {
       wb.ack := wc.io.wb.ack
       wb.rdData := wc.io.wb.rdData
     }
-    // is(0x3.U){
-    //   imem.wb.cyc := wb.cyc
-    //   wb.ack := imem.wb.ack
-    //   wb.rdData := imem.wb.rdData
+    is(0x3.U){
+      wc.io.wb_2.cyc := wb.cyc
+      wb.ack := wc.io.wb_2.ack
+      wb.rdData := wc.io.wb_2.rdData
+    }
+    // is (0x4.U) {
+    //   wcReset := true.B
     // }
-    is (0x4.U) {
-      wcReset := true.B
+    is (0x4.U){
+      comm.wb.cyc := wb.cyc
+      wb.ack := comm.wb.ack
+      wb.rdData := comm.wb.rdData
     }
     is(0x7.U) {
       lukeClock.wb.cyc := wb.cyc

@@ -100,6 +100,13 @@
                     ],
                     "orientation": "N"
                 },
+                "wc.imem_2.mem": {
+                    "location": [
+                        1900,
+                        700
+                    ],
+                    "orientation": "N"
+                },
                 "wc.dmem.bank": {
                     "location": [
                         100,
@@ -137,6 +144,7 @@
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
         "wc.videoController.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1",
         "wc.imem.ram vccd1 vssd1 vccd1 vssd1",
+        "wc.imem_2.mem vccd1 vssd1 vccd1 vssd1",
         "wc.dmem.bank vccd1 vssd1 vccd1 vssd1"
     ]
 }
