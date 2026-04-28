@@ -44,23 +44,20 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // Memory Connections
   // ------------------------------------------------
   // Memory Registers
-  // TODO: why are those signals registered? Can we not just connect them directly?
   val memAddrReg   = RegNext(cpu.io.dmem.address)
+  // TODO: why are those signals registered? This seems wrong. Can we not just connect them directly?
   val memRdReg     = RegNext(cpu.io.dmem.rd, false.B)
   val memWrReg     = RegNext(cpu.io.dmem.wr, false.B)
   val memWrDataReg = RegNext(cpu.io.dmem.wrData)
   val memWrMaskReg = RegNext(cpu.io.dmem.wrMask)
 
-  // Default CPU outputs
-  cpu.io.dmem.rdData := 0.U
-  cpu.io.dmem.ack    := false.B
-
-  // Default dmem inputs
-  dmem.io.address := 0.U
-  dmem.io.rd      := false.B
-  dmem.io.wr      := false.B
-  dmem.io.wrData  := 0.U
-  dmem.io.wrMask  := 0.U
+  // Default access to data memory
+  cpu.io.dmem <> dmem.io
+  // Gate rd and wr signal with address
+  when (cpu.io.dmem.address(31, 28) =/= 0.U) {
+    dmem.io.rd      := false.B
+    dmem.io.wr      := false.B
+  }
 
   // Default cache CPU-side inputs
   cache.io.cpuIO.address := memAddrReg
@@ -131,6 +128,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // ------------------------------------------------
   // Memory
   // ------------------------------------------------
+  /*
   when (memAddrReg(31, 28) === 0x0.U) { // DMem 0x0
     dmem.io.address := memAddrReg
     dmem.io.rd      := memRdReg
@@ -141,6 +139,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := dmem.io.rdData
     cpu.io.dmem.ack    := dmem.io.ack
   }
+  */
   when (memAddrReg(31, 28) === 0xe.U) { // CACHE 0xE
     // CPU -> cache
     cache.io.cpuIO.address := memAddrReg
