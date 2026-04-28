@@ -25,4 +25,5 @@ includes:
     - wb_inst_mem_test/wb_inst_mem_test.yaml
     - dmem_test/dmem_test.yaml
     - cache_test/cache_test.yaml
+    - imem_2_boot/imem_2_boot.yaml
 

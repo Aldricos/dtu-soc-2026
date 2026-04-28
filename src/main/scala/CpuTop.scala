@@ -5,6 +5,7 @@ import wildcat.pipeline._
 import memory._
 import videoController.VideoController
 import wishbone.WishboneIO
+import programmable_IMEM.programmable_IMEM
 
 /*
  * This file is a modification of the RISC-V processor Wildcat
@@ -25,6 +26,9 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val video = Output(UInt(8.W))
     val wb = Flipped(new WishboneIO(32))
     val flash = new SpiMemIO
+    val imem_sel = Input(Bool())
+    val wb_2 = Flipped(new WishboneIO(32))
+    val cpu_reset = Input(Bool())
   })
 
   val (memory, start) = Util.getCode(file)
@@ -32,13 +36,22 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val cpu = Module(new ThreeCats())
   val dmem = Module(new DataMemory()) //val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
   val imem = Module(new WishboneInstrRam) //val imem = Module(new InstructionROM(memory))
+  val imem_2 = Module(new(programmable_IMEM))
+  val imem_mux = Module(new(imem_mux))
+  cpu.reset := io.cpu_reset
 
   val cache = Module(new DataCache())
   val spiMem = Module(new SpiFlashController())
 
-  cpu.io.imem <> imem.io.cpu  //cpu.io.imem <> imem.io
+  // cpu.io.imem <> imem.io.cpu  //cpu.io.imem <> imem.io
+  imem.io.cpu<>imem_mux.imem_0
+  imem_2.cpu_connection <> imem_mux.imem_1
+  imem_2.cpu_enable := !io.cpu_reset
+  imem_mux.sel <> io.imem_sel
+  cpu.io.imem <> imem_mux.cpu
   imem.io.wb <> io.wb
   io.flash <> spiMem.io.spi
+  io.wb_2 <> imem_2.wb
 
   // ------------------------------------------------
   // Memory Connections
