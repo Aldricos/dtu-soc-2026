@@ -140,14 +140,11 @@ class CaravelUserProject extends Module {
   // GROUP 5 SPI PMOD (Pins 0 to 7)
   outVec(0) := wc.io.g5_spi_cs0_n
   outVec(1) := wc.io.g5_spi_mosi
-  wc.io.g5_spi_miso := io.in(2) // MISO is an input
-  oebVec(2) := true.B           // Mark pin 2 as input
+  wc.io.g5_spi_miso := io.in(2)
+  oebVec(2) := true.B                 // pin 2 is input
   outVec(3) := wc.io.g5_spi_sck
-
-  outVec(4) := true.B // SD2 (not used)
-  outVec(5) := true.B // SD3 (not used)
-  outVec(6) := wc.io.g5_spi_cs1_n
-  outVec(7) := wc.io.g5_spi_cs2_n
+  outVec(4) := wc.io.g5_spi_cs1_n    // moved from pin 6
+  outVec(5) := wc.io.g5_spi_cs2_n    // moved from pin 7 — conflict resolved
   // ==========================================
 
   // connect output ports

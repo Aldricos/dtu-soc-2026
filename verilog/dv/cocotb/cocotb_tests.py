@@ -7,3 +7,4 @@ from user_proj_tests.video_test.video_test import video_test
 from user_proj_tests.wb_inst_mem_test.wb_inst_mem_test import wb_inst_mem_test
 from user_proj_tests.dmem_test.dmem_test import dmem_test
 from user_proj_tests.cache_test.cache_test import cache_test
+from user_proj_tests.spi_test.spi_test import spi_test

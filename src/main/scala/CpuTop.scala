@@ -217,8 +217,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
     cpu.io.dmem.rdData := g5SpiCtrl.io.pipecon.rdData
     cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
-
-    dmem.io.wr := false.B // Prevent scratchpad overwrite
   }
 }
 
