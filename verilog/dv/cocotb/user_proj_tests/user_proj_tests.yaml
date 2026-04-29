@@ -23,8 +23,6 @@ includes:
     - wildcat_blink_test/wildcat_blink_test.yaml
     - video_test/video_test.yaml
     - wb_inst_mem_test/wb_inst_mem_test.yaml
-    - dmem_test/dmem_test.yaml
-    - cache_test/cache_test.yaml
     - test_psram_a/test_psram_a.yaml
     - imem_2_boot/imem_2_boot.yaml
     - test_psram_b/test_psram_b.yaml

@@ -1,35 +1,4 @@
-## Integrate Wildcat in Caravel
-Import the 3-stage wildcat using
-```scala
-    import wildcat.pipeline._
-```
-in `CaravelUserProject`
-
-Compile binary (example "Blink"):
-```bash
-    make -C wildcat/ app APP=asm/apps/blink.s
-```
-
-A binary file will be created
-```txt
-    "wildcat/a.out"
-```
-
-Initiate the wildcat as a module and make the relevant I/O connections. Ex
-```Scala
-val wc = Module(new WildcatTop("wildcat/a.out"))
-val led = wc.io.led
-val tx = wc.io.tx
-wc.io.rx := false.B //Tentative
-```
-
-Run the CaravelUserProject
-```shell
-sbt "runMain CaravelUserProject"
-```
-
-
-## Project Idea
+# Group 0
 ___
 ### SPI
 Add a memory controller module between CPU and
@@ -54,50 +23,70 @@ Where
 
 This means that 4 pads should be reserved for the memory control
 ___
-### Cache
-Data focused cache, which enables extra memory, 
-and fetching from SPI-based off-chip memory 
-if it is a miss (refilling the cache)
+## Data Cache
 
-Small cache FSM:
-- `idle`
-- `miss`
-- `refill`
+The cache is a simple data cache placed between the processor and the external/backing memory connected via SPI. 
+The cache is intended to reduce repeated memory accesses for recently read data while keeping the implementation small and easy to verify.
 
-In `idle`:
-- if request is a hit, serve immediately
-- if miss, latch request and start memory fetch
+### Cache Organization
 
-In `missWait`:
-- hold CPU stalled
-- wait for off-chip controller
+The cache is implemented as a direct-mapped cache with 256 entries. Each entry stores one 32-bit word.
 
-When refill completes:
-- update cache arrays
-- provide `rdData`
-- return to `idle`
+CPU addresses in the cached memory region use the range:
 
-## Makefile
-added:
-```make
-##### INTEGRATING WILDCAT MAKEFILE #####
-UNAME := $(shell uname)
-ifeq ($(UNAME),Darwin)
-# assuming tools are installed with Mac Homebrew
-export CROSS=riscv64-elf-
-else
-export CROSS=riscv64-unknown-elf-
-endif
-APP=apps/blink.s
-
-chisel-generate:
-	$(CROSS)as -march rv32ia_zicsr $(APP) -o a.o
-	$(CROSS)ld -m elf32lriscv -T wildcat/link.ld a.o -o a.out
-	sbt "runMain CaravelUserProject"
-
-chisel-test:
-	sbt test
+```text
+0xe000_0000 - 0xefff_ffff
 ```
 
-for the wildcat integration, to compile assembly files
+Internally, the cache strips the upper memory-map nibble and uses the lower 28 bits as the local address:
+```text
+localAddr = cpuAddr[27:0]
+```
 
+The address is divided as follows:
+```text
+offset = localAddr[1:0]
+index  = localAddr[9:2]
+tag    = localAddr[27:10]
+```
+
+Each cache entry has associated metadata containing a valid bit and a tag. 
+A cache hit occurs when the selected entry is valid and its stored tag matches the requested tag.
+
+
+
+### Cache Policy
+The cache uses the following policy:
+```text
+Read policy:        read-allocate
+Write policy:       write-through
+Write miss policy:  no-write-allocate
+Replacement:        direct-mapped replacement
+Line size:          one 32-bit word
+```
+On a read hit, the cache returns the stored word directly. 
+On a read miss, the word is fetched from backing memory, written into the cache, and returned to the CPU.
+
+On a write hit, the cache writes the value to backing memory and updates the cached copy. 
+On a write miss, the cache writes the value to backing memory but does not allocate a cache entry. 
+This keeps backing memory consistent while avoiding cache pollution from write-only data.
+
+Byte-masked writes are supported. 
+The selected bytes are updated in backing memory, and if the write hits in the cache, the cached word is updated with the same mask.
+
+### Testing
+#### Software Test
+The cache is tested using Chisel tests with a software backing-memory model. The tests verify the main cache-policy behavior:
+
+| Test                  | Purpose                                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| Read miss fills cache | Verifies that a first read fetches from backing memory and later reads return the cached value |
+| Write-through update  | Verifies that CPU writes are forwarded to backing memory                                       |
+| Byte-mask write       | Verifies that masked writes update only selected bytes in backing memory                       |
+| Different indices     | Verifies that different cache indices can hold independent cached words                        |
+| Conflict replacement  | Verifies that two addresses with the same index but different tags replace each other          |
+| Repeated cached reads | Verifies that repeated reads to a cached word return the cached value                          |
+| Write hit update      | Verifies that a write hit updates both backing memory and the cached copy                      |
+
+#### Hardware Test (FPGA)
+TBD
