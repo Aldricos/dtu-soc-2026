@@ -10,3 +10,4 @@ from user_proj_tests.cache_test.cache_test import cache_test
 from user_proj_tests.test_psram_a.test_psram_a import test_psram_a
 from user_proj_tests.imem_2_boot.imem_2_boot import imem_2_boot
 from user_proj_tests.test_psram_b.test_psram_b import test_psram_b
+from user_proj_tests.test_flash_read.test_flash_read import test_flash_read
