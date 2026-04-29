@@ -88,7 +88,7 @@
                 },
                 "wc.videoController.terminal.videoBuffer.mem": {
                     "location": [
-                        1700,
+                        1500,
                         100
                     ],
                     "orientation": "S"
@@ -109,7 +109,7 @@
                 },
                 "wc.cache.metaRam": {
                     "location": [
-                        1700,
+                        1500,
                         800
                     ],
                     "orientation": "N"
