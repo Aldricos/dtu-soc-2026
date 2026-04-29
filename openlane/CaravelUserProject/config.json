@@ -72,45 +72,45 @@
     "MACROS": {
         "sky130_sram_1kbyte_1rw1r_32x256_8": {
             "instances": {
-                "wc.cache.dataRam": {
-                    "location": [
-                        100,
-                        100
-                    ],
-                    "orientation": "N"
-                },
-                "wc.cache.metaRam": {
-                    "location": [
-                        700,
-                        100
-                    ],
-                    "orientation": "N"
-                },
-                "wc.videoController.terminal.videoBuffer.mem": {
-                    "location": [
-                        1300,
-                        100
-                    ],
-                    "orientation": "N"
-                },
                 "wc.imem.ram": {
                     "location": [
-                        1900,
+                        100,
                         100
                     ],
                     "orientation": "N"
                 },
                 "wc.imem_2.mem": {
                     "location": [
-                        1900,
-                        700
+                        900,
+                        100
                     ],
                     "orientation": "N"
+                },
+                "wc.videoController.terminal.videoBuffer.mem": {
+                    "location": [
+                        1500,
+                        100
+                    ],
+                    "orientation": "S"
                 },
                 "wc.dmem.bank": {
                     "location": [
                         100,
-                        700
+                        800
+                    ],
+                    "orientation": "N"
+                },
+                "wc.cache.dataRam": {
+                    "location": [
+                        900,
+                        800
+                    ],
+                    "orientation": "N"
+                },
+                "wc.cache.metaRam": {
+                    "location": [
+                        1500,
+                        800
                     ],
                     "orientation": "N"
                 }

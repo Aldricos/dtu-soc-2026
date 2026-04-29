@@ -40,7 +40,6 @@ class CaravelUserProject extends Module {
 
   val led = wc.io.led
   val tx = wc.io.tx
-  val video = wc.io.video
 
   // create dummy gpio peripheral for testing
   val gpio = Module(new WishboneGpio(8))
@@ -134,10 +133,7 @@ class CaravelUserProject extends Module {
   }
   gpio.io.in := io.in(15, 8)
 
-  // Video 23..16
-  for (i <- 0 until 8) {
-    outVec(16 + i) := video(i)
-  }
+
 
   // LED on pin 24
   outVec(24) := led(0)
@@ -153,15 +149,15 @@ class CaravelUserProject extends Module {
   oebVec(28) := true.B
   outVec(29) := wc.io.flash.sck
 
-  // VGA luke_clock
-  outVec(30) := lukeClock.io.hSyncOut
-  outVec(31) := lukeClock.io.vSyncOut
-  outVec(32) := lukeClock.io.redOut(0)
-  outVec(33) := lukeClock.io.redOut(1)
-  outVec(34) := lukeClock.io.greenOut(0)
-  outVec(35) := lukeClock.io.greenOut(1)
-  outVec(36) := lukeClock.io.blueOut(0)
-  outVec(37) := lukeClock.io.blueOut(1)
+  // VGA out
+  outVec(30) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.hSyncOut, wc.video.hSync) )))
+  outVec(31) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.vSyncOut, wc.video.vSync) )))
+  outVec(32) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.redOut(0), wc.video.red(0)) )))
+  outVec(33) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.redOut(1), wc.video.red(1)) )))
+  outVec(34) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.greenOut(0), wc.video.green(0)) )))
+  outVec(35) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.greenOut(1), wc.video.green(1)) )))
+  outVec(36) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.blueOut(0), wc.video.blue(0)) )))
+  outVec(37) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.blueOut(1), wc.video.blue(1)) )))
 
   io.out := outVec.asUInt
   io.oeb := oebVec.asUInt

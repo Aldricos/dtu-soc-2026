@@ -29,4 +29,5 @@ includes:
     - imem_2_boot/imem_2_boot.yaml
     - test_psram_b/test_psram_b.yaml
     - test_flash_read/test_flash_read.yaml
+    - caravel_wildcat_comm_test/caravel_wildcat_comm_test.yaml
 
