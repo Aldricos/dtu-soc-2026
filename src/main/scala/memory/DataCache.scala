@@ -128,10 +128,11 @@ class DataCache() extends Module {
   // FSM
   // ------------------------------------------------
 
-  // FSM States
+  // States
   val sInit :: sIdle :: sMetaRead :: sCheckHit :: sDataRead :: sDataWait :: sHitRead :: sReadMiss :: sWriteMem :: sWriteCache :: Nil = Enum(10)
   val state = RegInit(sInit)
 
+  // State Machine
   switch(state) {
     is(sInit) {
       metaRam.io.csb0   := false.B
