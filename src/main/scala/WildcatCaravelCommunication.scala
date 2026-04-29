@@ -2,16 +2,10 @@ import chisel3._
 import chisel3.util._
 import wishbone.WishboneIO
 
-/**
-  * Wishbone n-bit GPIO peripheral with 3 registers:
-  * - input register at address 0x0 (read-only)
-  * - output register at address 0x4 (read-write)
-  * - oeb register at address 0x8 (read-write) (1 = input, 0 = output)
-  */
 class WildcatCaravelCommunication() extends Module {
 
-  // we only need 2 bits to address the 2 registers (input, output)
-  val WB_ADDR_WIDTH = 2
+  // we only need 3 bits to address the 2 registers (input, output)
+  val WB_ADDR_WIDTH = 3
 
   val wb = IO(Flipped(new WishboneIO(WB_ADDR_WIDTH)))
   val io = IO(new Bundle {
@@ -34,7 +28,7 @@ class WildcatCaravelCommunication() extends Module {
 
   // address decoding for the registers
   val inAccess = wb.addr === 0.U
-  val outAccess = wb.addr === 1.U
+  val outAccess = wb.addr === 4.U
 
   // wishbone bus response logic (wishbone read)
   wb.ack := ackReg
@@ -45,7 +39,7 @@ class WildcatCaravelCommunication() extends Module {
 
   // wishbone write logic
   when(ackReg && wb.we) {
-    when(outAccess) { toWildcatReg := wb.wrData }
+    toWildcatReg := wb.wrData
   }
 
   //wildcat write
