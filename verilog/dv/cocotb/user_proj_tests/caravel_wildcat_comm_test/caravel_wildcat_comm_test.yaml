@@ -1,0 +1,2 @@
+Tests:
+  - {name: caravel_wildcat_comm_test, sim: RTL}

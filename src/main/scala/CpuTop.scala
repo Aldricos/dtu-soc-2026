@@ -230,15 +230,11 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   //Wildcat Caravel communication 
   // 0xC000_0000 <- maybe move
   io.comWriteData := cpu.io.dmem.wrData
-  io.comWriteValid := false.B 
+  io.comWriteValid := cpu.io.dmem.address(31, 28) === 0xc.U
 
   when (memAddressReg(31, 28) === 0xc.U){
     cpu.io.dmem.rdData := io.comReadData
     cpu.io.dmem.ack := true.B
-
-    when (cpu.io.dmem.wr) {
-      io.comWriteValid := true.B
-    }
   }
 
   // ------------------------------------------------
