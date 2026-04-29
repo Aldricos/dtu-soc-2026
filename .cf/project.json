@@ -42,8 +42,6 @@
       "37": "13'h1808"
     },
     "platform_project_id": "6498d2f1-fdcf-498d-ade0-26f48bf48ec8"
-<<<<<<< HEAD
-=======
   },
   "precheck": {
     "version": "1.3.1",
@@ -764,6 +762,7 @@
         "duration_s": 0,
         "reason": "optional (use --magic-drc to include)"
       }
-    }
+    },
+    "input_file_hash": "d16dd0dd54a55f3710b88a49281ad142abcdf1b5"
   }
 }
