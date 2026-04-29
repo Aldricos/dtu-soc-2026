@@ -26,13 +26,14 @@ class SpiMemoryController extends Module {
     val spi     = new Group5SpiPhysicalIO()
   })
 
-  val DIVIDER_RATIO = 8 // Safe 12.5MHz
 
   val sIdle :: sDoTransfer :: sCsToggle :: sDone :: Nil = Enum(4)
   val state     = RegInit(sIdle)
   val nextState = RegInit(sIdle)
 
-  val clkDiv         = RegInit(0.U(8.W))
+  // sckPhase: false = about to do rising edge, true = about to do falling edge
+  val sckPhase       = RegInit(false.B)
+
   val shiftReg       = RegInit(0.U(72.W))
   val readData       = RegInit(0.U(32.W))
   val bitsToTransfer = RegInit(0.U(7.W))
@@ -59,17 +60,13 @@ class SpiMemoryController extends Module {
   io.pipecon.ack    := false.B
   io.pipecon.rdData := readData
 
-  val tick     = (clkDiv === (DIVIDER_RATIO - 1).U)
-  val halfTick = (clkDiv === ((DIVIDER_RATIO / 2) - 1).U)
-  clkDiv := Mux(tick, 0.U, clkDiv + 1.U)
-
   switch(state) {
     is(sIdle) {
       spiCs0nReg := true.B
       spiCs1nReg := true.B
       spiCs2nReg := true.B
       spiSckReg  := false.B
-      clkDiv     := 0.U
+      sckPhase   := false.B
       delayCnt   := 0.U
 
       when(io.pipecon.rd || io.pipecon.wr) {
@@ -129,16 +126,21 @@ class SpiMemoryController extends Module {
     }
 
     is(sDoTransfer) {
-      when(halfTick) {
+      // Toggle sckPhase every system clock — gives 5MHz SCK at 10MHz sys-clk
+      sckPhase := !sckPhase
+      when(!sckPhase) {
+        // ---- Rising edge ----
         spiSckReg := true.B
         when(bitsToTransfer <= 32.U) {
           readData := Cat(readData(30, 0), io.spi.miso)
         }
-      }
-      when(tick) {
+      } .otherwise {
+        // ---- Falling edge ----
         spiSckReg := false.B
         when(bitsToTransfer === 1.U) {
-          state := nextState
+          // Last bit just clocked — move to next state
+          state    := nextState
+          sckPhase := false.B
         } .otherwise {
           spiMosiReg     := shiftReg(71)
           shiftReg       := Cat(shiftReg(70, 0), 0.U(1.W))
@@ -149,8 +151,15 @@ class SpiMemoryController extends Module {
 
     is(sCsToggle) {
       spiCs0nReg := true.B
-      when(clkDiv === 20.U) {
+      delayCnt   := delayCnt + 1.U
+
+      // Hold CS high for 20 system clock cycles (~2µs at 10MHz)
+      // Flash tSHSL (CS high time between commands) minimum = 50ns — satisfied
+      when(delayCnt === 19.U) {
         spiCs0nReg := false.B
+        delayCnt   := 0.U
+        sckPhase   := false.B
+
         when(isFlashErase) {
           spiMosiReg     := false.B
           shiftReg       := Cat("h20".U(8.W)(6, 0), addrReg, 0.U(41.W))
@@ -165,10 +174,7 @@ class SpiMemoryController extends Module {
           bitsToTransfer := 64.U
         }
         nextState := sDone
-        clkDiv    := 0.U
         state     := sDoTransfer
-      } .otherwise {
-        clkDiv := clkDiv + 1.U
       }
     }
 

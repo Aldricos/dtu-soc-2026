@@ -12,13 +12,13 @@ async def test_psram_b(dut):
     await caravelEnv.wait_mgmt_gpio(1)
     cocotb.log.info("IOs configured! Wildcat is running...")
 
-    cocotb.log.info("Monitoring CS2_n (Pin 5). Waiting for PSRAM B transaction...")
+    cocotb.log.info("Monitoring CS2_n (Pin 21). Waiting for PSRAM B transaction...")
 
     cs2_found = False
     for _ in range(1000000):
         await RisingEdge(caravelEnv.clk)
-        pin5_val = caravelEnv.monitor_gpio(5, 5).binstr
-        if pin5_val == '0':
+        pin21_val = caravelEnv.monitor_gpio(21, 21).binstr
+        if pin21_val == '0':
             cs2_found = True
             break
 

@@ -1,0 +1,2 @@
+Tests:
+  - {name: test_flash_read, sim: RTL}
