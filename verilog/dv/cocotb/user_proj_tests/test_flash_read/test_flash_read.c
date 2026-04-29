@@ -9,12 +9,12 @@ void main() {
     enableHkSpi(0);
 
     // Configure Group 5 SPI Pins
-    GPIOs_configure(0, GPIO_MODE_USER_STD_OUTPUT);       // CS0_n (Flash)
-    GPIOs_configure(1, GPIO_MODE_USER_STD_OUTPUT);       // MOSI
-    GPIOs_configure(2, GPIO_MODE_USER_STD_INPUT_NOPULL); // MISO
-    GPIOs_configure(3, GPIO_MODE_USER_STD_OUTPUT);       // SCK
-    GPIOs_configure(4, GPIO_MODE_USER_STD_OUTPUT);       // CS1_n
-    GPIOs_configure(5, GPIO_MODE_USER_STD_OUTPUT);       // CS2_n
+    GPIOs_configure(16, GPIO_MODE_USER_STD_OUTPUT);       // CS0_n  (Flash)
+    GPIOs_configure(17, GPIO_MODE_USER_STD_OUTPUT);       // MOSI
+    GPIOs_configure(18, GPIO_MODE_USER_STD_INPUT_NOPULL); // MISO   (Input!)
+    GPIOs_configure(19, GPIO_MODE_USER_STD_OUTPUT);       // SCK
+    GPIOs_configure(20, GPIO_MODE_USER_STD_OUTPUT);       // CS1_n  (PSRAM A)
+    GPIOs_configure(21, GPIO_MODE_USER_STD_OUTPUT);       // CS2_n  (PSRAM B)
 
     GPIOs_loadConfigs();
     User_enableIF();
