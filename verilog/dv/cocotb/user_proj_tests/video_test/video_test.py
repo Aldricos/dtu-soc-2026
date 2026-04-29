@@ -19,7 +19,7 @@ async def video_test(dut):
     EXPECTED_CYCLES = ACTIVE + FRONT_PORCH + SYNC_PULSE + BACK_PORCH
 
     for _ in range(100000):
-        hSync = caravelEnv.monitor_gpio(23, 23)
+        hSync = caravelEnv.monitor_gpio(30, 30)
         if hSync == 0 and state == "waiting":
             state = "sync_pulse"
             cycles = 0

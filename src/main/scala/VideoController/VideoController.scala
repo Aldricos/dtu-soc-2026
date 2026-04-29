@@ -11,8 +11,14 @@ class VideoController extends Module {
     val address = Input(UInt(12.W))
     val wrData = Input(UInt(8.W))
     val wr = Input(Bool())
+  })
 
-    val video = Output(UInt(8.W))
+  val video = IO(new Bundle {
+    val hSync = Output(Bool())
+    val vSync = Output(Bool())
+    val red = Output(UInt(2.W))
+    val green = Output(UInt(2.W))
+    val blue = Output(UInt(2.W))
   })
 
   val horizontal = RegInit(0.U(log2Up(VgaConstants.H_TOTAL).W))
@@ -39,7 +45,11 @@ class VideoController extends Module {
   val green = Mux(videoActive, terminal.io.green, 0.U)
   val blue = Mux(videoActive, terminal.io.blue, 0.U)
 
-  io.video := RegNext(RegNext(hSync ## vSync) ## red ## green ## blue)
+  video.hSync := RegNext(RegNext(hSync))
+  video.vSync := RegNext(RegNext(vSync))
+  video.red := RegNext(red)
+  video.green := RegNext(green)
+  video.blue := RegNext(blue)
 }
 
 object VideoController extends App {
