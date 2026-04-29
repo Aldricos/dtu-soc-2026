@@ -1,6 +1,6 @@
 {
   "project": {
-    "name": "dtu-soc-2026",
+    "name": "DTU SoC 2026",
     "type": "digital",
     "user": "martin-schoeberl",
     "version": "1",
@@ -40,6 +40,7 @@
       "35": "13'h1808",
       "36": "13'h1808",
       "37": "13'h1808"
-    }
+    },
+    "platform_project_id": "6498d2f1-fdcf-498d-ade0-26f48bf48ec8"
   }
 }
