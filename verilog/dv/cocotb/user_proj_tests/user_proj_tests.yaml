@@ -29,4 +29,5 @@ includes:
     - test_flash_read/test_flash_read.yaml
     - caravel_wildcat_comm_test/caravel_wildcat_comm_test.yaml
     - test_flash_page_prog/test_flash_page_prog.yaml
+    - test_flash_sec_erase/test_flash_sec_erase
 
