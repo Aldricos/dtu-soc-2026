@@ -42,9 +42,11 @@ class CaravelUserProject extends Module {
   val tx = wc.io.tx
 
   // create dummy gpio peripheral for testing
+  /*
   val gpio = Module(new WishboneGpio(8))
   gpio.wb <> wb
   gpio.wb.cyc := 0.B
+  */
 
   val comm = Module(new comm_controller())
   comm.wb <> wb
@@ -80,11 +82,13 @@ class CaravelUserProject extends Module {
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
   // bits [27:20] are used for decoding
   switch(wb.addr(27, 20)) {
+    /*
     is(0x0.U) {
       gpio.wb.cyc := wb.cyc
       wb.ack := gpio.wb.ack
       wb.rdData := gpio.wb.rdData
     }
+    */
     is(0x1.U) {
       gcd.wb.cyc := wb.cyc
       wb.ack := gcd.wb.ack
@@ -120,18 +124,37 @@ class CaravelUserProject extends Module {
     }
   }
 
-  val outVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(false.B)))
-  val oebVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(false.B)))
+  val lc = Module(new LittleCat())
+
+  val outVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(0.U(1.W))))
+  val oebVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(0.U(1.W))))
 
   // UART TX on pin 7
   outVec(7) := tx
 
+  // LitlleCat on pins 8..15
+  outVec(8) := lc.io.out(0)
+  outVec(9) := lc.io.out(1)
+  lc.io.in := io.in(11, 10)
+  oebVec(10) := true.B
+  oebVec(11) := true.B 
+  lc.io.rx := io.in(12)
+  oebVec(12) := true.B
+  outVec(13) := lc.io.tx
+  lc.io.rxConf := io.in(14)
+  oebVec(14) := true.B
+  outVec(15) := lc.io.txConf
+
+
+  /*
   // GPIO 15..8
   for (i <- 0 until 8) {
     outVec(8 + i) := gpio.io.out(i)
     oebVec(8 + i) := gpio.io.oeb(i)
   }
   gpio.io.in := io.in(15, 8)
+    */
+
 
 
 
@@ -159,9 +182,6 @@ class CaravelUserProject extends Module {
   outVec(36) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.blueOut(0), wc.video.blue(0)) )))
   outVec(37) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.blueOut(1), wc.video.blue(1)) )))
 
-  io.out := outVec.asUInt
-  io.oeb := oebVec.asUInt
-
   // ==========================================
   // GROUP 5 SPI PMOD (Pins 16 to 23)
   /*
@@ -175,6 +195,10 @@ class CaravelUserProject extends Module {
   */
   wc.io.g5_spi_miso := 0.U
   // ==========================================
+
+
+  io.out := outVec.asUInt
+  io.oeb := oebVec.asUInt
 
   // connect output ports
   //io.out := 0.U
