@@ -20,5 +20,4 @@ class sky130_sram_1kbyte_1rw1r_32x256_8 extends BlackBox with HasBlackBoxResourc
     val addr1 = Input(UInt(8.W))
     val dout1 = Output(UInt(32.W))
   })
-  addResource("/sky130_sram_1kbyte_1rw1r_32x256_8.v")
 }
