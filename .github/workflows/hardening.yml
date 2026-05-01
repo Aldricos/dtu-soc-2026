@@ -118,7 +118,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hardening-logs-${{ matrix.pdk }}
-          path: ${{ github.workspace }}/runs/
+          path: ${{ github.workspace }}/openlane/*/runs/
           retention-days: 7
 
       - name: Upload Hardened Design

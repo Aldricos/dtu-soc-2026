@@ -5,9 +5,9 @@ from user_proj_tests.gpio_set_output_test.gpio_set_output_test import gpio_set_o
 from user_proj_tests.wildcat_blink_test.wildcat_blink_test import wildcat_blink_test
 from user_proj_tests.video_test.video_test import video_test
 from user_proj_tests.wb_inst_mem_test.wb_inst_mem_test import wb_inst_mem_test
-from user_proj_tests.dmem_test.dmem_test import dmem_test
-from user_proj_tests.cache_test.cache_test import cache_test
 from user_proj_tests.test_psram_a.test_psram_a import test_psram_a
 from user_proj_tests.imem_2_boot.imem_2_boot import imem_2_boot
 from user_proj_tests.test_psram_b.test_psram_b import test_psram_b
+from user_proj_tests.test_flash_read.test_flash_read import test_flash_read
 from user_proj_tests.caravel_wildcat_comm_test.caravel_wildcat_comm_test import caravel_wildcat_comm_test
+from user_proj_tests.test_flash_page_prog.test_flash_page_prog import test_flash_page_prog

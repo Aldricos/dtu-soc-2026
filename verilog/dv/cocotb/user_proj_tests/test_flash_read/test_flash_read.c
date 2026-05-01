@@ -1,6 +1,6 @@
 #include <firmware_apis.h>
 
-#define IMEM_2_ADDR (0x300000 >> 2) // imem bank 1
+#define IMEM_2_ADDR (0x300000 >> 2)
 #define COMM_CTRL   (0x400000 >> 2)
 
 void main() {
@@ -23,31 +23,23 @@ void main() {
     // Binary 11 = 3
     USER_writeWord(3, COMM_CTRL);
 
+    // Assembly: lui x2, 0x40000 | lw x3, 0(x2) | j loop
     uint32_t boot_program[] = {
-        0x50000137, // lui x2, 0x50000  (Loads 0x50000000)
-        0x00012183, // lw x3, 0(x2)     (read PSRAM A CS1_n LOW)
-        0xFFDFF06F  // j loop           (loop forever)
+        0x40000137,
+        0x00012183,
+        0xFFDFF06F
     };
 
-    for (int i = 0; i < 3; i++) {
-        USER_writeWord(boot_program[i], IMEM_2_ADDR + i);
-    }
+    for (int i = 0; i < 3; i++) USER_writeWord(boot_program[i], IMEM_2_ADDR + i);
 
-    // verify saved program
     bool status = true;
     for (int i = 0; i < 3; i++) {
-        if (USER_readWord(IMEM_2_ADDR + i) != boot_program[i]) {
-            status = false;
-        }
+        if (USER_readWord(IMEM_2_ADDR + i) != boot_program[i]) status = false;
     }
 
     if (status == true) {
-        // Release RESET (Bit 0 = 0) BUT KEEP IMEM_2
-        // Binary 10 = 2
         USER_writeWord(2, COMM_CTRL);
-
         ManagmentGpio_write(1);
     }
-
     return;
 }
