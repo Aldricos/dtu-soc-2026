@@ -60,7 +60,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val imem_2 = Module(new(programmable_IMEM))
   val imem_mux = Module(new(imem_mux))
   cpu.reset := io.cpu_reset
-
+  imem.io.reset := io.cpu_reset
   val cache = Module(new DataCache())
   val spiMem = Module(new SpiFlashController())
 
