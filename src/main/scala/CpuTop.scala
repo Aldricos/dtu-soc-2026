@@ -85,14 +85,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val memWrDataReg = RegNext(cpu.io.dmem.wrData)
   val memWrMaskReg = RegNext(cpu.io.dmem.wrMask)
 
-  // Default access to data memory
-  cpu.io.dmem <> dmem.io
-  // Gate rd and wr signal with address
-  when (cpu.io.dmem.address(31, 28) =/= 0.U) {
-    dmem.io.rd      := false.B
-    dmem.io.wr      := false.B
-  }
-
   // Default cache CPU-side inputs
   cache.io.cpuIO.address := memAddrReg
   cache.io.cpuIO.rd      := false.B
@@ -130,9 +122,11 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   g5SpiCtrl.io.pipecon.wr      := false.B
   // -----------------------------------
 
-  // Here IO stuff
+  // Here data memory and IO stuff
+  // data memory is at 0x0000_0000
   // IO is mapped ot 0xf000_0000
   // use lower bits to select IOs
+  // bits 19..16 are used to select IO devices
 
   // UART:
   // 0xf000_0000 status:
@@ -148,12 +142,11 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
   val csMem = cpu.io.dmem.address(31, 28) === 0.U
 
+  // Default access is to data memory
   cpu.io.dmem <> dmem.io
   dmem.io.rd := csMem && cpu.io.dmem.rd
   dmem.io.wr := csMem && cpu.io.dmem.wr
 
-  // IO is mapped ot 0xf000_0000
-  // bits 19..16 are used to select IO devices
   val csIO = cpu.io.dmem.address(31, 28) === 0xf.U
   val csIOReg = memAddressReg(31, 28) === 0xf.U
   val ioDecodeAddress = cpu.io.dmem.address(19,16)
@@ -172,7 +165,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
   // We also love to have an LED to blink
   val ledDevice = Module(new LedDevice(16))
-  io.led := 1.U ## 0.U(7.W) ## RegNext(ledDevice.io.leds)
+  io.led := RegNext(ledDevice.io.leds)
 
   val csLed = csIO && ioDecodeAddress === 1.U
   val muxLed = csIOReg && ioDecodeAddressReg === 1.U
@@ -180,7 +173,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   ledDevice.cpuPort.rd := csLed && cpu.io.dmem.rd
   ledDevice.cpuPort.wr := csLed && cpu.io.dmem.wr
 
-  // TODO: move to the bottom
+  // TODO: move to the bottom and have all devices in one statement
   // read mux for memory and IO devices
   cpu.io.dmem.rdData := dmem.io.rdData
   when (muxUart) {
@@ -226,10 +219,16 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   videoController.io.wr := false.B
   video <> videoController.video
   
+  val videoAckReg = RegInit(false.B)
+  videoAckReg := false.B
   when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
     videoController.io.address := cpu.io.dmem.address(11,0)
     videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
     videoController.io.wr := cpu.io.dmem.wr
+    videoAckReg := true.B
+  }
+  when (videoAckReg) {
+    cpu.io.dmem.ack := true.B
   }
 
   //Wildcat Caravel communication 
