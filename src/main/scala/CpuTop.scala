@@ -6,6 +6,7 @@ import wildcat.pipeline._
 import memory._
 import device._
 import videoController.VideoController
+import raytracer.RayTracerController
 import wishbone.WishboneIO
 import programmable_IMEM.programmable_IMEM
 
@@ -26,6 +27,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
     val rx = Input(UInt(1.W))
+    val rayTx = Output(UInt(1.W))
     val wb = Flipped(new WishboneIO(32))
     val comReadData = Input(UInt(32.W))
     val comWriteData = Output(UInt(32.W))
@@ -252,6 +254,37 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
     cpu.io.dmem.rdData := g5SpiCtrl.io.pipecon.rdData
     cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
+  }
+
+  // ------------------------------------------------
+  // Group 4: ray-tracer accelerator + dedicated UART TX
+  // ------------------------------------------------
+  // The accelerator owns a streaming pixel FIFO. It exposes both an MMIO
+  // drain register (0xff00_000C) and a Decoupled byte stream. We drive a
+  // dedicated BufferedTx from byteOut so the bytes leave on a separate UART
+  // pin (io.rayTx) without touching the CPU UART. Software picks which path
+  // it wants via the controller's drain-mode register.
+  val rayController = Module(new RayTracerController)
+  rayController.io.address := 0.U
+  rayController.io.wr      := false.B
+  rayController.io.rd      := false.B
+  rayController.io.wrData  := 0.U
+  rayController.io.wrMask  := 0.U
+
+  val rayTxUart = Module(new BufferedTx(10000000, 921600))
+  rayTxUart.io.channel <> rayController.io.byteOut
+  io.rayTx := rayTxUart.io.txd
+
+  // Group 4: ray-tracer MMIO at 0xff00_0000
+  val isRayController = memAddrReg(31, 24) === 0xff.U
+  when (isRayController) {
+    rayController.io.address := memAddrReg(15, 0)
+    rayController.io.wr      := memWrReg
+    rayController.io.rd      := memRdReg
+    rayController.io.wrData  := memWrDataReg
+    rayController.io.wrMask  := memWrMaskReg
+    cpu.io.dmem.rdData       := rayController.io.rdData
+    cpu.io.dmem.ack          := rayController.io.ack
   }
 }
 
