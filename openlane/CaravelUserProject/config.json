@@ -160,7 +160,7 @@
             }
         }
     },
-    "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
+    "VERILOG_POWER_DEFINE": "USE_POWER_PINS",
     "FP_PDN_CHECK_NODES": false,
 
     "MAGIC_CAPTURE_ERRORS": false,
