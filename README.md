@@ -118,7 +118,7 @@ Did a second booting memory.
 Working on booting fomr cocotb test via UART in simulation.
 
 
-## Group 4: Hardware Accelerated ASCII Ray Tracing
+## Group 4: Hardware Accelerated Ray Tracing
 
 - Rifki Firdaus (s250169)
 - Aoxuan Wang (s252619)
