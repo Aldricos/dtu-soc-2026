@@ -175,6 +175,15 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   ledDevice.cpuPort.rd := csLed && cpu.io.dmem.rd
   ledDevice.cpuPort.wr := csLed && cpu.io.dmem.wr
 
+  // Floating Point Peripheral
+  // 0xF004_0000
+  val fpp = Module(new FloatingPointPeripheral)
+  val csFpp = csIO && ioDecodeAddress === 4.U
+  val muxFpp = csIOReg && ioDecodeAddressReg === 4.U
+  fpp.io <> cpu.io.dmem
+  fpp.io.rd := csFpp && cpu.io.dmem.rd
+  fpp.io.wr := csFpp && cpu.io.dmem.wr
+
   // TODO: move to the bottom and have all devices in one statement
   // read mux for memory and IO devices
   cpu.io.dmem.rdData := dmem.io.rdData
@@ -182,9 +191,11 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := uartDevice.cpuPort.rdData
   } .elsewhen(muxLed) {
     cpu.io.dmem.rdData := RegNext(ledDevice.io.leds)
+  } .elsewhen(muxFpp) {
+    cpu.io.dmem.rdData := fpp.io.rdData
   }
   // or reduce all ack signals
-  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack
+  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || fpp.io.ack
 
   // ------------------------------------------------
   // Memory

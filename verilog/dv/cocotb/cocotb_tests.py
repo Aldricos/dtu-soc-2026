@@ -11,3 +11,4 @@ from user_proj_tests.test_psram_b.test_psram_b import test_psram_b
 from user_proj_tests.test_flash_read.test_flash_read import test_flash_read
 from user_proj_tests.caravel_wildcat_comm_test.caravel_wildcat_comm_test import caravel_wildcat_comm_test
 from user_proj_tests.test_flash_page_prog.test_flash_page_prog import test_flash_page_prog
+from user_proj_tests.floating_point_test.floating_point_test import floating_point_test

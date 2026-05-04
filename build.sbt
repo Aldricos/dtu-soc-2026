@@ -9,6 +9,7 @@ fork := true
 Compile / unmanagedSourceDirectories += baseDirectory.value / "wildcat/src"
 Compile / unmanagedSourceDirectories += baseDirectory.value / "wildcat/soc-comm/src"
 Compile / unmanagedSourceDirectories += baseDirectory.value / "wildcat/ip-contributions/src"
+Compile / unmanagedSourceDirectories += baseDirectory.value / "FloatingPointUnit/src"
 
 scalaVersion := "2.13.14"
 val chiselVersion = "3.6.1"
