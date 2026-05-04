@@ -30,7 +30,7 @@ class CaravelUserProject extends Module {
   wcReset := reset
 
   // Wildcat Integration
-  val wc = Module(new CpuTop("a.out"))
+  val wc = Module(new CpuTop())
   wc.reset := wcReset
   wc.io.wb <> wb
   wc.io.wb.cyc := 0.B
