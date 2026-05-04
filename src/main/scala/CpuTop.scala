@@ -193,13 +193,37 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // ------------------------------------------------
   // Memory
   // ------------------------------------------------
+  /*
+  when (memAddrReg(31, 28) === 0x0.U) { // DMem 0x0
+    dmem.io.address := memAddrReg
+    dmem.io.rd      := memRdReg
+    dmem.io.wr      := memWrReg
+    dmem.io.wrData  := memWrDataReg
+    dmem.io.wrMask  := memWrMaskReg
+
+    cpu.io.dmem.rdData := dmem.io.rdData
+    cpu.io.dmem.ack    := dmem.io.ack
+  }
+  */
+  // PSRAM A (0x1) and PSRAM B (0x2): bypass the cache, direct read/write via spiMem
+  // The cache is read-only backing store; using it for writable PSRAM would cause stale reads after writes.
+  when (memAddrReg(31, 28) === "h1".U || memAddrReg(31, 28) === "h2".U) {
+    spiMem.io.mem.address := cpu.io.dmem.address
+    spiMem.io.mem.rd      := cpu.io.dmem.rd
+    spiMem.io.mem.wr      := cpu.io.dmem.wr
+    spiMem.io.mem.wrData  := cpu.io.dmem.wrData
+    spiMem.io.mem.wrMask  := cpu.io.dmem.wrMask
+    cpu.io.dmem.rdData    := spiMem.io.mem.rdData
+    cpu.io.dmem.ack       := spiMem.io.mem.ack
+  }
+
   when (memAddrReg(31, 28) === 0xe.U) { // CACHE 0xE
     // CPU -> cache
-    cache.io.cpuIO.address := memAddrReg
-    cache.io.cpuIO.rd      := memRdReg
-    cache.io.cpuIO.wr      := memWrReg
-    cache.io.cpuIO.wrData  := memWrDataReg
-    cache.io.cpuIO.wrMask  := memWrMaskReg
+    cache.io.cpuIO.address := cpu.io.dmem.address
+    cache.io.cpuIO.rd      := cpu.io.dmem.rd
+    cache.io.cpuIO.wr      := cpu.io.dmem.wr
+    cache.io.cpuIO.wrData  := cpu.io.dmem.wrData
+    cache.io.cpuIO.wrMask  := cpu.io.dmem.wrMask
 
     // cache -> spiMem
     spiMem.io.mem.address := cache.io.memIO.address
