@@ -90,14 +90,14 @@
                 },
                 "wc.imem_2.mem": {
                     "location": [
-                        900,
+                        1000,
                         100
                     ],
                     "orientation": "N"
                 },
                 "wc.vc.terminal.videoBuffer.mem": {
                     "location": [
-                        1500,
+                        1600,
                         100
                     ],
                     "orientation": "S"
@@ -111,14 +111,14 @@
                 },
                 "wc.cache.dataRam": {
                     "location": [
-                        900,
+                        1000,
                         800
                     ],
                     "orientation": "N"
                 },
                 "wc.cache.metaRam": {
                     "location": [
-                        1500,
+                        1600,
                         800
                     ],
                     "orientation": "N"
