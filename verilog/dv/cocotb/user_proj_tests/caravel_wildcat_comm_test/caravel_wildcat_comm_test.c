@@ -7,7 +7,7 @@ typedef struct {
 } mem_init_t;
 
 const mem_init_t caravel_wildcat_comm_test_img[] = {
-    { 0x00000000, 0xc00000b7 },  // li      x1, 0xc0000000
+    { 0x00000000, 0xf00300b7 },  // li      x1, 0xf0030000
     { 0x00000004, 0x0000a103 },  // lw      x2, 0(x1)
     { 0x00000008, 0x0020a023 },  // sw      x2, 0(x1)
     { 0x0000000C, 0xff5ff06f },  // j       loop

@@ -190,6 +190,18 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     videoAckReg := true.B
   }
 
+  //Wildcat Caravel communication
+  val csComm = csIO && ioDecodeAddress === 3.U
+  val muxComm = csIOReg && ioDecodeAddressReg === 3.U
+  io.comWriteData := cpu.io.dmem.wrData
+  io.comWriteValid := csComm
+
+  val commAckReg = RegInit(false.B)
+  commAckReg := false.B
+  when (csComm) {
+    commAckReg := true.B
+  }
+
   // Floating Point Peripheral
   val fpp = Module(new FloatingPointPeripheral)
   val csFpp = csIO && ioDecodeAddress === 4.U
@@ -205,11 +217,13 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := uartDevice.cpuPort.rdData
   } .elsewhen(muxLed) {
     cpu.io.dmem.rdData := RegNext(ledDevice.io.leds)
+  } .elsewhen(muxComm) {
+    cpu.io.dmem.rdData := io.comReadData
   } .elsewhen(muxFpp) {
     cpu.io.dmem.rdData := fpp.io.rdData
   }
   // or reduce all ack signals
-  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || videoAckReg || fpp.io.ack
+  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || videoAckReg || commAckReg || fpp.io.ack
 
   // ------------------------------------------------
   // Memory
@@ -236,16 +250,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     // cache -> CPU
     cpu.io.dmem.rdData := cache.io.cpuIO.rdData
     cpu.io.dmem.ack    := cache.io.cpuIO.ack
-  }
-
-  //Wildcat Caravel communication 
-  // 0xC000_0000 <- maybe move
-  io.comWriteData := cpu.io.dmem.wrData
-  io.comWriteValid := cpu.io.dmem.address(31, 28) === 0xc.U
-
-  when (memAddressReg(31, 28) === 0xc.U){
-    cpu.io.dmem.rdData := io.comReadData
-    cpu.io.dmem.ack := true.B
   }
 
   // ------------------------------------------------

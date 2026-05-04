@@ -26,7 +26,7 @@ start:
 
 # Send to Caravel using Caravel-Wildcat communication
 send:
-    li      s0, 0xc0000000
+    li      s0, 0xf0030000
     sw      s1, 0(s0)
 
 loop:
