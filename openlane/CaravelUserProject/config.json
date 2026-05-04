@@ -95,7 +95,7 @@
                     ],
                     "orientation": "N"
                 },
-                "wc.videoController.terminal.videoBuffer.mem": {
+                "wc.vc.terminal.videoBuffer.mem": {
                     "location": [
                         1500,
                         100
@@ -158,7 +158,7 @@
     "PDN_MACRO_CONNECTIONS": [
         "wc.cache.dataRam vccd1 vssd1 vccd1 vssd1",
         "wc.cache.metaRam vccd1 vssd1 vccd1 vssd1",
-        "wc.videoController.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1",
+        "wc.vc.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1",
         "wc.imem.ram vccd1 vssd1 vccd1 vssd1",
         "wc.imem_2.mem vccd1 vssd1 vccd1 vssd1",
         "wc.dmem.bank vccd1 vssd1 vccd1 vssd1",
