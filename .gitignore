@@ -36,6 +36,7 @@ verilog/gl/
 test_run_dir/
 
 /verilog/rtl/
+build/
 
 a.o
 a.out

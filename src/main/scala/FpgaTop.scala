@@ -1,9 +1,7 @@
 import circt.stage.ChiselStage
 import chisel3._
 import chisel3.util._
-import wishbone.WishboneIO
-import wildcat.pipeline._
-import videoController.VideoController
+import debug.UartDebug
 
 object FpgaTop extends App {
   emitVerilog(
@@ -21,7 +19,9 @@ class clk_wiz_0 extends BlackBox {
 
 class FpgaTop extends Module {
   val io = IO(new Bundle {
-    val out = Output(UInt(9.W))
+    val video = Output(UInt(8.W))
+    val rx = Input(Bool())
+    val tx = Output(Bool())
   })
 
   val cw = Module(new clk_wiz_0)
@@ -30,15 +30,28 @@ class FpgaTop extends Module {
   withClock(cw.io.clk_out) {
     val ct = Module(new CaravelUserProject)
 
-    // tie off wishbone interface
-    ct.wb.stb := 0.U
+    val debug = Module(new UartDebug(10000000, n = 64))
+    debug.io.rx := io.rx
+    io.tx := debug.io.tx
+    debug.io.din := 0.U
+
+    ct.wb.stb := false.B
     ct.wb.addr := 0.U
     ct.wb.wrData := 0.U
-    ct.wb.we := 0.U
-    ct.wb.cyc := 0.U
+    ct.wb.we := false.B
+    ct.wb.cyc := false.B
     ct.wb.sel := 0.U
 
+    when (debug.io.dout =/= RegNext(debug.io.dout)) {
+      ct.wb.stb := true.B
+      ct.wb.addr := debug.io.dout(63, 32)
+      ct.wb.wrData := debug.io.dout(31, 0)
+      ct.wb.we := true.B
+      ct.wb.cyc := true.B
+      ct.wb.sel := "b1111".U
+    }
+
     ct.io.in := 0.U
-    io.out := ct.io.out(24,16)
+    io.video := ct.io.out(37,30)
   }
 }

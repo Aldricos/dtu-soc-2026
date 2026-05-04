@@ -4,7 +4,9 @@ import chisel3.util.RegEnable
 import wildcat.Util
 import wildcat.pipeline._
 import memory._
+import device._
 import videoController.VideoController
+import raytracer.RayTracerController
 import wishbone.WishboneIO
 import programmable_IMEM.programmable_IMEM
 
@@ -13,6 +15,7 @@ import programmable_IMEM.programmable_IMEM
  * for implementation in Caravel.
  *
  * This is the top-level for a three stage pipeline.
+ * A copy of WildcatTop.
  *
  * Author: Martin Schoeberl (martin@jopdesign.com)
  *
@@ -24,6 +27,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
     val rx = Input(UInt(1.W))
+    val rayTx = Output(UInt(1.W))
     val wb = Flipped(new WishboneIO(32))
     val pmod = new QspiPmodIO
     val flashCtrl = new FlashCtrlIO
@@ -60,7 +64,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val imem_2 = Module(new(programmable_IMEM))
   val imem_mux = Module(new(imem_mux))
   cpu.reset := io.cpu_reset
-
+  imem.io.reset := io.cpu_reset
   val cache = Module(new DataCache())
   val spiMem = Module(new SpiFlashController())
 
@@ -86,14 +90,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   val memWrReg     = RegNext(cpu.io.dmem.wr, false.B)
   val memWrDataReg = RegNext(cpu.io.dmem.wrData)
   val memWrMaskReg = RegNext(cpu.io.dmem.wrMask)
-
-  // Default access to data memory
-  cpu.io.dmem <> dmem.io
-  // Gate rd and wr signal with address
-  when (cpu.io.dmem.address(31, 28) =/= 0.U) {
-    dmem.io.rd      := false.B
-    dmem.io.wr      := false.B
-  }
 
   // Default cache CPU-side inputs
   cache.io.cpuIO.address := memAddrReg
@@ -132,9 +128,11 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   g5SpiCtrl.io.pipecon.wr      := false.B
   // -----------------------------------
 
-  // Here IO stuff
+  // Here data memory and IO stuff
+  // data memory is at 0x0000_0000
   // IO is mapped ot 0xf000_0000
   // use lower bits to select IOs
+  // bits 19..16 are used to select IO devices
 
   // UART:
   // 0xf000_0000 status:
@@ -145,54 +143,56 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // Cache
   // 0xe000_0000 - 0xefff_ffff
 
-  val tx = Module(new BufferedTx(10000000, 115200))
-  val rx = Module(new Rx(10000000, 115200))
-  io.tx := tx.io.txd
-  rx.io.rxd := io.rx
-  
-  tx.io.channel.bits := cpu.io.dmem.wrData(7, 0)
-  tx.io.channel.valid := false.B
-  rx.io.channel.ready := cpu.io.dmem.rd && (cpu.io.dmem.address(31, 28) === 0xf.U && cpu.io.dmem.address(19,16) === 0.U && cpu.io.dmem.address(3, 0) === 4.U)
-
-  val uartStatusReg = RegNext(rx.io.channel.valid ## tx.io.channel.ready)
+  // Address register for read multiplexing
   val memAddressReg = RegEnable(cpu.io.dmem.address, 0.U, cpu.io.dmem.rd)
-  when (memAddressReg(31, 28) === 0xf.U && memAddressReg(19,16) === 0.U) {
-    when (memAddressReg(3, 0) === 0.U) {
-      cpu.io.dmem.rdData := uartStatusReg
-    } .elsewhen(memAddressReg(3, 0) === 4.U) {
-      cpu.io.dmem.rdData := rx.io.channel.bits
-    }
-  }
 
-  // LED 0xF
-  val ledReg = RegInit(0.U(8.W))
-  when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.wr) {
-    when (cpu.io.dmem.address(19,16) === 0.U && cpu.io.dmem.address(3, 0) === 4.U) {
-      printf(" %c %d\n", cpu.io.dmem.wrData(7, 0), cpu.io.dmem.wrData(7, 0))
-      tx.io.channel.valid := true.B
-    } .elsewhen (cpu.io.dmem.address(19,16) === 1.U) {
-      ledReg := cpu.io.dmem.wrData(7, 0)
-    }
-    dmem.io.wr := false.B
-  }
+  val csMem = cpu.io.dmem.address(31, 28) === 0.U
 
-  io.led := 1.U ## 0.U(7.W) ## RegNext(ledReg)
+  // Default access is to data memory
+  cpu.io.dmem <> dmem.io
+  dmem.io.rd := csMem && cpu.io.dmem.rd
+  dmem.io.wr := csMem && cpu.io.dmem.wr
+
+  val csIO = cpu.io.dmem.address(31, 28) === 0xf.U
+  val csIOReg = memAddressReg(31, 28) === 0xf.U
+  val ioDecodeAddress = cpu.io.dmem.address(19,16)
+  val ioDecodeAddressReg = memAddressReg(19, 16)
+
+  // Everyone needs a UART
+  val uartDevice = Module(new UartDevice(10000000, 115200))
+  io.tx := uartDevice.io.txd
+  uartDevice.io.rxd := io.rx
+
+  val csUart = csIO && ioDecodeAddress === 0.U
+  val muxUart = csIOReg && ioDecodeAddressReg === 0.U
+  uartDevice.cpuPort <> cpu.io.dmem
+  uartDevice.cpuPort.rd := csUart && cpu.io.dmem.rd
+  uartDevice.cpuPort.wr := csUart && cpu.io.dmem.wr
+
+  // We also love to have an LED to blink
+  val ledDevice = Module(new LedDevice(16))
+  io.led := RegNext(ledDevice.io.leds)
+
+  val csLed = csIO && ioDecodeAddress === 1.U
+  val muxLed = csIOReg && ioDecodeAddressReg === 1.U
+  ledDevice.cpuPort <> cpu.io.dmem
+  ledDevice.cpuPort.rd := csLed && cpu.io.dmem.rd
+  ledDevice.cpuPort.wr := csLed && cpu.io.dmem.wr
+
+  // TODO: move to the bottom and have all devices in one statement
+  // read mux for memory and IO devices
+  cpu.io.dmem.rdData := dmem.io.rdData
+  when (muxUart) {
+    cpu.io.dmem.rdData := uartDevice.cpuPort.rdData
+  } .elsewhen(muxLed) {
+    cpu.io.dmem.rdData := RegNext(ledDevice.io.leds)
+  }
+  // or reduce all ack signals
+  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack
 
   // ------------------------------------------------
   // Memory
   // ------------------------------------------------
-  /*
-  when (memAddrReg(31, 28) === 0x0.U) { // DMem 0x0
-    dmem.io.address := memAddrReg
-    dmem.io.rd      := memRdReg
-    dmem.io.wr      := memWrReg
-    dmem.io.wrData  := memWrDataReg
-    dmem.io.wrMask  := memWrMaskReg
-
-    cpu.io.dmem.rdData := dmem.io.rdData
-    cpu.io.dmem.ack    := dmem.io.ack
-  }
-  */
   when (memAddrReg(31, 28) === 0xe.U) { // CACHE 0xE
     // CPU -> cache
     cache.io.cpuIO.address := memAddrReg
@@ -225,10 +225,16 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   videoController.io.wr := false.B
   video <> videoController.video
   
+  val videoAckReg = RegInit(false.B)
+  videoAckReg := false.B
   when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
     videoController.io.address := cpu.io.dmem.address(11,0)
     videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
     videoController.io.wr := cpu.io.dmem.wr
+    videoAckReg := true.B
+  }
+  when (videoAckReg) {
+    cpu.io.dmem.ack := true.B
   }
 
   //Wildcat Caravel communication 
@@ -252,6 +258,37 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
 
     cpu.io.dmem.rdData := g5SpiCtrl.io.pipecon.rdData
     cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
+  }
+
+  // ------------------------------------------------
+  // Group 4: ray-tracer accelerator + dedicated UART TX
+  // ------------------------------------------------
+  // The accelerator owns a streaming pixel FIFO. It exposes both an MMIO
+  // drain register (0xff00_000C) and a Decoupled byte stream. We drive a
+  // dedicated BufferedTx from byteOut so the bytes leave on a separate UART
+  // pin (io.rayTx) without touching the CPU UART. Software picks which path
+  // it wants via the controller's drain-mode register.
+  val rayController = Module(new RayTracerController)
+  rayController.io.address := 0.U
+  rayController.io.wr      := false.B
+  rayController.io.rd      := false.B
+  rayController.io.wrData  := 0.U
+  rayController.io.wrMask  := 0.U
+
+  val rayTxUart = Module(new BufferedTx(10000000, 921600))
+  rayTxUart.io.channel <> rayController.io.byteOut
+  io.rayTx := rayTxUart.io.txd
+
+  // Group 4: ray-tracer MMIO at 0xff00_0000
+  val isRayController = memAddrReg(31, 24) === 0xff.U
+  when (isRayController) {
+    rayController.io.address := memAddrReg(15, 0)
+    rayController.io.wr      := memWrReg
+    rayController.io.rd      := memRdReg
+    rayController.io.wrData  := memWrDataReg
+    rayController.io.wrMask  := memWrMaskReg
+    cpu.io.dmem.rdData       := rayController.io.rdData
+    cpu.io.dmem.ack          := rayController.io.ack
   }
 }
 

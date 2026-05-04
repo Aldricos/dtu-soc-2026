@@ -12,7 +12,7 @@
         0,
         0,
         2500,
-        1500
+        2100
     ],
 
 
@@ -122,6 +122,13 @@
                         800
                     ],
                     "orientation": "N"
+                },
+                "wc.rayController.pf.mem": {
+                    "location": [
+                        200,
+                        1500
+                    ],
+                    "orientation": "N"
                 }
             },
 
@@ -154,6 +161,12 @@
         "wc.videoController.terminal.videoBuffer.mem vccd1 vssd1 vccd1 vssd1",
         "wc.imem.ram vccd1 vssd1 vccd1 vssd1",
         "wc.imem_2.mem vccd1 vssd1 vccd1 vssd1",
-        "wc.dmem.bank vccd1 vssd1 vccd1 vssd1"
+        "wc.dmem.bank vccd1 vssd1 vccd1 vssd1",
+        "wc.rayController.pf.mem vccd1 vssd1 vccd1 vssd1"
     ]
 }
+
+
+
+
+

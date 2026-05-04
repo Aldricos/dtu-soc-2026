@@ -12,6 +12,7 @@ class WishboneInstrRam extends Module {
   val io = IO(new Bundle {
     val cpu = PipeCon(32)
     val wb  = Flipped(new WishboneIO(32))
+    val reset = Input(Bool())
   })
 
   val ram = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
@@ -32,20 +33,12 @@ class WishboneInstrRam extends Module {
   io.wb.rdData := ram.io.dout0
 
   // CPU (R) port: Port 1
-
-  //cpu intruction fetch not enabled before WB writes to address 11111111, for testing until we get a reset
-  val cpuEnable = RegInit(false.B)
-  val address = io.wb.addr(9, 2)
-  when (io.wb.cyc && io.wb.stb && io.wb.we && (address === "b11111111".U)) {
-    cpuEnable := true.B
-  }
-
-  ram.io.csb1  := !(io.cpu.rd && cpuEnable)  // Active low chip select
+  ram.io.csb1  := !(io.cpu.rd && !io.reset)  // Active low chip select
   ram.io.addr1 := io.cpu.address(9, 2) // 8-bit address for 1KB RAM
 
   val cpuAck  = RegInit(false.B)
   // Register the acknowledge
-  cpuAck  := io.cpu.rd && cpuEnable
+  cpuAck  := io.cpu.rd && !io.reset
 
   io.cpu.rdData := ram.io.dout1
   io.cpu.ack := cpuAck
