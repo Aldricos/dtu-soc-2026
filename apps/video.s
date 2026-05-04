@@ -1,7 +1,7 @@
 #
 # Write "Hello, world!" in the video buffer. 
 #
-    li s0, 0xf2000000
+    li s0, 0xf0020000
 
 hello:
     li s1, 'H'

@@ -175,8 +175,22 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   ledDevice.cpuPort.rd := csLed && cpu.io.dmem.rd
   ledDevice.cpuPort.wr := csLed && cpu.io.dmem.wr
 
+  // Video Controller
+  val vc = Module(new VideoController)
+  video <> vc.video
+
+  val csVc = csIO && ioDecodeAddress === 2.U
+  vc.io.address := cpu.io.dmem.address
+  vc.io.wrData := cpu.io.dmem.wrData
+  vc.io.wr := csVc && cpu.io.dmem.wr
+  
+  val videoAckReg = RegInit(false.B)
+  videoAckReg := false.B
+  when (csVc) {
+    videoAckReg := true.B
+  }
+
   // Floating Point Peripheral
-  // 0xF004_0000
   val fpp = Module(new FloatingPointPeripheral)
   val csFpp = csIO && ioDecodeAddress === 4.U
   val muxFpp = csIOReg && ioDecodeAddressReg === 4.U
@@ -195,7 +209,7 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := fpp.io.rdData
   }
   // or reduce all ack signals
-  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || fpp.io.ack
+  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || videoAckReg || fpp.io.ack
 
   // ------------------------------------------------
   // Memory
@@ -222,26 +236,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     // cache -> CPU
     cpu.io.dmem.rdData := cache.io.cpuIO.rdData
     cpu.io.dmem.ack    := cache.io.cpuIO.ack
-  }
-
-  // Video Controller
-  // 0xf200_0000
-  val videoController = Module(new VideoController)
-  videoController.io.address := 0.U
-  videoController.io.wrData := 0.U
-  videoController.io.wr := false.B
-  video <> videoController.video
-  
-  val videoAckReg = RegInit(false.B)
-  videoAckReg := false.B
-  when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
-    videoController.io.address := cpu.io.dmem.address(11,0)
-    videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
-    videoController.io.wr := cpu.io.dmem.wr
-    videoAckReg := true.B
-  }
-  when (videoAckReg) {
-    cpu.io.dmem.ack := true.B
   }
 
   //Wildcat Caravel communication 
