@@ -22,7 +22,7 @@ import programmable_IMEM.programmable_IMEM
  * Edited by F26 02118
  *
  */
-class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
+class CpuTop(dmemNrByte: Int = 16) extends Module {
   val io = IO(new Bundle {
     val led = Output(UInt(16.W))
     val tx = Output(UInt(1.W))
@@ -56,8 +56,6 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     val blue = Output(UInt(2.W))
   })
 
-  val (memory, start) = Util.getCode(file)
-
   val cpu = Module(new ThreeCats())
   val dmem = Module(new DataMemory()) //val dmem = Module(new ScratchPadMem(memory, nrBytes = dmemNrByte))
   val imem = Module(new WishboneInstrRam) //val imem = Module(new InstructionROM(memory))
@@ -83,20 +81,21 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   // ------------------------------------------------
   // Memory Connections
   // ------------------------------------------------
-  // Memory Registers
-  val memAddrReg   = RegNext(cpu.io.dmem.address)
-  // TODO: why are those signals registered? This seems wrong. Can we not just connect them directly?
-  val memRdReg     = RegNext(cpu.io.dmem.rd, false.B)
-  val memWrReg     = RegNext(cpu.io.dmem.wr, false.B)
-  val memWrDataReg = RegNext(cpu.io.dmem.wrData)
-  val memWrMaskReg = RegNext(cpu.io.dmem.wrMask)
+  // Direct CPU memory request signals
+  val memAddress = cpu.io.dmem.address
+  val memRd      = cpu.io.dmem.rd
+  val memWr      = cpu.io.dmem.wr
+  val memWrData  = cpu.io.dmem.wrData
+  val memWrMask  = cpu.io.dmem.wrMask
+
+  val memSelect = memAddress(31, 28)
 
   // Default cache CPU-side inputs
-  cache.io.cpuIO.address := memAddrReg
+  cache.io.cpuIO.address := memAddress
   cache.io.cpuIO.rd      := false.B
   cache.io.cpuIO.wr      := false.B
-  cache.io.cpuIO.wrData  := memWrDataReg
-  cache.io.cpuIO.wrMask  := memWrMaskReg
+  cache.io.cpuIO.wrData  := memWrData
+  cache.io.cpuIO.wrMask  := memWrMask
 
   // Default cache backing-memory inputs
   cache.io.memIO.rdData := 0.U
@@ -121,9 +120,9 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   io.g5_spi_cs2_n := g5SpiCtrl.io.spi.cs2_n
 
   // Default values
-  g5SpiCtrl.io.pipecon.address := memAddrReg
-  g5SpiCtrl.io.pipecon.wrData  := memWrDataReg
-  g5SpiCtrl.io.pipecon.wrMask  := memWrMaskReg
+  g5SpiCtrl.io.pipecon.address := memAddress
+  g5SpiCtrl.io.pipecon.wrData  := memWrData
+  g5SpiCtrl.io.pipecon.wrMask  := memWrMask
   g5SpiCtrl.io.pipecon.rd      := false.B
   g5SpiCtrl.io.pipecon.wr      := false.B
   // -----------------------------------
@@ -179,6 +178,41 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   ledDevice.cpuPort.rd := csLed && cpu.io.dmem.rd
   ledDevice.cpuPort.wr := csLed && cpu.io.dmem.wr
 
+  // Video Controller
+  val vc = Module(new VideoController)
+  video <> vc.video
+
+  val csVc = csIO && ioDecodeAddress === 2.U
+  vc.io.address := cpu.io.dmem.address
+  vc.io.wrData := cpu.io.dmem.wrData
+  vc.io.wr := csVc && cpu.io.dmem.wr
+
+  val videoAckReg = RegInit(false.B)
+  videoAckReg := false.B
+  when (csVc) {
+    videoAckReg := true.B
+  }
+
+  //Wildcat Caravel communication
+  val csComm = csIO && ioDecodeAddress === 3.U
+  val muxComm = csIOReg && ioDecodeAddressReg === 3.U
+  io.comWriteData := cpu.io.dmem.wrData
+  io.comWriteValid := csComm
+
+  val commAckReg = RegInit(false.B)
+  commAckReg := false.B
+  when (csComm) {
+    commAckReg := true.B
+  }
+
+  // Floating Point Peripheral
+  val fpp = Module(new FloatingPointPeripheral)
+  val csFpp = csIO && ioDecodeAddress === 4.U
+  val muxFpp = csIOReg && ioDecodeAddressReg === 4.U
+  fpp.io <> cpu.io.dmem
+  fpp.io.rd := csFpp && cpu.io.dmem.rd
+  fpp.io.wr := csFpp && cpu.io.dmem.wr
+
   // TODO: move to the bottom and have all devices in one statement
   // read mux for memory and IO devices
   cpu.io.dmem.rdData := dmem.io.rdData
@@ -186,44 +220,24 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := uartDevice.cpuPort.rdData
   } .elsewhen(muxLed) {
     cpu.io.dmem.rdData := RegNext(ledDevice.io.leds)
+  } .elsewhen(muxComm) {
+    cpu.io.dmem.rdData := io.comReadData
+  } .elsewhen(muxFpp) {
+    cpu.io.dmem.rdData := fpp.io.rdData
   }
   // or reduce all ack signals
-  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack
+  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || videoAckReg || commAckReg || fpp.io.ack
 
   // ------------------------------------------------
   // Memory
   // ------------------------------------------------
-  /*
-  when (memAddrReg(31, 28) === 0x0.U) { // DMem 0x0
-    dmem.io.address := memAddrReg
-    dmem.io.rd      := memRdReg
-    dmem.io.wr      := memWrReg
-    dmem.io.wrData  := memWrDataReg
-    dmem.io.wrMask  := memWrMaskReg
-
-    cpu.io.dmem.rdData := dmem.io.rdData
-    cpu.io.dmem.ack    := dmem.io.ack
-  }
-  */
-  // PSRAM A (0x1) and PSRAM B (0x2): bypass the cache, direct read/write via spiMem
-  // The cache is read-only backing store; using it for writable PSRAM would cause stale reads after writes.
-  when (memAddrReg(31, 28) === "h1".U || memAddrReg(31, 28) === "h2".U) {
-    spiMem.io.mem.address := cpu.io.dmem.address
-    spiMem.io.mem.rd      := cpu.io.dmem.rd
-    spiMem.io.mem.wr      := cpu.io.dmem.wr
-    spiMem.io.mem.wrData  := cpu.io.dmem.wrData
-    spiMem.io.mem.wrMask  := cpu.io.dmem.wrMask
-    cpu.io.dmem.rdData    := spiMem.io.mem.rdData
-    cpu.io.dmem.ack       := spiMem.io.mem.ack
-  }
-
-  when (memAddrReg(31, 28) === 0xe.U) { // CACHE 0xE
+  when (memSelect === 0xe.U) { // CACHE 0xE
     // CPU -> cache
-    cache.io.cpuIO.address := cpu.io.dmem.address
-    cache.io.cpuIO.rd      := cpu.io.dmem.rd
-    cache.io.cpuIO.wr      := cpu.io.dmem.wr
-    cache.io.cpuIO.wrData  := cpu.io.dmem.wrData
-    cache.io.cpuIO.wrMask  := cpu.io.dmem.wrMask
+    cache.io.cpuIO.address := memAddress
+    cache.io.cpuIO.rd      := memRd
+    cache.io.cpuIO.wr      := memWr
+    cache.io.cpuIO.wrData  := memWrData
+    cache.io.cpuIO.wrMask  := memWrMask
 
     // cache -> spiMem
     spiMem.io.mem.address := cache.io.memIO.address
@@ -241,44 +255,14 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.ack    := cache.io.cpuIO.ack
   }
 
-  // Video Controller
-  // 0xf200_0000
-  val videoController = Module(new VideoController)
-  videoController.io.address := 0.U
-  videoController.io.wrData := 0.U
-  videoController.io.wr := false.B
-  video <> videoController.video
-  
-  val videoAckReg = RegInit(false.B)
-  videoAckReg := false.B
-  when ((cpu.io.dmem.address(31, 28) === 0xf.U) && cpu.io.dmem.address(27,24) === 0x2.U) {
-    videoController.io.address := cpu.io.dmem.address(11,0)
-    videoController.io.wrData := cpu.io.dmem.wrData(7, 0)
-    videoController.io.wr := cpu.io.dmem.wr
-    videoAckReg := true.B
-  }
-  when (videoAckReg) {
-    cpu.io.dmem.ack := true.B
-  }
-
-  //Wildcat Caravel communication 
-  // 0xC000_0000 <- maybe move
-  io.comWriteData := cpu.io.dmem.wrData
-  io.comWriteValid := cpu.io.dmem.address(31, 28) === 0xc.U
-
-  when (memAddressReg(31, 28) === 0xc.U){
-    cpu.io.dmem.rdData := io.comReadData
-    cpu.io.dmem.ack := true.B
-  }
-
   // ------------------------------------------------
   // GROUP 5: Memory Mapping (0x4, 0x5, 0x6)
   // ------------------------------------------------
-  val isG5Access = (memAddrReg(31, 28) === "h4".U) || (memAddrReg(31, 28) === "h5".U) || (memAddrReg(31, 28) === "h6".U)
+  val isG5Access = (memSelect === "h4".U) || (memSelect === "h5".U) || (memSelect === "h6".U)
 
   when (isG5Access) {
-    g5SpiCtrl.io.pipecon.rd := memRdReg
-    g5SpiCtrl.io.pipecon.wr := memWrReg
+    g5SpiCtrl.io.pipecon.rd := memRd
+    g5SpiCtrl.io.pipecon.wr := memWr
 
     cpu.io.dmem.rdData := g5SpiCtrl.io.pipecon.rdData
     cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
@@ -304,18 +288,18 @@ class CpuTop(file: String, dmemNrByte: Int = 16) extends Module {
   io.rayTx := rayTxUart.io.txd
 
   // Group 4: ray-tracer MMIO at 0xff00_0000
-  val isRayController = memAddrReg(31, 24) === 0xff.U
+  val isRayController = memSelect === 0xff.U
   when (isRayController) {
-    rayController.io.address := memAddrReg(15, 0)
-    rayController.io.wr      := memWrReg
-    rayController.io.rd      := memRdReg
-    rayController.io.wrData  := memWrDataReg
-    rayController.io.wrMask  := memWrMaskReg
+    rayController.io.address := memAddress(15, 0)
+    rayController.io.wr      := memWr
+    rayController.io.rd      := memRd
+    rayController.io.wrData  := memWrData
+    rayController.io.wrMask  := memWrMask
     cpu.io.dmem.rdData       := rayController.io.rdData
     cpu.io.dmem.ack          := rayController.io.ack
   }
 }
 
 object CpuTop extends App {
-  emitVerilog(new CpuTop(args(0)), Array("--target-dir", "generated"))
+  emitVerilog(new CpuTop(), Array("--target-dir", "generated"))
 }

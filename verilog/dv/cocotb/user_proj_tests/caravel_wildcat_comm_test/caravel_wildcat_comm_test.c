@@ -7,10 +7,11 @@ typedef struct {
 } mem_init_t;
 
 const mem_init_t caravel_wildcat_comm_test_img[] = {
-    { 0x00000000, 0xc00000b7 },  // li      x1, 0xc0000000
+    { 0x00000000, 0xf00300b7 },  // li      x1, 0xf0030000
     { 0x00000004, 0x0000a103 },  // lw      x2, 0(x1)
-    { 0x00000008, 0x0020a023 },  // sw      x2, 0(x1)
-    { 0x0000000C, 0xff5ff06f },  // j       loop
+    { 0x00000008, 0x00110113 },  // addi    x2, x2, 1
+    { 0x0000000C, 0x0020a023 },  // sw      x2, 0(x1)
+    { 0x00000010, 0xff1ff06f },  // j       loop
 };
 
 const int wildcat_img_len =
@@ -76,8 +77,8 @@ void main() {
     // Write "0xDEADBEEF" to Wildcat
     USER_writeWord(0xDEADBEEF, COMM);
 
-    // Read "0xDEADBEEF" from Wildcat
-    while (USER_readWord(COMM) != 0xDEADBEEF);
+    // Read "0xDEADBEF0" from Wildcat
+    while (USER_readWord(COMM) != 0xDEADBEF0);
 
     // Signal testbench that test has passed
     ManagmentGpio_write(1);
