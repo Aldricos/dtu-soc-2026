@@ -81,7 +81,6 @@ class FpgaTop extends Module {
     ct.io.in := 0.U
     io.video_1 := ct.io.out(37,30)
     io.video_2 := ct.io.out(37,30)
-    io.video := ct.io.out(37,30)
 
     // SPI IO
     inVec(28) := io.sd1       // MISO — input
