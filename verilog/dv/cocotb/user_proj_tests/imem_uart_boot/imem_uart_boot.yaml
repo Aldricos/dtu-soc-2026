@@ -1,0 +1,2 @@
+Tests:
+  - {name: imem_uart_boot, sim: RTL}
