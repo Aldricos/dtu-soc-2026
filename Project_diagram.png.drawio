@@ -1,0 +1,169 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="owC-3aXfeRnF-eDPN3yS">
+    <mxGraphModel dx="1039" dy="385" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-33" parent="1" style="whiteSpace=wrap;strokeWidth=2;verticalAlign=top;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="PMOD Board" vertex="1">
+          <mxGeometry height="228" width="273" x="1872" y="2192" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-34" parent="pPbNRcYSXxb3MOa1_Iod-33" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="SPI Flash (16MB)" vertex="1">
+          <mxGeometry height="54" width="176" x="56" y="43" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-35" parent="pPbNRcYSXxb3MOa1_Iod-33" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="PSRAM (8MB/16MB)" vertex="1">
+          <mxGeometry height="54" width="198" x="46" y="147" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-36" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="578" width="1740" x="1390" y="1461" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-38" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Wildcat RISC-V CPU" vertex="1">
+          <mxGeometry height="78" width="260" x="1878" y="1630" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-39" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="ADDRESS DECODER&#xa;(PipeCon Bus)" vertex="1">
+          <mxGeometry height="78" width="194" x="1911" y="1782" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-40" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="INTERNAL MEMORY&#xa;(On-chip RAM)" vertex="1">
+          <mxGeometry height="78" width="193" x="1675" y="1910" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-41" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="SPI CONTROLLER&#xa;(Flash/PSRAM)" vertex="1">
+          <mxGeometry height="78" width="180" x="1918" y="1910" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-42" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="UART&#xa;(Serial Comm)" vertex="1">
+          <mxGeometry height="78" width="162" x="2169" y="1910" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-20" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="PUAQRodHXAuUau04ay97-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-22" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="pPbNRcYSXxb3MOa1_Iod-39">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2501" y="1820" />
+              <mxPoint x="2253" y="1820" />
+              <mxPoint x="2253" y="1821" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-43" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Wishbone Interface" vertex="1">
+          <mxGeometry height="54" width="199" x="2401" y="1922" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-44" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="PMOD Pins (uio[7:0])" vertex="1">
+          <mxGeometry height="54" width="207" x="1905" y="2088" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-45" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="UART Pins (gpio)" vertex="1">
+          <mxGeometry height="54" width="177" x="2162" y="2088" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-46" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Caravel Host CPU" vertex="1">
+          <mxGeometry height="54" width="184" x="2408" y="2088" as="geometry" />
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-47" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-38" style="curved=1;startArrow=block;endArrow=block;strokeWidth=3;exitX=0.5;exitY=1;rounded=0;fontSize=12;startSize=8;endSize=8;" value="PipeCon Bus">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="2008" y="1782" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-48" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-39" style="curved=1;startArrow=block;endArrow=block;exitX=0;exitY=0.84;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-40" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1772" y="1885" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-49" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-39" style="curved=1;startArrow=block;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-41" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-50" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-39" style="curved=1;startArrow=block;endArrow=block;exitX=1;exitY=0.83;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-42" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2250" y="1885" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-51" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-41" style="curved=1;startArrow=block;endArrow=block;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-44" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-52" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-42" style="curved=1;startArrow=block;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-45" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-53" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-43" style="curved=1;startArrow=block;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-46" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pPbNRcYSXxb3MOa1_Iod-54" edge="1" parent="1" source="pPbNRcYSXxb3MOa1_Iod-44" style="curved=1;startArrow=block;endArrow=block;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=12;startSize=8;endSize=8;" target="pPbNRcYSXxb3MOa1_Iod-33" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="&lt;p style=&quot;margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica&quot;&gt;CARAVEL CHIP - CaravelTop.scala&lt;br&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="20" width="253.5" x="2147.5" y="1480" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-8" edge="1" parent="1" source="PUAQRodHXAuUau04ay97-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="GDrv3zsDUCuqvtU5-yXH-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;strokeWidth=2;" value="VGA controller&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="120" x="1420" y="1830" as="geometry" />
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-9" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Wildcat RISC-V CPU" vertex="1">
+          <mxGeometry height="78" width="260" x="2843" y="1618" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-21" edge="1" parent="1" source="PUAQRodHXAuUau04ay97-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="PUAQRodHXAuUau04ay97-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-10" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="ADDRESS DECODER&#xa;(PipeCon Bus)" vertex="1">
+          <mxGeometry height="70" width="194" x="2876" y="1770" as="geometry" />
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-11" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="INTERNAL MEMORY&#xa;(On-chip RAM)" vertex="1">
+          <mxGeometry height="78" width="193" x="2876" y="1898" as="geometry" />
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-14" edge="1" parent="1" source="PUAQRodHXAuUau04ay97-9" style="curved=1;startArrow=block;endArrow=block;strokeWidth=3;exitX=0.5;exitY=1;rounded=0;fontSize=12;startSize=8;endSize=8;" value="PipeCon Bus">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="2973" y="1770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-9" edge="1" parent="1" source="PUAQRodHXAuUau04ay97-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="PUAQRodHXAuUau04ay97-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-11" edge="1" parent="1" source="GDrv3zsDUCuqvtU5-yXH-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;endArrow=none;endFill=0;" target="pPbNRcYSXxb3MOa1_Iod-39">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1751" y="1750" />
+              <mxPoint x="1751" y="1821" />
+            </Array>
+            <mxPoint x="1660" y="1750" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PUAQRodHXAuUau04ay97-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="Buffer&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="120" x="1420" y="1720" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-6" edge="1" parent="1" source="GDrv3zsDUCuqvtU5-yXH-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="GDrv3zsDUCuqvtU5-yXH-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;strokeWidth=2;" value="External hardware to transform the rgb signals into something that the monitor can read &amp;nbsp;" vertex="1">
+          <mxGeometry height="92" width="120" x="1420" y="2088" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="Monitor&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="120" x="1420" y="2260" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-14" edge="1" parent="1" source="GDrv3zsDUCuqvtU5-yXH-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="GDrv3zsDUCuqvtU5-yXH-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="ASCII Ray tracing&lt;div&gt;(calculates the scene at each reset)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1580" y="1590" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-16" edge="1" parent="1" source="GDrv3zsDUCuqvtU5-yXH-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="PUAQRodHXAuUau04ay97-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDrv3zsDUCuqvtU5-yXH-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;strokeWidth=2;" value="Multiplexer" vertex="1">
+          <mxGeometry height="60" width="120" x="1580" y="1720" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
