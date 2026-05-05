@@ -113,3 +113,7 @@ class RayTracerController extends Module {
                          io.rd && isPixel && pf.io.deq.valid,
                          io.byteOut.ready)
 }
+
+object RayTracerController extends App {
+  emitVerilog(new RayTracerController, Array("--target-dir", "verilog/rtl"))
+}
