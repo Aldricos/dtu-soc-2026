@@ -92,7 +92,7 @@ def write_summary(design: str, exit_code: int, project_root: Path):
             out.write("\n```\n\n</details>\n\n")
 
         # Find the latest run directory for additional logs
-        runs_dir = project_root / "runs" / design
+        runs_dir = project_root / "openlane" / design / "runs"
         if runs_dir.exists():
             run_dirs = sorted(runs_dir.iterdir(), reverse=True)
             if run_dirs:

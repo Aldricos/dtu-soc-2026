@@ -18,11 +18,10 @@ import soc.PipeCon
 
 class DataCache() extends Module {
   val NUM_WORDS   = 256
-  val BIT_WIDTH   = 32
-  val ADDR_WIDTH  = 28 // local address width inside 0xe000_0000 - 0xefff_ffff
-  val INDEX_BITS  = log2Ceil(NUM_WORDS) // 8
-  val OFFSET_BITS = 2                   // 32-bit word offset
-  val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS // 18
+  val ADDR_WIDTH  = 28
+  val INDEX_BITS  = log2Ceil(NUM_WORDS)
+  val OFFSET_BITS = 2
+  val TAG_BITS    = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS
 
   val io = IO(new Bundle {
     val cpuIO = new PipeCon(32)
@@ -31,22 +30,12 @@ class DataCache() extends Module {
 
   // ------------------------------------------------
   // Address decoding
-  // CPU address: 0xeXXX_XXXX
-  //
-  // Inside the cache we ignore the high nibble and use:
-  // localAddr = address(27, 0)
-  //
-  // index = localAddr(9, 2)
-  // tag   = localAddr(27, 10)
   // ------------------------------------------------
   val localAddr = io.cpuIO.address(ADDR_WIDTH - 1, 0)
   val reqIndex  = localAddr(OFFSET_BITS + INDEX_BITS - 1, OFFSET_BITS)
   val reqTag    = localAddr(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
   def backingAddress(addr: UInt): UInt = {
-    // Strip the memory-map nibble 0xe before sending to backing memory.
-    // If your SpiFlashController expects the full 0xe... address instead,
-    // replace this with simply: addr
     Cat(0.U(4.W), addr(27, 0))
   }
 
@@ -63,15 +52,16 @@ class DataCache() extends Module {
   val isWriteReg = Reg(Bool())
   val hitReg     = Reg(Bool())
 
-  // rdDataReg holds the last returned read value.
-  // ackReg pulses for one cycle after a read/write response is ready.
   val rdDataReg  = RegInit(0.U(32.W))
   val ackReg     = RegInit(false.B)
 
   // ------------------------------------------------
   // Data SRAM
+  // Use only port0.
+  // Port1 is unused and its address is fixed to 0.
   // ------------------------------------------------
   val dataRam = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
+
   dataRam.io.clk0   := clock
   dataRam.io.csb0   := true.B
   dataRam.io.web0   := true.B
@@ -88,8 +78,12 @@ class DataCache() extends Module {
   // bit 0           : valid
   // bits TAG_BITS:1 : tag
   // upper bits      : unused
+  //
+  // Use only port0.
+  // Port1 is unused and its address is fixed to 0.
   // ------------------------------------------------
   val metaRam = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
+
   metaRam.io.clk0   := clock
   metaRam.io.csb0   := true.B
   metaRam.io.web0   := true.B
@@ -105,7 +99,8 @@ class DataCache() extends Module {
     Cat(0.U((32 - 1 - TAG_BITS).W), tag, valid)
   }
 
-  val metaOut   = metaRam.io.dout1
+  // All reads go through port0.
+  val metaOut   = metaRam.io.dout0
   val metaValid = metaOut(0)
   val metaTag   = metaOut(TAG_BITS, 1)
   val hit       = metaValid && (metaTag === tagReg)
@@ -127,12 +122,9 @@ class DataCache() extends Module {
   // ------------------------------------------------
   // FSM
   // ------------------------------------------------
-
-  // States
   val sInit :: sIdle :: sMetaRead :: sCheckHit :: sDataRead :: sDataWait :: sHitRead :: sReadMiss :: sWriteMem :: sWriteCache :: Nil = Enum(10)
   val state = RegInit(sInit)
 
-  // State Machine
   switch(state) {
     is(sInit) {
       metaRam.io.csb0   := false.B
@@ -157,21 +149,25 @@ class DataCache() extends Module {
         wrMaskReg  := io.cpuIO.wrMask
         isWriteReg := io.cpuIO.wr
 
-        metaRam.io.csb1  := false.B
-        metaRam.io.addr1 := reqIndex
-
+        metaRam.io.csb0  := false.B
+        metaRam.io.web0  := true.B
+        metaRam.io.addr0 := reqIndex
         state := sMetaRead
       }
     }
 
     is(sMetaRead) {
-      metaRam.io.csb1  := false.B
-      metaRam.io.addr1 := indexReg
+      // Keep metadata read active through port0.
+      metaRam.io.csb0  := false.B
+      metaRam.io.web0  := true.B
+      metaRam.io.addr0 := indexReg
+
       state := sCheckHit
     }
 
     is(sCheckHit) {
       hitReg := hit
+
       when(isWriteReg) {
         // Write-through: always write backing memory.
         io.memIO.address := backingAddress(addrReg)
@@ -181,12 +177,13 @@ class DataCache() extends Module {
         state := sWriteMem
       }.otherwise {
         when(hit) {
-          // Read hit: start synchronous data SRAM read.
-          dataRam.io.csb1  := false.B
-          dataRam.io.addr1 := indexReg
+          // Read hit: start synchronous data SRAM read
+          dataRam.io.csb0  := false.B
+          dataRam.io.web0  := true.B
+          dataRam.io.addr0 := indexReg
           state := sDataRead
         }.otherwise {
-          // Read miss: fetch word from backing memory.
+          // Read miss: fetch word from backing memory
           io.memIO.address := backingAddress(addrReg)
           io.memIO.rd      := true.B
           state := sReadMiss
@@ -195,19 +192,21 @@ class DataCache() extends Module {
     }
 
     is(sDataRead) {
-      dataRam.io.csb1  := false.B
-      dataRam.io.addr1 := indexReg
+      dataRam.io.csb0  := false.B
+      dataRam.io.web0  := true.B
+      dataRam.io.addr0 := indexReg
       state := sDataWait
     }
 
     is(sDataWait) {
-      dataRam.io.csb1  := false.B
-      dataRam.io.addr1 := indexReg
+      dataRam.io.csb0  := false.B
+      dataRam.io.web0  := true.B
+      dataRam.io.addr0 := indexReg
       state := sHitRead
     }
 
     is(sHitRead) {
-      rdDataReg := dataRam.io.dout1
+      rdDataReg := dataRam.io.dout0
       ackReg    := true.B
       state     := sIdle
     }
@@ -231,7 +230,7 @@ class DataCache() extends Module {
 
         rdDataReg := io.memIO.rdData
         ackReg    := true.B
-        state := sIdle
+        state     := sIdle
       }
     }
 
@@ -246,7 +245,7 @@ class DataCache() extends Module {
           state := sWriteCache
         }.otherwise {
           ackReg := true.B
-          state := sIdle
+          state  := sIdle
         }
       }
     }
@@ -265,7 +264,7 @@ class DataCache() extends Module {
       metaRam.io.din0   := packMeta(true.B, tagReg)
 
       ackReg := true.B
-      state := sIdle
+      state  := sIdle
     }
   }
 }

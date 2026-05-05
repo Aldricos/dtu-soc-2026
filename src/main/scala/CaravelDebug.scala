@@ -6,14 +6,14 @@ import wildcat.pipeline._
 import programmable_IMEM.programmable_IMEM
 import comm_controller.comm_controller
 
-object CaravelUserProject extends App {
+object CaravelDebug extends App {
   emitVerilog(
-    new CaravelUserProject(), 
+    new CaravelDebug(),
     Array("--target-dir", "verilog/rtl")
   )
 }
 
-class CaravelUserProject extends Module {
+class CaravelDebug extends Module {
 
   val WB_ADDR_WIDTH = 32
   val MPRJ_IO_PADS = 38
@@ -23,6 +23,8 @@ class CaravelUserProject extends Module {
     val in = Input(UInt(MPRJ_IO_PADS.W))
     val out = Output(UInt(MPRJ_IO_PADS.W))
     val oeb = Output(UInt(MPRJ_IO_PADS.W))
+
+    val debugReadback = Output(UInt(64.W))
   })
 
   // Wildcate Reset Register
@@ -36,7 +38,7 @@ class CaravelUserProject extends Module {
   wc.io.wb.cyc := 0.B
   wc.io.wb_2 <> wb
   wc.io.wb_2.cyc := 0.B
-  
+
 
   val led = wc.io.led
   val tx = wc.io.tx
@@ -58,11 +60,55 @@ class CaravelUserProject extends Module {
   com.wb <> wb
   com.wb.cyc := 0.B
 
-  //connect com io to wildcat io 
+  //connect com io to wildcat io
   com.io.fromWildcat := wc.io.comWriteData
   com.io.wildcatWriteValid := wc.io.comWriteValid
   wc.io.comReadData := com.io.toWildcat
 
+  // ------------------------------------------------------------
+  // Debug readback for FPGA UART debugger
+  // ------------------------------------------------------------
+  // The CPU program writes to 0xf0030000.
+  // CpuTop exposes that through:
+  //   wc.io.comWriteData
+  //   wc.io.comWriteValid
+  //
+  // We latch the first two writes into result0 and result1.
+  // Then FpgaTop can read them back over UartDebug using the "r" command.
+  val result0 = RegInit(0.U(32.W))
+  val result1 = RegInit(0.U(32.W))
+  val resultIndex = RegInit(false.B)
+
+  // Edge-detect comWriteValid so one CPU store is captured once,
+  // even if comWriteValid stays high for more than one clock.
+  val prevComWriteValid = RegNext(wc.io.comWriteValid, false.B)
+  val comWriteFire = wc.io.comWriteValid && !prevComWriteValid
+
+  when (comWriteFire) {
+    when (!resultIndex) {
+      result0 := wc.io.comWriteData
+      resultIndex := true.B
+    } .otherwise {
+      result1 := wc.io.comWriteData
+      resultIndex := false.B
+    }
+  }
+
+  when (wc.io.cpu_reset) {
+    result0 := 0.U
+    result1 := 0.U
+    resultIndex := false.B
+  } .elsewhen (comWriteFire) {
+    when (!resultIndex) {
+      result0 := wc.io.comWriteData
+      resultIndex := true.B
+    } .otherwise {
+      result1 := wc.io.comWriteData
+      resultIndex := false.B
+    }
+  }
+
+  io.debugReadback := Cat(result0, result1)
 
   // create dummy gcd peripheral for testing
   val gcd = Module(new WishboneGcd(16))
@@ -81,8 +127,8 @@ class CaravelUserProject extends Module {
   wc.io.progMode := spiPmod.progMode
 
   // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
-    // imem.wb<>wb
-    // imem.wb.cyc:=0.B
+  // imem.wb<>wb
+  // imem.wb.cyc:=0.B
 
   // address decoding for the peripherals
   // lower 20 bits of the address are used inside the peripherals, so we ignore them for decoding
@@ -148,7 +194,7 @@ class CaravelUserProject extends Module {
   outVec(9) := lc.io.out(1)
   lc.io.in := io.in(11, 10)
   oebVec(10) := true.B
-  oebVec(11) := true.B 
+  oebVec(11) := true.B
   lc.io.rx := io.in(12)
   oebVec(12) := true.B
   outVec(13) := lc.io.tx
@@ -206,7 +252,7 @@ class CaravelUserProject extends Module {
   // ==========================================
 
   // Group 4 raytracer dedicated UART TX (pin 22).
-  outVec(22) := wc.io.rayTx
+  //outVec(22) := wc.io.rayTx
 
 
   io.out := outVec.asUInt

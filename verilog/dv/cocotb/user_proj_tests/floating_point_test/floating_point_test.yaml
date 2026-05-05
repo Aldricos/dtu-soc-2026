@@ -1,0 +1,2 @@
+Tests:
+  - {name: floating_point_test, sim: RTL}
