@@ -137,7 +137,7 @@
                     ],
                     "orientation": "N"
                 },
-                "lc.i=dmem.mem": {
+                "lc.dmem.mem": {
                     "location": [
                         1950,
                         2320
