@@ -272,3 +272,10 @@ class DataCache() extends Module {
     }
   }
 }
+
+object DataCache extends App {
+  emitVerilog(
+    new DataCache(),
+    Array("--target-dir", "verilog/rtl")
+  )
+}
