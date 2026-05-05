@@ -19,36 +19,43 @@ val ram = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
 ```
 And also add it to the config.json file:
 ```json
- "MACROS": {
-"sky130_sram_1kbyte_1rw1r_32x256_8": {
-"instances": {
-"wc.imem.ram": {
-"location": [
-100,
-150
-],
-"orientation": "N"
-},
-"gds": [
-"pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"
-],
-"lef": [
-"pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"
-],
-"nl": [
-"pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
-],
-"lib": {
-"*": [ "ref::$DESIGN_DIR/../../libs/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C_modified.lib" ]
+{
+  "MACROS": {
+    "sky130_sram_1kbyte_1rw1r_32x256_8": {
+      "instances": {
+        "wc.imem.ram": {
+          "location": [
+            100,
+            150
+          ],
+          "orientation": "N"
+        },
+        "gds": [
+          "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"
+        ],
+        "lef": [
+          "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"
+        ],
+        "nl": [
+          "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
+        ],
+        "lib": {
+          "*": [
+            "ref::$DESIGN_DIR/../../libs/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C_modified.lib"
+          ]
+        }
+      }
+    }
+  }
 }
-}
-},
 ```
 Then add the power connections:
 ```json
-    "PDN_MACRO_CONNECTIONS": [
-        "wc.imem.ram vccd1 vssd1 vccd1 vssd1"
-    ]
+{
+  "PDN_MACRO_CONNECTIONS": [
+    "wc.imem.ram vccd1 vssd1 vccd1 vssd1"
+  ]
+}
 ```
 ### Wishbone
 For the Wishbone connections, we first need to connect the Wishbone bus in the `CaraveluserProject` module. To do this, we connect the Wishbone bus signals`cyc`, `ack` and `rdData` to the instruction memory module if the decoded part of the Wishbone address (`wb.addr(27, 20)`) matches the correct value, `2.U` in our case.
