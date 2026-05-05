@@ -73,8 +73,8 @@ set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports reset]
 
 ##Pmod Header JA
 set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports io_cs0]   ;# JA1  Flash CS
-set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports io_mosi]  ;# JA2  SD0 MOSI
-set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports io_miso]  ;# JA3  SD1 MISO
+set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports io_sd0]  ;# JA2  SD0 MOSI
+set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports io_sd1]  ;# JA3  SD1 MISO
 set_property -dict { PACKAGE_PIN G2   IOSTANDARD LVCMOS33 } [get_ports io_sck]   ;# JA4  SCK
 set_property -dict { PACKAGE_PIN H1   IOSTANDARD LVCMOS33 } [get_ports io_sd2]   ;# JA7  WP#
 set_property -dict { PACKAGE_PIN K2   IOSTANDARD LVCMOS33 } [get_ports io_sd3]   ;# JA8  HOLD#
