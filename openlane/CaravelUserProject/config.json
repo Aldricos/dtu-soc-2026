@@ -176,7 +176,9 @@
         "wc.imem.ram vccd1 vssd1 vccd1 vssd1",
         "wc.imem_2.mem vccd1 vssd1 vccd1 vssd1",
         "wc.dmem.bank vccd1 vssd1 vccd1 vssd1",
-        "wc.rayController.pf.mem vccd1 vssd1 vccd1 vssd1"
+        "wc.rayController.pf.mem vccd1 vssd1 vccd1 vssd1",
+        "lc.imem.mem vccd1 vssd1 vccd1 vssd1",
+        "lc.dmem.mem vccd1 vssd1 vccd1 vssd1"
     ]
 }
 
