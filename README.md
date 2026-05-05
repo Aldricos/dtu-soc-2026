@@ -135,7 +135,7 @@ Output not yet decided.
 - Dimitrios Vlachos (s243192)
 
 We will implement an SPI based memory controller.
-Maybe gave up? Commited SPI contoller.
+Maybe gave up? Commited SPI contoller. [Group 5 report](G5README.md)
 
 ## Group 6:
 
