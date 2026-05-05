@@ -206,7 +206,7 @@ class CaravelUserProject extends Module {
   // ==========================================
 
   // Group 4 raytracer dedicated UART TX (pin 22).
-  outVec(22) := wc.io.rayTx
+  //outVec(22) := wc.io.rayTx
 
 
   io.out := outVec.asUInt
