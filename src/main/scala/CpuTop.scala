@@ -5,7 +5,7 @@ import wildcat.Util
 import wildcat.pipeline._
 import memory._
 import device._
-import VideoController.VideoController
+import videoController.VideoController
 import raytracer.RayTracerController
 import wishbone.WishboneIO
 import programmable_IMEM.programmable_IMEM

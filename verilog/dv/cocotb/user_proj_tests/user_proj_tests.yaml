@@ -25,9 +25,10 @@ includes:
     - wb_inst_mem_test/wb_inst_mem_test.yaml
     - test_psram_a/test_psram_a.yaml
     - imem_2_boot/imem_2_boot.yaml
+    - imem_uart_boot/imem_uart_boot.yaml
     - test_psram_b/test_psram_b.yaml
     - test_flash_read/test_flash_read.yaml
     - caravel_wildcat_comm_test/caravel_wildcat_comm_test.yaml
     - test_flash_page_prog/test_flash_page_prog.yaml
+    - test_flash_sec_erase/test_flash_sec_erase.yaml
     - floating_point_test/floating_point_test.yaml
-

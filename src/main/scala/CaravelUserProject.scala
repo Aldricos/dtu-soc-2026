@@ -135,7 +135,7 @@ class CaravelUserProject extends Module {
     }
   }
 
-  val lc = Module(new LittleCat())
+  val lc = Module(new LittleCat(10000000, 115200))
 
   val outVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(0.U(1.W))))
   val oebVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(0.U(1.W))))
@@ -165,9 +165,6 @@ class CaravelUserProject extends Module {
   }
   gpio.io.in := io.in(15, 8)
     */
-
-
-
 
   // LED on pin 24
   outVec(24) := led(0)
@@ -214,32 +211,4 @@ class CaravelUserProject extends Module {
 
   io.out := outVec.asUInt
   io.oeb := oebVec.asUInt
-
-  // connect output ports
-  //io.out := 0.U
-  //io.oeb := 0.U
-  // Pins 0-6 are used by Caravel
-  /* This does not work du to a Chisel limitation
-  Better define a bundle
-  io.out(7) := tx
-  io.out(15, 8) := gpio.io.out
-  io.oeb(15, 8) := gpio.io.oeb
-  io.out(23, 16) := video
-  io.oeb(23, 16) := 0.U(8.W)
-  io.out(24) := led(0)
-  io.oeb(24) := 0.U(1.W)
-  */
-
-  //val spi_out = Cat(wc.io.flash.sck, 0.U, wc.io.flash.mosi ,wc.io.flash.cs)
-  //val spi_oeb = Cat(0.U, 1.U, 0.U, 0.U)
-
-  // TODO make a Bundle for this
-  //io.out := spi_out ## 0.U(1.W) ## led(0) ## video ## gpio.io.out ## tx ##0.U(7.W)
-  //io.oeb := spi_oeb ## 1.U(1.W) ## 0.U(1.W) ## 0.U(8.W) ## gpio.io.oeb ## 0.U(1.W) ## 0.U(7.W)
- 
-  // connect input ports
-  //gpio.io.in := io.in(15,8)
-  //wc.io.rx := io.in(25)
-
-  //wc.io.flash.miso := io.in(28)
 }

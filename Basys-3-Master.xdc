@@ -72,14 +72,14 @@ set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports reset]
 
 
 ##Pmod Header JA
-#set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports {JA[0]}];#Sch name = JA1
-#set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports {JA[1]}];#Sch name = JA2
-#set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports {JA[2]}];#Sch name = JA3
-#set_property -dict { PACKAGE_PIN G2   IOSTANDARD LVCMOS33 } [get_ports {JA[3]}];#Sch name = JA4
-#set_property -dict { PACKAGE_PIN H1   IOSTANDARD LVCMOS33 } [get_ports {JA[4]}];#Sch name = JA7
-#set_property -dict { PACKAGE_PIN K2   IOSTANDARD LVCMOS33 } [get_ports {JA[5]}];#Sch name = JA8
-#set_property -dict { PACKAGE_PIN H2   IOSTANDARD LVCMOS33 } [get_ports {JA[6]}];#Sch name = JA9
-#set_property -dict { PACKAGE_PIN G3   IOSTANDARD LVCMOS33 } [get_ports {JA[7]}];#Sch name = JA10
+set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports io_cs0]   ;# JA1  Flash CS
+set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports io_sd0]  ;# JA2  SD0 MOSI
+set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports io_sd1]  ;# JA3  SD1 MISO
+set_property -dict { PACKAGE_PIN G2   IOSTANDARD LVCMOS33 } [get_ports io_sck]   ;# JA4  SCK
+set_property -dict { PACKAGE_PIN H1   IOSTANDARD LVCMOS33 } [get_ports io_sd2]   ;# JA7  WP#
+set_property -dict { PACKAGE_PIN K2   IOSTANDARD LVCMOS33 } [get_ports io_sd3]   ;# JA8  HOLD#
+set_property -dict { PACKAGE_PIN H2   IOSTANDARD LVCMOS33 } [get_ports io_cs1]   ;# JA9  PSRAM A CS
+set_property -dict { PACKAGE_PIN G3   IOSTANDARD LVCMOS33 } [get_ports io_cs2]   ;# JA10 PSRAM B CS
 
 ##Pmod Header JB
 set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33 } [get_ports {io_video_2[3]}];#Sch name = JB1
