@@ -36,11 +36,11 @@ class DataCache() extends Module {
   val reqTag    = localAddr(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
   def backingAddress(addr: UInt): UInt = {
-    val BACKING_FLASH = "h0".U(4.W)
-    val BACKING_PSRAM_A = "h1".U(4.W)
-    val BACKING_PSRAM_B = "h2".U(4.W)
+    val FLASH = "h0".U(4.W)
+    val PSRAM_A = "h1".U(4.W)
+    val PSRAM_B = "h2".U(4.W)
 
-    Cat(BACKING_FLASH, addr(27, 0))
+    Cat(FLASH, addr(27, 0)) // Hard coded to flash
   }
 
   // ------------------------------------------------
