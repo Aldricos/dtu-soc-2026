@@ -17,8 +17,8 @@ import chisel3.util._
   *   0x100C W : SphereX  (Q16.16)  default 0.0
   *   0x1010 W : SphereY             default 1.0
   *   0x1014 W : SphereZ             default 0.0
-  *   0x1018 W : Cols     (7 bits)  default 32
-  *   0x101C W : Rows     (7 bits)  default 32
+  *   0x1018 W : Cols     (13 bits) default 32
+  *   0x101C W : Rows     (13 bits) default 32
   *   0x1020 W : ScaleX   (Q16.16)  default 1/24
   *   0x1024 W : ScaleY              default 1/24
   *
@@ -46,8 +46,8 @@ class RayTracerController extends Module {
   val sphXReg = RegInit(FixedPoint.lit(0.0))
   val sphYReg = RegInit(FixedPoint.lit(1.0))
   val sphZReg = RegInit(FixedPoint.lit(0.0))
-  val colsReg = RegInit(32.U(7.W))
-  val rowsReg = RegInit(32.U(7.W))
+  val colsReg = RegInit(32.U(13.W))
+  val rowsReg = RegInit(32.U(13.W))
   val sclXReg = RegInit(FixedPoint.lit(1.0 / 24.0))
   val sclYReg = RegInit(FixedPoint.lit(1.0 / 24.0))
   rt.io.camX    := camXReg
@@ -97,8 +97,8 @@ class RayTracerController extends Module {
     when (isSphX) { sphXReg := io.wrData.asSInt }
     when (isSphY) { sphYReg := io.wrData.asSInt }
     when (isSphZ) { sphZReg := io.wrData.asSInt }
-    when (isCols) { colsReg := io.wrData(6, 0) }
-    when (isRows) { rowsReg := io.wrData(6, 0) }
+    when (isCols) { colsReg := io.wrData(12, 0) }
+    when (isRows) { rowsReg := io.wrData(12, 0) }
     when (isSclX) { sclXReg := io.wrData.asSInt }
     when (isSclY) { sclYReg := io.wrData.asSInt }
     when (isMode) { drainModeMmio := io.wrData(0) }

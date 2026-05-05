@@ -283,7 +283,7 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   rayController.io.wrData  := 0.U
   rayController.io.wrMask  := 0.U
 
-  val rayTxUart = Module(new BufferedTx(10000000, 921600))
+  val rayTxUart = Module(new BufferedTx(10000000, 115200))
   rayTxUart.io.channel <> rayController.io.byteOut
   io.rayTx := rayTxUart.io.txd
 
