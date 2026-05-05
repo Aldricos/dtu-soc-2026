@@ -78,7 +78,6 @@ class FpgaTop extends Module {
     ct.wb.wrData := wbData
     ct.wb.sel := "b1111".U
 
-    ct.io.in := 0.U
     io.video_1 := ct.io.out(37,30)
     io.video_2 := ct.io.out(37,30)
 
