@@ -19,7 +19,8 @@ class clk_wiz_0 extends BlackBox {
 
 class FpgaTop extends Module {
   val io = IO(new Bundle {
-    val video = Output(UInt(8.W))
+    val video_1 = Output(UInt(8.W))
+    val video_2 = Output(UInt(8.W))
     val rx = Input(Bool())
     val tx = Output(Bool())
 
@@ -77,6 +78,9 @@ class FpgaTop extends Module {
     ct.wb.wrData := wbData
     ct.wb.sel := "b1111".U
 
+    ct.io.in := 0.U
+    io.video_1 := ct.io.out(37,30)
+    io.video_2 := ct.io.out(37,30)
     io.video := ct.io.out(37,30)
 
     // SPI IO
