@@ -135,7 +135,7 @@ class CaravelUserProject extends Module {
     }
   }
 
-  val lc = Module(new LittleCat())
+  val lc = Module(new LittleCat(10000000, 115200))
 
   val outVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(0.U(1.W))))
   val oebVec = WireInit(VecInit(Seq.fill(MPRJ_IO_PADS)(0.U(1.W))))
