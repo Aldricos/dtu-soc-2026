@@ -111,14 +111,14 @@
                 },
                 "wc.cache.dataRam": {
                     "location": [
-                        1000,
+                        1100,
                         800
                     ],
                     "orientation": "N"
                 },
                 "wc.cache.metaRam": {
                     "location": [
-                        1600,
+                        1700,
                         800
                     ],
                     "orientation": "N"
@@ -127,6 +127,20 @@
                     "location": [
                         200,
                         2000
+                    ],
+                    "orientation": "N"
+                },
+                "lc.imem.mem": {
+                    "location": [
+                        1950,
+                        1400
+                    ],
+                    "orientation": "N"
+                },
+                "lc.i=dmem.mem": {
+                    "location": [
+                        1950,
+                        2320
                     ],
                     "orientation": "N"
                 }
