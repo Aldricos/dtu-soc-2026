@@ -53,6 +53,12 @@ tag    = localAddr[27:10]
 Each cache entry has associated metadata containing a valid bit and a tag. 
 A cache hit occurs when the selected entry is valid and its stored tag matches the requested tag.
 
+### SRAM Port Usage
+
+The data and metadata memories are implemented using 1RW1R SRAM macros.  
+However, the cache only uses port0 for both reads and writes. The read-only port, port1, is not used; it is disabled and its address is tied to zero.
+
+This simplifies the routing and avoids using the extra read-only SRAM port. All metadata reads, data reads, cache fills, and cache updates are therefore performed through port0.
 
 
 ### Cache Policy
@@ -89,4 +95,39 @@ The cache is tested using Chisel tests with a software backing-memory model. The
 | Write hit update      | Verifies that a write hit updates both backing memory and the cached copy                      |
 
 #### Hardware Test (FPGA)
-TBD
+The cache was also tested on the FPGA using a UART-based debug interface.
+The PC sends 64-bit debug commands over UART in the format:
+```text
+w<32-bit address><32-bit data>
+```
+These commands are used to hold the CPU in reset, load a small RISC-V test program into instruction memory, and then release reset so the CPU executes the program.
+
+The CPU reports test results by writing to the communication MMIO address:
+```text
+0xf003_0000
+```
+
+The FPGA debug wrapper latches the first two 32-bit values written by the CPU and returns them over UART when the PC sends:
+```text
+r
+```
+
+The hardware tests verify that the cache works in the complete FPGA system, including the processor, cache, SPI-backed memory path, instruction loading, and debug readback.
+
+| Test                       | Purpose                                                                                        | Expected UART result                |
+| -------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Single address cached read | Fills one cache line, writes `0xdeadbeef`, then performs two reads through the cache           | `deadbeefdeadbeef`                  |
+| Multiple address loop      | Writes and verifies several consecutive cached addresses                                       | `cace000100000000`                  |
+| Conflict replacement       | Accesses `0xe000_0000` and `0xe000_0400`, which map to the same cache index but different tags | `cace0002ffffffff`                  |
+| VGA cache output           | Reads character values through the cache and writes them to the VGA character buffer           | Expected characters shown on screen |
+
+The UART tests are automated using a small Python script (`fpga_bootloader/FpgaUart.py`). The script reads a text file containing one debug command per line, sends each command over the serial port, and finally enters a loop where it repeatedly sends `r` to read back the latest latched test result. Small character and line delays are used to avoid dropping commands during UART transmission.
+
+A typical command file first writes `1` to the reset/control register, then writes the test program into instruction memory, and finally writes `0` to the reset/control register to start the CPU:
+
+```text
+w0040000000000001   # hold CPU in reset
+w00200000...        # program instruction memory
+...
+w0040000000000000   # release CPU reset
+```
