@@ -83,7 +83,7 @@ The selected bytes are updated in backing memory, and if the write hits in the c
 ### Physical Implementation
 The `DataCache` module was hardened as a standalone macro using OpenLane.
 
-![DataCache hardened layout](figures/Cache_Layout.png)
+![DataCache hardened layout](figures/group0/Cache_Layout.png)
 
 The hardened macro has a die size of 700 µm × 1100 µm, and a reported utilization of 53.8%.
 
