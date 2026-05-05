@@ -108,17 +108,24 @@ class SpiFlashController extends Module {
         startShiftOut(Cat(cmdRead, 0.U(24.W)), 8)
         state := sCmd
       }.elsewhen(!io.progMode && io.mem.wr) {
-        // PSRAM direct write: no write-enable needed, just 0x02 + addr + 4 bytes
-        opReg      := FlashCtrlOp.WriteWord
-        addrReg    := io.mem.address(23, 0)
-        wrWordReg  := io.mem.wrData  // capture now — wrData is only valid this cycle
-        reqFromMem := true.B
-        deviceReg  := MuxCase(FlashDevice.Flash, Seq(
-          (io.mem.address(31, 28) === "h1".U) -> FlashDevice.PsramA,
-          (io.mem.address(31, 28) === "h2".U) -> FlashDevice.PsramB
-        ))
-        startShiftOut(Cat(cmdProgram, 0.U(24.W)), 8)  // 0x02: same write command as flash page program
-        state := sCmd
+        val isPsramAccess = io.mem.address(31, 28) === "h1".U || io.mem.address(31, 28) === "h2".U
+
+        when(isPsramAccess) {
+          // PSRAM direct write: no write-enable/erase needed, just 0x02 + addr + 4 bytes
+          opReg      := FlashCtrlOp.WriteWord
+          addrReg    := io.mem.address(23, 0)
+          wrWordReg  := io.mem.wrData
+          reqFromMem := true.B
+
+          deviceReg := Mux(io.mem.address(31, 28) === "h1".U, FlashDevice.PsramA, FlashDevice.PsramB)
+
+          startShiftOut(Cat(cmdProgram, 0.U(24.W)), 8) // 0x02: same write command as flash page program
+          state := sCmd
+        }.otherwise {
+          // Do not allow normal memory writes to program flash.
+          // Acknowledge so the CPU does not hang, but ignore the write.
+          io.mem.ack := true.B
+        }
       }
     }
 
