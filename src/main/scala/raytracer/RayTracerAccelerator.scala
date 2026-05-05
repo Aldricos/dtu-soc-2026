@@ -9,12 +9,12 @@ import FixedPoint.{lit, mul, floorInt}
   * Sphere has fixed radius R=1.
   */
 class RayTracerAccelerator(
-  val maxCols: Int = 64,
-  val maxRows: Int = 64,
+  val maxCols: Int = 4096,
+  val maxRows: Int = 4096,
   val K:       Int = 4
 ) extends Module {
   require(maxCols > 0 && maxRows > 0, "maxCols and maxRows must be positive")
-  require(maxCols <= 64 && maxRows <= 64, "col/row counters are 6-bit; max 64")
+  require(maxCols <= 4096 && maxRows <= 4096, "col/row counters are 12-bit; max 4096")
 
   val FpW = FixedPoint.W    // 32
   val FpF = FixedPoint.F    // 16
@@ -37,8 +37,8 @@ class RayTracerAccelerator(
     val camY  = Input(SInt(FpW.W))
     val camZ  = Input(SInt(FpW.W))
     // sampled at psInitRender. caller must keep cols/rows in [1, max]
-    val cols    = Input(UInt(7.W))
-    val rows    = Input(UInt(7.W))
+    val cols    = Input(UInt(13.W))
+    val rows    = Input(UInt(13.W))
     val scaleX  = Input(SInt(FpW.W))
     val scaleY  = Input(SInt(FpW.W))
     val sphereX = Input(SInt(FpW.W))
@@ -56,8 +56,8 @@ class RayTracerAccelerator(
        psWaitDiv2   :: psFinishRefl :: psWrite :: Nil) = Enum(11)
   val pstate = RegInit(psInitRender)
 
-  val col = RegInit(0.U(6.W))
-  val row = RegInit(0.U(6.W))
+  val col = RegInit(0.U(12.W))
+  val row = RegInit(0.U(12.W))
 
   // shared math units
   val sqrt = Module(new IterSqrt(W = DivW, K = K))
@@ -83,10 +83,10 @@ class RayTracerAccelerator(
   val ocZReg     = Reg(SInt(FpW.W))
   val cScalarReg = Reg(SInt(FpW.W))
   val negCamYReg = Reg(SInt(FpW.W))
-  val colsReg    = Reg(UInt(7.W))
-  val rowsReg    = Reg(UInt(7.W))
-  val midColReg  = Reg(UInt(6.W))
-  val midRowReg  = Reg(UInt(6.W))
+  val colsReg    = Reg(UInt(13.W))
+  val rowsReg    = Reg(UInt(13.W))
+  val midColReg  = Reg(UInt(12.W))
+  val midRowReg  = Reg(UInt(12.W))
   val scaleXReg  = Reg(SInt(FpW.W))
   val scaleYReg  = Reg(SInt(FpW.W))
 

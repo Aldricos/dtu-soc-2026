@@ -139,8 +139,8 @@ class RayTracerAcceleratorSpec extends AnyFreeSpec with ChiselScalatestTester {
     dut.io.sphereX.poke(toFP(p.sphereX).S(dut.FpW.W))
     dut.io.sphereY.poke(toFP(p.sphereY).S(dut.FpW.W))
     dut.io.sphereZ.poke(toFP(p.sphereZ).S(dut.FpW.W))
-    dut.io.cols.poke(p.cols.U(7.W))
-    dut.io.rows.poke(p.rows.U(7.W))
+    dut.io.cols.poke(p.cols.U(13.W))
+    dut.io.rows.poke(p.rows.U(13.W))
     dut.io.scaleX.poke(toFP(p.scaleX).S(dut.FpW.W))
     dut.io.scaleY.poke(toFP(p.scaleY).S(dut.FpW.W))
   }

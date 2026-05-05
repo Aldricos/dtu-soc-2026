@@ -205,8 +205,8 @@ class CaravelUserProject extends Module {
   outVec(21) := wc.io.g5_spi_cs2_n
   // ==========================================
 
-  // Group 4 raytracer dedicated UART TX (pin 22).
-  outVec(22) := wc.io.rayTx
+  // Group 4 raytracer dedicated UART TX (pin 6).
+  outVec(6) := wc.io.rayTx
 
 
   io.out := outVec.asUInt
