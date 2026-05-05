@@ -5,7 +5,7 @@ import wildcat.Util
 import wildcat.pipeline._
 import memory._
 import device._
-import videoController.VideoController
+import VideoController.VideoController
 import raytracer.RayTracerController
 import wishbone.WishboneIO
 import programmable_IMEM.programmable_IMEM
@@ -29,10 +29,12 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
     val rx = Input(UInt(1.W))
     val rayTx = Output(UInt(1.W))
     val wb = Flipped(new WishboneIO(32))
+    val pmod = new QspiPmodIO
+    val flashCtrl = new FlashCtrlIO
+    val progMode = Input(Bool())
     val comReadData = Input(UInt(32.W))
     val comWriteData = Output(UInt(32.W))
     val comWriteValid = Output(Bool())
-    val flash = new SpiMemIO
     val imem_sel = Input(Bool())
     val wb_2 = Flipped(new WishboneIO(32))
     val cpu_reset = Input(Bool())
@@ -71,7 +73,9 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   imem_mux.sel <> io.imem_sel
   cpu.io.imem <> imem_mux.cpu
   imem.io.wb <> io.wb
-  io.flash <> spiMem.io.spi
+  io.pmod <> spiMem.io.spi
+  spiMem.io.ctrl <> io.flashCtrl
+  spiMem.io.progMode := io.progMode
   io.wb_2 <> imem_2.wb
 
   // ------------------------------------------------
@@ -182,7 +186,7 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   vc.io.address := cpu.io.dmem.address
   vc.io.wrData := cpu.io.dmem.wrData
   vc.io.wr := csVc && cpu.io.dmem.wr
-  
+
   val videoAckReg = RegInit(false.B)
   videoAckReg := false.B
   when (csVc) {

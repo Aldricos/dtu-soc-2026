@@ -1,4 +1,4 @@
-package videoController
+package VideoController
 
 object VgaConstants {
   val H_ACTIVE_VIDEO = 200

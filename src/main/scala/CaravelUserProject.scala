@@ -74,6 +74,12 @@ class CaravelUserProject extends Module {
   lukeClock.wb <> wb
   lukeClock.wb.cyc := 0.B
 
+  val spiPmod = Module(new WishboneSpiPmod)
+  spiPmod.wb <> wb
+  spiPmod.wb.cyc := 0.B
+  spiPmod.ctrl <> wc.io.flashCtrl
+  wc.io.progMode := spiPmod.progMode
+
   // val imem = Module(new programmable_IMEM(depth = 16)) // depth = 1024 words
     // imem.wb<>wb
     // imem.wb.cyc:=0.B
@@ -111,6 +117,11 @@ class CaravelUserProject extends Module {
       comm.wb.cyc := wb.cyc
       wb.ack := comm.wb.ack
       wb.rdData := comm.wb.rdData
+    }
+    is(0x6.U) {
+      spiPmod.wb.cyc := wb.cyc
+      wb.ack := spiPmod.wb.ack
+      wb.rdData := spiPmod.wb.rdData
     }
     is(0x7.U) {
       lukeClock.wb.cyc := wb.cyc
@@ -165,12 +176,16 @@ class CaravelUserProject extends Module {
   wc.io.rx := io.in(25)
   oebVec(25) := true.B
 
-  // SPI 29..26
-  outVec(26) := wc.io.flash.cs
-  outVec(27) := wc.io.flash.mosi
-  wc.io.flash.miso := io.in(28)
+  // QSPI pmod: primary SPI on 29..26, PSRAM chip selects on 23..22
+  // sd2 (WP#) and sd3 (HOLD#) are always driven high inside SpiFlashController;
+  // no pad needed — tie high on the PMOD board with pull-ups.
+  outVec(26) := wc.io.pmod.cs0   // flash chip select
+  outVec(27) := wc.io.pmod.sd0   // MOSI
+  wc.io.pmod.sd1 := io.in(28)    // MISO — input
   oebVec(28) := true.B
-  outVec(29) := wc.io.flash.sck
+  outVec(29) := wc.io.pmod.sck   // clock
+  outVec(22) := wc.io.pmod.cs1   // PSRAM A chip select
+  outVec(23) := wc.io.pmod.cs2   // PSRAM B chip select
 
   // VGA out
   outVec(30) := RegNext(RegNext(RegNext( Mux(comm.vga_sel, lukeClock.io.hSyncOut, wc.video.hSync) )))
