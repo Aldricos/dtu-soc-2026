@@ -138,3 +138,84 @@ w00200000...        # program instruction memory
 ...
 w0040000000000000   # release CPU reset
 ```
+___
+## SPI & External Memory
+
+The SPI subsystem connects the Wildcat RISC-V CPU to three off-chip memory devices via a standard SPI PMOD connector, providing expanded memory beyond on-chip SRAM.
+
+### Connected Devices
+
+| Device | CS | CPU Address | Access |
+|--------|----|-------------|--------|
+| W25Q128 NOR Flash | CS0 (GPIO 26) | `0xE000_0000–0xEFFF_FFFF` | Read-only via cache |
+| APS6404L PSRAM A | CS1 (GPIO 22) | `0x1000_0000–0x1FFF_FFFF` | Read/write, direct |
+| APS6404L PSRAM B | CS2 (GPIO 23) | `0x2000_0000–0x2FFF_FFFF` | Read/write, direct |
+
+### Architecture
+
+```
+Wildcat CPU
+  ├── 0x1.../0x2...  ──────────────────► SpiFlashController ──► PSRAM A/B
+  ├── 0xE...  ──► DataCache (256 entries) ──► SpiFlashController ──► Flash
+  └── Wishbone slot 0x6 ──► WishboneSpiPmod ──► SpiFlashController
+                                                       │
+                                              QspiPmodIO (PMOD pins)
+                                        CS0/CS1/CS2 · SCK · MOSI · MISO
+```
+
+- **Flash reads** at `0xE...` pass through the `DataCache` — a 256-entry direct-mapped write-through cache
+- **PSRAM reads/writes** at `0x1...`/`0x2...` bypass the cache and go directly to the SPI controller
+- **Wishbone interface** (`WishboneSpiPmod`, slot 6) allows software to perform flash operations (erase, page program, read status) without CPU load/store instructions
+
+### SPI Operations
+
+| Operation | Command | Use |
+|-----------|---------|-----|
+| `ReadWord` | `0x03` | Flash/PSRAM 32-bit read |
+| `WriteEnable` | `0x06` | Required before flash write |
+| `ProgramPage` | `0x02` | 1–256 byte page write to flash |
+| `SectorErase` | `0x20` | 4 KB sector erase |
+| `ReadStatus` | `0x05` | Poll flash busy (WIP) bit |
+| `WriteWord` | `0x02` | 32-bit write to PSRAM |
+
+### GPIO Pin Assignments
+
+| GPIO | Signal | Direction |
+|------|--------|-----------|
+| 26 | CS0 — Flash | Output |
+| 22 | CS1 — PSRAM A | Output |
+| 23 | CS2 — PSRAM B | Output |
+| 27 | MOSI (sd0) | Output |
+| 28 | MISO (sd1) | Input |
+| 29 | SCK | Output |
+
+### Testing
+
+#### Simulation (`CaravelUserProjectSpiIntegrationTest`)
+
+Integration tests drive the full `CaravelUserProject` via Wishbone and observe the GPIO pins directly, verifying correct SPI protocol on the physical pads.
+
+| Test | What it verifies |
+|------|-----------------|
+| Page program | Command `0x02`, correct 24-bit address and 4 data bytes on MOSI; total 64 bits |
+| Read status | Command `0x05` on MOSI; `0xa5` driven on MISO returns through Wishbone DATA register |
+| Busy after start | STATUS register reads `1` immediately after writing the start bit — regression for `startPending` bug |
+| ReadWord | Command `0x03` and 24-bit address on MOSI; total 64 bits (cmd + addr + read phase) |
+| WriteEnable | Command `0x06` only, exactly 8 MOSI bits, no address or data phase |
+| WriteEnable + ProgramPage | Two-step flash write flow verified end-to-end in sequence |
+
+Run with:
+```bash
+sbt "testOnly CaravelUserProjectSpiIntegrationTest"
+```
+
+#### Hardware Test (FPGA)
+
+Tested on the Basys3 FPGA using the same UART debug interface as the cache. A Python script (`fpga_bootloader/FpgaUart.py`) loads a RISC-V test program over serial, executes it, and reads back the result.
+
+| Test | Expected UART result |
+|------|---------------------|
+| PSRAM write→read roundtrip | `deadbeefdeadbeef` |
+| Multiple address loop | `cace000100000000` |
+| Cache conflict replacement | `cace0002ffffffff` |
+___
