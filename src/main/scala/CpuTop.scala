@@ -260,7 +260,7 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   // Memory
   // ------------------------------------------------
   when (memSelect === 0xc.U) {
-    // 0xD000_0000 - 0xD7FF_FFFF -> direct uncached PSRAM A
+    // 0xC000_0000 - 0xC7FF_FFFF -> direct uncached PSRAM A
     spiMem.io.mem.address := "h1".U(4.W) ## memAddress(27, 0)
     spiMem.io.mem.rd      := memRd
     spiMem.io.mem.wr      := memWr
@@ -281,30 +281,33 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := spiMem.io.mem.rdData
     cpu.io.dmem.ack    := spiMem.io.mem.ack
   }
-  when (memSelect === 0xe.U) { // CACHE 0xE
-    when(memRd) {
-      cache.io.cpuIO.address := memAddress
-      cache.io.cpuIO.rd      := true.B
-      cache.io.cpuIO.wr      := false.B
-      cache.io.cpuIO.wrData  := memWrData
-      cache.io.cpuIO.wrMask  := memWrMask
+  when (memSelect === 0xe.U) { // CACHE 0xE, read-only cached PSRAM/flash window
+    // CPU -> cache
+    cache.io.cpuIO.address := memAddress
+    cache.io.cpuIO.rd      := memRd
+    cache.io.cpuIO.wr      := false.B
+    cache.io.cpuIO.wrData  := memWrData
+    cache.io.cpuIO.wrMask  := memWrMask
 
-      spiMem.io.mem.address := cache.io.memIO.address
-      spiMem.io.mem.rd      := cache.io.memIO.rd
-      spiMem.io.mem.wr      := false.B
-      spiMem.io.mem.wrData  := 0.U
-      spiMem.io.mem.wrMask  := 0.U
+    // cache -> spiMem
+    spiMem.io.mem.address := cache.io.memIO.address
+    spiMem.io.mem.rd      := cache.io.memIO.rd
+    spiMem.io.mem.wr      := false.B
+    spiMem.io.mem.wrData  := 0.U
+    spiMem.io.mem.wrMask  := 0.U
 
-      cache.io.memIO.rdData := spiMem.io.mem.rdData
-      cache.io.memIO.ack    := spiMem.io.mem.ack
+    // spiMem -> cache
+    cache.io.memIO.rdData := spiMem.io.mem.rdData
+    cache.io.memIO.ack    := spiMem.io.mem.ack
 
-      cpu.io.dmem.rdData := cache.io.cpuIO.rdData
-      cpu.io.dmem.ack    := cache.io.cpuIO.ack
-    } .otherwise {
-      // Writes to flash-cache window are ignored.
-      // Flash programming must go through WishboneSpiPmod.
+    // cache -> CPU
+    when (memWr) {
+      // Read-only cache region: ignore writes but acknowledge them.
       cpu.io.dmem.rdData := 0.U
       cpu.io.dmem.ack    := true.B
+    } .otherwise {
+      cpu.io.dmem.rdData := cache.io.cpuIO.rdData
+      cpu.io.dmem.ack    := cache.io.cpuIO.ack
     }
   }
 

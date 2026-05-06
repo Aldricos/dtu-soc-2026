@@ -9,7 +9,6 @@ import soc._
 class DataMemory() extends Module {
   val io = IO(PipeCon(32))
 
-
   val bank = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
   val wordAddr = io.address(9, 2)
 
