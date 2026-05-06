@@ -36,7 +36,18 @@ class DataCache() extends Module {
   val reqTag    = localAddr(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
   def backingAddress(addr: UInt): UInt = {
-    Cat("h0".U(4.W), addr(27, 0))
+    // CPU cached window:
+    //   0xE000_0000 - 0xE7FF_FFFF -> PSRAM A
+    //   0xE800_0000 - 0xEFFF_FFFF -> PSRAM B
+
+    val deviceNibble = Mux(
+      addr(27),
+      "h2".U(4.W), // PSRAM B
+      "h1".U(4.W)  // PSRAM A
+    )
+
+    // Remove selector bit from chip-internal address.
+    Cat(deviceNibble, 0.U(1.W), addr(26, 0))
   }
 
   // ------------------------------------------------
