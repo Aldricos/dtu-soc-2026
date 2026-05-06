@@ -5,6 +5,8 @@ import chisel3.util._
 
 /** MMIO wrapper around the raytracer + pixel FIFO.
   *
+  * In CpuTop this controller is mounted at base 0xf005_0000.
+  *
   * Memory map (byte offsets):
   *   0x0000 W : start (bit 0)
   *   0x0004 R : busy
