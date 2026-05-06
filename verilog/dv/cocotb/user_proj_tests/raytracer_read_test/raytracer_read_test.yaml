@@ -1,0 +1,2 @@
+Tests:
+  - {name: raytracer_read_test, sim: RTL}

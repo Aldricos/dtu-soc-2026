@@ -51,9 +51,9 @@ class SpiFlashController extends Module {
                  state === sWritePage || state === sWriteWord
 
   // Each CS is active-low: pulled low only when csActive AND this chip is selected.
-  io.spi.cs0 := !(csActive && deviceReg === FlashDevice.Flash)
-  io.spi.cs1 := !(csActive && deviceReg === FlashDevice.PsramA)
-  io.spi.cs2 := !(csActive && deviceReg === FlashDevice.PsramB)
+  io.spi.cs0 := !(csActive && (deviceReg === FlashDevice.Flash))
+  io.spi.cs1 := !(csActive && (deviceReg === FlashDevice.PsramA))
+  io.spi.cs2 := !(csActive && (deviceReg === FlashDevice.PsramB))
 
   io.spi.sck := false.B
   io.spi.sd0 := shiftOut(31)

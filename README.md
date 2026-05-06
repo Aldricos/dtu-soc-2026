@@ -152,7 +152,7 @@ Notes:
 
 ## Block diagram of the entire project 
 
-![Block diagram](Project_diagram.png)
+![Block diagram](Project_diagram.svg)
 
 ## Needed Work (TODO List)
 

@@ -213,6 +213,32 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   fpp.io.rd := csFpp && cpu.io.dmem.rd
   fpp.io.wr := csFpp && cpu.io.dmem.wr
 
+  // Group 4: ray-tracer accelerator + dedicated UART TX. MMIO at 0xf005_0000.
+  // Reset gated on cpu_reset too so the firmware can re-arm the FSM after
+  // the mgmt CPU loads IMEM (otherwise random IMEM bits can spuriously pulse
+  // start during boot).
+  val rayController = withReset(reset.asBool || io.cpu_reset) {
+    Module(new RayTracerController)
+  }
+  val rayTxUart = Module(new BufferedTx(10000000, 115200))
+  rayTxUart.io.channel <> rayController.io.byteOut
+  io.rayTx := rayTxUart.io.txd
+
+  val csRayController  = csIO && ioDecodeAddress === 5.U
+  val muxRayController = csIOReg && ioDecodeAddressReg === 5.U
+  rayController.io.address := memAddress(15, 0)
+  rayController.io.wr      := csRayController && memWr
+  rayController.io.rd      := csRayController && memRd
+  rayController.io.wrData  := memWrData
+  rayController.io.wrMask  := memWrMask
+
+  val rayCtrlRdDataReg = RegNext(rayController.io.rdData)
+  val rayCtrlAckReg    = RegInit(false.B)
+  rayCtrlAckReg := false.B
+  when (csRayController && (memRd || memWr)) {
+    rayCtrlAckReg := true.B
+  }
+
   // TODO: move to the bottom and have all devices in one statement
   // read mux for memory and IO devices
   cpu.io.dmem.rdData := dmem.io.rdData
@@ -224,9 +250,11 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.rdData := io.comReadData
   } .elsewhen(muxFpp) {
     cpu.io.dmem.rdData := fpp.io.rdData
+  } .elsewhen(muxRayController) {
+    cpu.io.dmem.rdData := rayCtrlRdDataReg
   }
   // or reduce all ack signals
-  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || videoAckReg || commAckReg || fpp.io.ack
+  cpu.io.dmem.ack := dmem.io.ack || uartDevice.cpuPort.ack || ledDevice.cpuPort.ack || videoAckReg || commAckReg || fpp.io.ack || rayCtrlAckReg
 
   // ------------------------------------------------
   // Memory
@@ -293,36 +321,6 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
     cpu.io.dmem.ack    := g5SpiCtrl.io.pipecon.ack
   }
 
-  // ------------------------------------------------
-  // Group 4: ray-tracer accelerator + dedicated UART TX
-  // ------------------------------------------------
-  // The accelerator owns a streaming pixel FIFO. It exposes both an MMIO
-  // drain register (0xff00_000C) and a Decoupled byte stream. We drive a
-  // dedicated BufferedTx from byteOut so the bytes leave on a separate UART
-  // pin (io.rayTx) without touching the CPU UART. Software picks which path
-  // it wants via the controller's drain-mode register.
-  val rayController = Module(new RayTracerController)
-  rayController.io.address := 0.U
-  rayController.io.wr      := false.B
-  rayController.io.rd      := false.B
-  rayController.io.wrData  := 0.U
-  rayController.io.wrMask  := 0.U
-
-  val rayTxUart = Module(new BufferedTx(10000000, 115200))
-  rayTxUart.io.channel <> rayController.io.byteOut
-  io.rayTx := rayTxUart.io.txd
-
-  // Group 4: ray-tracer MMIO at 0xff00_0000
-  val isRayController = memAddress(31, 24) === "hff".U
-  when (isRayController) {
-    rayController.io.address := memAddress(15, 0)
-    rayController.io.wr      := memWr
-    rayController.io.rd      := memRd
-    rayController.io.wrData  := memWrData
-    rayController.io.wrMask  := memWrMask
-    cpu.io.dmem.rdData       := rayController.io.rdData
-    cpu.io.dmem.ack          := rayController.io.ack
-  }
 }
 
 object CpuTop extends App {

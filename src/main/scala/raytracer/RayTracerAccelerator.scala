@@ -48,8 +48,9 @@ class RayTracerAccelerator(
     val pixel = Decoupled(UInt(8.W))
   })
 
-  // FSM
-  val sRunning :: sDone :: Nil = Enum(2)
+  // FSM. sDone first so it encodes as 0 (matches the all-zeros init Verilator
+  // gives us under RANDOMIZE_REG_INIT before reset has fired).
+  val sDone :: sRunning :: Nil = Enum(2)
   val state = RegInit(sDone)
   val (psInitRender :: psRowInit :: psWaitRowDiv :: psSetup ::
        psWaitSqrt   :: psWaitDiv1 :: psComputeRefl :: psStartDiv2 ::
@@ -74,36 +75,39 @@ class RayTracerAccelerator(
   div2.io.dividend := 0.S
   div2.io.divisor  := 1.S
 
+  // RegInit (not bare Reg) on the datapath so they come up zero in sim
+  // instead of X — protects the dividers/sqrt from a phantom pre-reset render.
+
   // per-render regs (set in psInitRender)
-  val camXReg    = Reg(SInt(FpW.W))
-  val camYReg    = Reg(SInt(FpW.W))
-  val camZReg    = Reg(SInt(FpW.W))
-  val ocXReg     = Reg(SInt(FpW.W))
-  val ocYReg     = Reg(SInt(FpW.W))
-  val ocZReg     = Reg(SInt(FpW.W))
-  val cScalarReg = Reg(SInt(FpW.W))
-  val negCamYReg = Reg(SInt(FpW.W))
-  val colsReg    = Reg(UInt(13.W))
-  val rowsReg    = Reg(UInt(13.W))
-  val midColReg  = Reg(UInt(12.W))
-  val midRowReg  = Reg(UInt(12.W))
-  val scaleXReg  = Reg(SInt(FpW.W))
-  val scaleYReg  = Reg(SInt(FpW.W))
+  val camXReg    = RegInit(0.S(FpW.W))
+  val camYReg    = RegInit(0.S(FpW.W))
+  val camZReg    = RegInit(0.S(FpW.W))
+  val ocXReg     = RegInit(0.S(FpW.W))
+  val ocYReg     = RegInit(0.S(FpW.W))
+  val ocZReg     = RegInit(0.S(FpW.W))
+  val cScalarReg = RegInit(0.S(FpW.W))
+  val negCamYReg = RegInit(0.S(FpW.W))
+  val colsReg    = RegInit(0.U(13.W))
+  val rowsReg    = RegInit(0.U(13.W))
+  val midColReg  = RegInit(0.U(12.W))
+  val midRowReg  = RegInit(0.U(12.W))
+  val scaleXReg  = RegInit(0.S(FpW.W))
+  val scaleYReg  = RegInit(0.S(FpW.W))
 
   // per-row
-  val ocYdyRowReg  = Reg(SInt(FpW.W))
-  val tFloorRowReg = Reg(SInt(FpW.W))
+  val ocYdyRowReg  = RegInit(0.S(FpW.W))
+  val tFloorRowReg = RegInit(0.S(FpW.W))
 
   // per-pixel
-  val sReg          = Reg(SInt(FpW.W))
-  val tSphereReg    = Reg(SInt(FpW.W))
-  val hitXReg       = Reg(SInt(FpW.W))
-  val hitYReg       = Reg(SInt(FpW.W))
-  val hitZReg       = Reg(SInt(FpW.W))
-  val rdirXReg      = Reg(SInt(FpW.W))
-  val rdirYReg      = Reg(SInt(FpW.W))
-  val rdirZReg      = Reg(SInt(FpW.W))
-  val tReflFloorReg = Reg(SInt(FpW.W))
+  val sReg          = RegInit(0.S(FpW.W))
+  val tSphereReg    = RegInit(0.S(FpW.W))
+  val hitXReg       = RegInit(0.S(FpW.W))
+  val hitYReg       = RegInit(0.S(FpW.W))
+  val hitZReg       = RegInit(0.S(FpW.W))
+  val rdirXReg      = RegInit(0.S(FpW.W))
+  val rdirYReg      = RegInit(0.S(FpW.W))
+  val rdirZReg      = RegInit(0.S(FpW.W))
+  val tReflFloorReg = RegInit(0.S(FpW.W))
   val charReg       = RegInit(charSky)
 
   // sign-extend Q16.16 -> DivW (divisor)

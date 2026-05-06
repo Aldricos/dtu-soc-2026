@@ -1,0 +1,2 @@
+Tests:
+  - {name: raytracer_mmio_test, sim: RTL}
