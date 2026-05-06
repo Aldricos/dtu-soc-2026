@@ -1,0 +1,115 @@
+{
+    "DESIGN_NAME": "WishboneSnn",
+    "FP_PDN_MULTILAYER": true,
+    "FP_PDN_CORE_RING": true,
+    "VERILOG_FILES": [
+        "ref::$DESIGN_DIR/../../verilog/rtl/WishboneSnn.sv"
+    ],
+    "CLOCK_PERIOD": 100,
+    "CLOCK_PORT": "clock",
+    "FP_SIZING": "absolute",
+    "DIE_AREA": [
+        0,
+        0,
+        900,
+        1100
+    ],
+    "GRT_ANTENNA_MARGIN": 10,
+    "DESIGN_REPAIR_MAX_SLEW_PCT": 20,
+    "DESIGN_REPAIR_MAX_CAP_PCT": 20,
+    "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 20,
+    "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 20,
+    "MAX_TRANSITION_CONSTRAINT": 1.0,
+    "MAX_FANOUT_CONSTRAINT": 8,
+    "PL_RESIZER_SETUP_SLACK_MARGIN": 0.4,
+    "GRT_RESIZER_SETUP_SLACK_MARGIN": 0.2,
+    "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.2,
+    "PL_RESIZER_HOLD_SLACK_MARGIN": 0.4,
+    "CTS_SINK_CLUSTERING_SIZE": 8,
+    "CTS_DISTANCE_BETWEEN_BUFFERS": 100,
+    "CTS_CLK_MAX_WIRE_LENGTH": 150,
+    "MAGIC_DEF_LABELS": false,
+    "SYNTH_ABC_BUFFERING": true,
+    "RUN_HEURISTIC_DIODE_INSERTION": true,
+    "HEURISTIC_ANTENNA_THRESHOLD": 110,
+    "GRT_ANTENNA_ITERS": 8,
+    "RUN_ANTENNA_REPAIR": true,
+    "RUN_POST_GRT_DESIGN_REPAIR": true,
+    "RUN_POST_GRT_RESIZER_TIMING": true,
+    "DESIGN_REPAIR_MAX_WIRE_LENGTH": 100,
+    "GRT_DESIGN_REPAIR_MAX_WIRE_LENGTH": 100,
+    "DESIGN_REPAIR_REMOVE_BUFFERS": true,
+    "VDD_NETS": [
+        "vccd1"
+    ],
+    "GND_NETS": [
+        "vssd1"
+    ],
+    "MAGIC_DRC_USE_GDS": true,
+    "DPL_CELL_PADDING": 2,
+    "GPL_CELL_PADDING": 2,
+    "pdk::sky130*": {
+        "RT_MAX_LAYER": "met4",
+        "scl::sky130_fd_sc_hd": {
+            "CLOCK_PERIOD": 100
+        },
+        "scl::sky130_fd_sc_hdll": {
+            "CLOCK_PERIOD": 10
+        },
+        "scl::sky130_fd_sc_hs": {
+            "CLOCK_PERIOD": 8
+        },
+        "scl::sky130_fd_sc_ls": {
+            "CLOCK_PERIOD": 10,
+            "SYNTH_MAX_FANOUT": 5
+        },
+        "scl::sky130_fd_sc_ms": {
+            "CLOCK_PERIOD": 10
+        }
+    },
+    "pdk::gf180mcuC": {
+        "STD_CELL_LIBRARY": "gf180mcu_fd_sc_mcu7t5v0",
+        "CLOCK_PERIOD": 24.0,
+        "RT_MAX_LAYER": "Metal4",
+        "SYNTH_MAX_FANOUT": 4,
+        "PL_TARGET_DENSITY_PCT": 45
+    },
+    "meta": {
+        "version": 2
+    },
+    "MACROS": {
+        "sky130_sram_1kbyte_1rw1r_32x256_8": {
+            "instances": {
+                "shell.ram": {
+                    "location": [
+                        120,
+                        120
+                    ],
+                    "orientation": "N"
+                }
+            },
+            "gds": [
+                "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"
+            ],
+            "lef": [
+                "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"
+            ],
+            "nl": [
+                "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
+            ],
+            "lib": {
+                "*": [ "ref::$DESIGN_DIR/../../libs/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C_modified.lib" ]
+            }
+        }
+    },
+    "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
+    "FP_PDN_CHECK_NODES": false,
+    "MAGIC_CAPTURE_ERRORS": false,
+    "PRIMARY_GDSII_STREAMOUT_TOOL": "klayout",
+    "RUN_KLAYOUT_DRC": true,
+    "RUN_MAGIC_DRC": false,
+    "RUN_KLAYOUT_XOR": false,
+    "PDN_MACRO_CONNECTIONS": [
+        "shell.ram vccd1 vssd1 vccd1 vssd1"
+    ]
+}
