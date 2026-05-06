@@ -231,28 +231,53 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   // ------------------------------------------------
   // Memory
   // ------------------------------------------------
+  when (memSelect === 0xc.U) {
+    // 0xD000_0000 - 0xD7FF_FFFF -> direct uncached PSRAM A
+    spiMem.io.mem.address := "h1".U(4.W) ## memAddress(27, 0)
+    spiMem.io.mem.rd      := memRd
+    spiMem.io.mem.wr      := memWr
+    spiMem.io.mem.wrData  := memWrData
+    spiMem.io.mem.wrMask  := memWrMask
+
+    cpu.io.dmem.rdData := spiMem.io.mem.rdData
+    cpu.io.dmem.ack    := spiMem.io.mem.ack
+  }
+  when (memSelect === 0xd.U) {
+    // 0xD800_0000 - 0xDFFF_FFFF -> direct uncached PSRAM B
+    spiMem.io.mem.address := "h2".U(4.W) ## memAddress(27, 0)
+    spiMem.io.mem.rd      := memRd
+    spiMem.io.mem.wr      := memWr
+    spiMem.io.mem.wrData  := memWrData
+    spiMem.io.mem.wrMask  := memWrMask
+
+    cpu.io.dmem.rdData := spiMem.io.mem.rdData
+    cpu.io.dmem.ack    := spiMem.io.mem.ack
+  }
   when (memSelect === 0xe.U) { // CACHE 0xE
-    // CPU -> cache
-    cache.io.cpuIO.address := memAddress
-    cache.io.cpuIO.rd      := memRd
-    cache.io.cpuIO.wr      := memWr
-    cache.io.cpuIO.wrData  := memWrData
-    cache.io.cpuIO.wrMask  := memWrMask
+    when(memRd) {
+      cache.io.cpuIO.address := memAddress
+      cache.io.cpuIO.rd      := true.B
+      cache.io.cpuIO.wr      := false.B
+      cache.io.cpuIO.wrData  := memWrData
+      cache.io.cpuIO.wrMask  := memWrMask
 
-    // cache -> spiMem
-    spiMem.io.mem.address := cache.io.memIO.address
-    spiMem.io.mem.rd      := cache.io.memIO.rd
-    spiMem.io.mem.wr      := cache.io.memIO.wr
-    spiMem.io.mem.wrData  := cache.io.memIO.wrData
-    spiMem.io.mem.wrMask  := cache.io.memIO.wrMask
+      spiMem.io.mem.address := cache.io.memIO.address
+      spiMem.io.mem.rd      := cache.io.memIO.rd
+      spiMem.io.mem.wr      := false.B
+      spiMem.io.mem.wrData  := 0.U
+      spiMem.io.mem.wrMask  := 0.U
 
-    // spiMem -> cache
-    cache.io.memIO.rdData := spiMem.io.mem.rdData
-    cache.io.memIO.ack    := spiMem.io.mem.ack
+      cache.io.memIO.rdData := spiMem.io.mem.rdData
+      cache.io.memIO.ack    := spiMem.io.mem.ack
 
-    // cache -> CPU
-    cpu.io.dmem.rdData := cache.io.cpuIO.rdData
-    cpu.io.dmem.ack    := cache.io.cpuIO.ack
+      cpu.io.dmem.rdData := cache.io.cpuIO.rdData
+      cpu.io.dmem.ack    := cache.io.cpuIO.ack
+    } .otherwise {
+      // Writes to flash-cache window are ignored.
+      // Flash programming must go through WishboneSpiPmod.
+      cpu.io.dmem.rdData := 0.U
+      cpu.io.dmem.ack    := true.B
+    }
   }
 
   // ------------------------------------------------
@@ -288,7 +313,7 @@ class CpuTop(dmemNrByte: Int = 16) extends Module {
   io.rayTx := rayTxUart.io.txd
 
   // Group 4: ray-tracer MMIO at 0xff00_0000
-  val isRayController = memSelect === 0xff.U
+  val isRayController = memAddress(31, 24) === "hff".U
   when (isRayController) {
     rayController.io.address := memAddress(15, 0)
     rayController.io.wr      := memWr

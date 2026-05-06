@@ -6,6 +6,7 @@
 *.lst
 *.vcd
 *.gtkw
+*.DS_Store
 /env
 /venv
 /venv-cocotb

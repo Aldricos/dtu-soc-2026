@@ -52,7 +52,7 @@ class CaravelDebug extends Module {
 
   val comm = Module(new comm_controller())
   comm.wb <> wb
-  comm.wb.cyc <> 0.B
+  comm.wb.cyc := 0.B
   wc.io.cpu_reset := comm.cpu_reset
   wc.io.imem_sel := comm.imem_sel
 
@@ -83,16 +83,6 @@ class CaravelDebug extends Module {
   // even if comWriteValid stays high for more than one clock.
   val prevComWriteValid = RegNext(wc.io.comWriteValid, false.B)
   val comWriteFire = wc.io.comWriteValid && !prevComWriteValid
-
-  when (comWriteFire) {
-    when (!resultIndex) {
-      result0 := wc.io.comWriteData
-      resultIndex := true.B
-    } .otherwise {
-      result1 := wc.io.comWriteData
-      resultIndex := false.B
-    }
-  }
 
   when (wc.io.cpu_reset) {
     result0 := 0.U
@@ -251,8 +241,8 @@ class CaravelDebug extends Module {
   outVec(21) := wc.io.g5_spi_cs2_n
   // ==========================================
 
-  // Group 4 raytracer dedicated UART TX (pin 22).
-  //outVec(22) := wc.io.rayTx
+  // Group 4 raytracer dedicated UART TX (pin 6).
+  outVec(6) := wc.io.rayTx
 
 
   io.out := outVec.asUInt

@@ -36,11 +36,7 @@ class DataCache() extends Module {
   val reqTag    = localAddr(ADDR_WIDTH - 1, OFFSET_BITS + INDEX_BITS)
 
   def backingAddress(addr: UInt): UInt = {
-    val FLASH = "h0".U(4.W)
-    val PSRAM_A = "h1".U(4.W)
-    val PSRAM_B = "h2".U(4.W)
-
-    Cat(FLASH, addr(27, 0)) // Hard coded to flash
+    Cat("h0".U(4.W), addr(27, 0))
   }
 
   // ------------------------------------------------
@@ -48,21 +44,15 @@ class DataCache() extends Module {
   // ------------------------------------------------
   val initCounter = RegInit(0.U(INDEX_BITS.W))
 
-  val addrReg    = Reg(UInt(32.W))
-  val indexReg   = Reg(UInt(INDEX_BITS.W))
-  val tagReg     = Reg(UInt(TAG_BITS.W))
-  val wrDataReg  = Reg(UInt(32.W))
-  val wrMaskReg  = Reg(UInt(4.W))
-  val isWriteReg = Reg(Bool())
-  val hitReg     = Reg(Bool())
+  val addrReg  = Reg(UInt(32.W))
+  val indexReg = Reg(UInt(INDEX_BITS.W))
+  val tagReg   = Reg(UInt(TAG_BITS.W))
 
-  val rdDataReg  = RegInit(0.U(32.W))
-  val ackReg     = RegInit(false.B)
+  val rdDataReg = RegInit(0.U(32.W))
+  val ackReg    = RegInit(false.B)
 
   // ------------------------------------------------
   // Data SRAM
-  // Use only port0.
-  // Port1 is unused and its address is fixed to 0.
   // ------------------------------------------------
   val dataRam = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
 
@@ -82,9 +72,6 @@ class DataCache() extends Module {
   // bit 0           : valid
   // bits TAG_BITS:1 : tag
   // upper bits      : unused
-  //
-  // Use only port0.
-  // Port1 is unused and its address is fixed to 0.
   // ------------------------------------------------
   val metaRam = Module(new sky130_sram_1kbyte_1rw1r_32x256_8())
 
@@ -103,7 +90,6 @@ class DataCache() extends Module {
     Cat(0.U((32 - 1 - TAG_BITS).W), tag, valid)
   }
 
-  // All reads go through port0.
   val metaOut   = metaRam.io.dout0
   val metaValid = metaOut(0)
   val metaTag   = metaOut(TAG_BITS, 1)
@@ -124,9 +110,9 @@ class DataCache() extends Module {
   io.memIO.wrMask  := 0.U
 
   // ------------------------------------------------
-  // FSM
+  // Read-only cache FSM
   // ------------------------------------------------
-  val sInit :: sIdle :: sMetaRead :: sCheckHit :: sDataRead :: sDataWait :: sHitRead :: sReadMiss :: sWriteMem :: sWriteCache :: Nil = Enum(10)
+  val sInit :: sIdle :: sMetaRead :: sCheckHit :: sDataRead :: sDataWait :: sHitRead :: sReadMiss :: Nil = Enum(8)
   val state = RegInit(sInit)
 
   switch(state) {
@@ -145,23 +131,26 @@ class DataCache() extends Module {
     }
 
     is(sIdle) {
-      when((io.cpuIO.rd || io.cpuIO.wr) && !ackReg) {
-        addrReg    := io.cpuIO.address
-        indexReg   := reqIndex
-        tagReg     := reqTag
-        wrDataReg  := io.cpuIO.wrData
-        wrMaskReg  := io.cpuIO.wrMask
-        isWriteReg := io.cpuIO.wr
+      when(io.cpuIO.rd) {
+        addrReg  := io.cpuIO.address
+        indexReg := reqIndex
+        tagReg   := reqTag
 
         metaRam.io.csb0  := false.B
         metaRam.io.web0  := true.B
         metaRam.io.addr0 := reqIndex
+
         state := sMetaRead
+      }.elsewhen(io.cpuIO.wr) {
+        // Read-only cache: ignore writes but acknowledge them
+        // so the CPU cannot hang if a write reaches this module.
+        rdDataReg := 0.U
+        ackReg    := true.B
+        state     := sIdle
       }
     }
 
     is(sMetaRead) {
-      // Keep metadata read active through port0.
       metaRam.io.csb0  := false.B
       metaRam.io.web0  := true.B
       metaRam.io.addr0 := indexReg
@@ -170,28 +159,17 @@ class DataCache() extends Module {
     }
 
     is(sCheckHit) {
-      hitReg := hit
+      when(hit) {
+        dataRam.io.csb0  := false.B
+        dataRam.io.web0  := true.B
+        dataRam.io.addr0 := indexReg
 
-      when(isWriteReg) {
-        // Write-through: always write backing memory.
-        io.memIO.address := backingAddress(addrReg)
-        io.memIO.wr      := true.B
-        io.memIO.wrData  := wrDataReg
-        io.memIO.wrMask  := wrMaskReg
-        state := sWriteMem
+        state := sDataRead
       }.otherwise {
-        when(hit) {
-          // Read hit: start synchronous data SRAM read
-          dataRam.io.csb0  := false.B
-          dataRam.io.web0  := true.B
-          dataRam.io.addr0 := indexReg
-          state := sDataRead
-        }.otherwise {
-          // Read miss: fetch word from backing memory
-          io.memIO.address := backingAddress(addrReg)
-          io.memIO.rd      := true.B
-          state := sReadMiss
-        }
+        io.memIO.address := backingAddress(addrReg)
+        io.memIO.rd      := true.B
+
+        state := sReadMiss
       }
     }
 
@@ -199,6 +177,7 @@ class DataCache() extends Module {
       dataRam.io.csb0  := false.B
       dataRam.io.web0  := true.B
       dataRam.io.addr0 := indexReg
+
       state := sDataWait
     }
 
@@ -206,6 +185,7 @@ class DataCache() extends Module {
       dataRam.io.csb0  := false.B
       dataRam.io.web0  := true.B
       dataRam.io.addr0 := indexReg
+
       state := sHitRead
     }
 
@@ -236,39 +216,6 @@ class DataCache() extends Module {
         ackReg    := true.B
         state     := sIdle
       }
-    }
-
-    is(sWriteMem) {
-      io.memIO.address := backingAddress(addrReg)
-      io.memIO.wr      := true.B
-      io.memIO.wrData  := wrDataReg
-      io.memIO.wrMask  := wrMaskReg
-
-      when(io.memIO.ack) {
-        when(hitReg) {
-          state := sWriteCache
-        }.otherwise {
-          ackReg := true.B
-          state  := sIdle
-        }
-      }
-    }
-
-    is(sWriteCache) {
-      dataRam.io.csb0   := false.B
-      dataRam.io.web0   := false.B
-      dataRam.io.wmask0 := wrMaskReg
-      dataRam.io.addr0  := indexReg
-      dataRam.io.din0   := wrDataReg
-
-      metaRam.io.csb0   := false.B
-      metaRam.io.web0   := false.B
-      metaRam.io.wmask0 := "b1111".U
-      metaRam.io.addr0  := indexReg
-      metaRam.io.din0   := packMeta(true.B, tagReg)
-
-      ackReg := true.B
-      state  := sIdle
     }
   }
 }

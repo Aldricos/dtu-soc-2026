@@ -50,7 +50,7 @@ class CaravelUserProject extends Module {
 
   val comm = Module(new comm_controller())
   comm.wb <> wb
-  comm.wb.cyc <> 0.B
+  comm.wb.cyc := 0.B
   wc.io.cpu_reset := comm.cpu_reset
   wc.io.imem_sel := comm.imem_sel
 
